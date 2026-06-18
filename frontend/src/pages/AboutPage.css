@@ -1,0 +1,213 @@
+.about-container {
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: var(--font-body), sans-serif;
+  color: var(--text-primary);
+}
+
+.about-header-card {
+  background: var(--surface-dark);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255,255,255,0.08);
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  min-height: 280px;
+}
+
+.about-header-content {
+  padding: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-3);
+  position: relative;
+  z-index: 2;
+}
+
+.about-logo {
+  max-width: 140px;
+  height: auto;
+  margin-bottom: var(--space-2);
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.35));
+}
+
+.about-title {
+  font-family: var(--font-heading), 'Barlow Condensed', sans-serif;
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--text-inverse);
+  margin: 0;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.about-subtitle {
+  font-size: var(--text-lg);
+  color: var(--accent-primary);
+  margin: 0;
+  font-weight: 500;
+}
+
+.about-hero-wrapper {
+  position: relative;
+  height: 100%;
+}
+
+.about-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.about-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, var(--surface-dark) 0%, rgba(19, 23, 15, 0.4) 100%);
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: var(--space-6);
+}
+
+.about-card {
+  background: #FFFFFF;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-6);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.intro-card {
+  grid-column: span 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.intro-card h2 {
+  font-family: var(--font-heading), 'Barlow Condensed', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--surface-dark);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.highlight-text {
+  font-size: var(--text-lg);
+  line-height: var(--leading-relaxed);
+  color: #2D2D2A;
+}
+
+.intro-card p {
+  line-height: var(--leading-relaxed);
+  color: var(--text-secondary);
+}
+
+.highlight-metric-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  background: var(--surface-dark);
+  border: none;
+  gap: var(--space-4);
+}
+
+.metric-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.metric-val {
+  font-family: var(--font-heading), 'Barlow Condensed', sans-serif;
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--accent-primary);
+  line-height: 1;
+}
+
+.metric-lbl {
+  font-size: var(--text-xs);
+  color: var(--text-on-dark);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.feature-card {
+  grid-column: span 2;
+  display: flex;
+  gap: var(--space-5);
+  align-items: flex-start;
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.feature-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-primary);
+}
+
+.feature-icon {
+  font-size: 2.2rem;
+  background: var(--bg-main);
+  border-radius: var(--radius-md);
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid var(--card-border);
+}
+
+.feature-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.feature-info h3 {
+  font-family: var(--font-heading), 'Barlow Condensed', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--surface-dark);
+  margin: 0;
+}
+
+.feature-info p {
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
+  margin: 0;
+  font-size: var(--text-md);
+}
+
+@media (max-width: 900px) {
+  .about-header-card {
+    grid-template-columns: 1fr;
+  }
+  .about-hero-wrapper {
+    height: 180px;
+  }
+  .about-hero-overlay {
+    background: linear-gradient(to top, var(--surface-dark) 0%, rgba(19, 23, 15, 0.2) 100%);
+  }
+  .about-grid {
+    grid-template-columns: 1fr;
+  }
+  .feature-card {
+    grid-column: span 1;
+  }
+}

@@ -1,0 +1,220 @@
+.workflow-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--space-4) 0;
+  animation: fadeInUp 0.4s ease;
+}
+
+.workflow-header {
+  text-align: center;
+  margin-bottom: var(--space-8);
+}
+
+.workflow-title {
+  font-family: var(--font-heading);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.workflow-subtitle {
+  font-size: var(--text-md);
+  color: var(--text-muted);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Vertical Timeline/Flow styling */
+.workflow-flow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+/* The vertical connecting line */
+.workflow-flow::before {
+  content: '';
+  position: absolute;
+  top: 50px;
+  bottom: 50px;
+  width: 3px;
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--card-border),
+    var(--card-border) 8px,
+    transparent 8px,
+    transparent 16px
+  );
+  z-index: 1;
+}
+
+.workflow-node-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+  margin-bottom: var(--space-10);
+}
+
+.workflow-node-container:last-child {
+  margin-bottom: 0;
+}
+
+/* Connective Arrow pointing down */
+.workflow-arrow {
+  margin: var(--space-4) 0;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+}
+
+.workflow-arrow-line {
+  width: 2px;
+  height: 30px;
+  background-color: var(--card-border);
+}
+
+.workflow-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 650px;
+  padding: var(--space-5);
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  gap: var(--space-4);
+  transition: all var(--transition-base);
+  box-shadow: var(--card-shadow);
+  cursor: pointer;
+}
+
+.workflow-card:hover {
+  border-color: var(--accent-primary);
+  transform: translateY(-3px);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.workflow-card.active {
+  border-color: var(--accent-primary);
+  background-color: #FAF9F5;
+  box-shadow: 0 0 0 2px var(--accent-primary-light);
+}
+
+.workflow-icon-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.workflow-icon-circle {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.workflow-icon-circle.ceo { background-color: var(--surface-dark); }
+.workflow-icon-circle.state_sales_head { background-color: var(--accent-primary); }
+.workflow-icon-circle.district_manager { background-color: var(--accent-secondary); }
+.workflow-icon-circle.sales_officer { background-color: var(--info); }
+
+.workflow-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.workflow-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px dashed var(--card-border);
+  padding-bottom: var(--space-2);
+}
+
+.workflow-role-title {
+  font-family: var(--font-heading);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+}
+
+.workflow-scope-badge {
+  font-size: var(--text-xs);
+  padding: 2px 8px;
+  background-color: var(--bg-main);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.workflow-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.workflow-list-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.workflow-list-title {
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.workflow-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.workflow-list-item {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.workflow-list-item::before {
+  content: '•';
+  color: var(--accent-primary);
+  font-weight: bold;
+}
+
+.workflow-card.active .workflow-list-item::before {
+  color: var(--accent-secondary);
+}
+
+.workflow-action-badge {
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  background-color: #f0ede4;
+  color: var(--text-primary);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  margin-right: 4px;
+}
