@@ -84,8 +84,23 @@ export function RoleProvider({ children }) {
     });
   }, []);
 
-  // Compute filtered datasets based on current role scope
-  const filteredSales = useMemo(() => {
+  const [filters, setFilters] = useState({
+    fromDate: '',
+    toDate: '',
+    areas: [],
+    salesMen: [],
+    stockGroup: '',
+    stockCategory: '',
+    partyName: '',
+  });
+
+  const normalizeName = useCallback((name) => {
+    if (!name) return '';
+    return name.replace(/^M[rs]\.\s+/, '').trim().toLowerCase();
+  }, []);
+
+  // Baseline scoped datasets (before global filters)
+  const baseSales = useMemo(() => {
     switch (currentRole) {
       case ROLES.CEO:
         return sales;
@@ -94,13 +109,13 @@ export function RoleProvider({ children }) {
       case ROLES.DISTRICT_MANAGER:
         return sales.filter(r => r.areaCity === selectedDistrict);
       case ROLES.SALES_OFFICER:
-        return sales.filter(r => r.salesMan === selectedSalesMan);
+        return sales.filter(r => normalizeName(r.salesMan) === normalizeName(selectedSalesMan));
       default:
         return [];
     }
-  }, [currentRole, selectedState, selectedDistrict, selectedSalesMan, sales]);
+  }, [currentRole, selectedState, selectedDistrict, selectedSalesMan, sales, normalizeName]);
 
-  const filteredComplaints = useMemo(() => {
+  const baseComplaints = useMemo(() => {
     switch (currentRole) {
       case ROLES.CEO:
         return complaints;
@@ -109,18 +124,17 @@ export function RoleProvider({ children }) {
       case ROLES.DISTRICT_MANAGER:
         return complaints.filter(c => c.district === selectedDistrict);
       case ROLES.SALES_OFFICER: {
-        // Find dealers assigned to this sales officer
         const officerDealers = allDealers
-          .filter(d => d.salesOfficer === selectedSalesMan)
+          .filter(d => normalizeName(d.salesOfficer) === normalizeName(selectedSalesMan))
           .map(d => d.name);
         return complaints.filter(c => officerDealers.includes(c.dealer));
       }
       default:
         return [];
     }
-  }, [currentRole, selectedState, selectedDistrict, selectedSalesMan, complaints]);
+  }, [currentRole, selectedState, selectedDistrict, selectedSalesMan, complaints, allDealers, normalizeName]);
 
-  const filteredVisits = useMemo(() => {
+  const baseVisits = useMemo(() => {
     switch (currentRole) {
       case ROLES.CEO:
         return visits;
@@ -128,21 +142,146 @@ export function RoleProvider({ children }) {
         const stateOfficers = allSalesOfficers
           .filter(o => o.state === selectedState)
           .map(o => o.name);
-        return visits.filter(v => stateOfficers.includes(v.salesMan));
+        return visits.filter(v => stateOfficers.some(so => normalizeName(so) === normalizeName(v.salesMan)));
       }
       case ROLES.DISTRICT_MANAGER: {
-        // Find sales officers for this district
         const districtOfficers = allSalesOfficers
           .filter(o => o.district === selectedDistrict)
           .map(o => o.name);
-        return visits.filter(v => districtOfficers.includes(v.salesMan));
+        return visits.filter(v => districtOfficers.some(so => normalizeName(so) === normalizeName(v.salesMan)));
       }
       case ROLES.SALES_OFFICER:
-        return visits.filter(v => v.salesMan === selectedSalesMan);
+        return visits.filter(v => normalizeName(v.salesMan) === normalizeName(selectedSalesMan));
       default:
         return [];
     }
-  }, [currentRole, selectedState, selectedDistrict, selectedSalesMan, visits]);
+  }, [currentRole, selectedState, selectedDistrict, selectedSalesMan, visits, allSalesOfficers, normalizeName]);
+
+  // Available options for the filters based on baseline
+  const availableAreas = useMemo(() => {
+    const unique = new Set(baseSales.map(r => r.areaCity).filter(Boolean));
+    return [...unique].sort();
+  }, [baseSales]);
+
+  const availableSalesMen = useMemo(() => {
+    const unique = new Set(baseSales.map(r => r.salesMan).filter(Boolean));
+    return [...unique].sort();
+  }, [baseSales]);
+
+  const availableStockGroups = useMemo(() => {
+    const unique = new Set(baseSales.map(r => r.stockGroup).filter(Boolean));
+    return [...unique].sort();
+  }, [baseSales]);
+
+  const availableStockCategories = useMemo(() => {
+    let dataset = baseSales;
+    if (filters.stockGroup) {
+      dataset = dataset.filter(r => r.stockGroup === filters.stockGroup);
+    }
+    const unique = new Set(dataset.map(r => r.stockCategory).filter(Boolean));
+    return [...unique].sort();
+  }, [baseSales, filters.stockGroup]);
+
+  const availableDealers = useMemo(() => {
+    const unique = new Set(baseSales.map(r => r.partyName).filter(Boolean));
+    return [...unique].sort();
+  }, [baseSales]);
+
+  // Apply Global Filters (AND Logic)
+  const filteredSales = useMemo(() => {
+    let result = baseSales;
+
+    if (filters.fromDate) {
+      result = result.filter(r => r.date >= filters.fromDate);
+    }
+    if (filters.toDate) {
+      result = result.filter(r => r.date <= filters.toDate);
+    }
+    if (filters.areas && filters.areas.length > 0) {
+      result = result.filter(r => filters.areas.includes(r.areaCity));
+    }
+    if (filters.salesMen && filters.salesMen.length > 0) {
+      const normalizedFilters = filters.salesMen.map(sm => normalizeName(sm));
+      result = result.filter(r => normalizedFilters.includes(normalizeName(r.salesMan)));
+    }
+    if (filters.stockGroup) {
+      result = result.filter(r => r.stockGroup === filters.stockGroup);
+    }
+    if (filters.stockCategory) {
+      result = result.filter(r => r.stockCategory === filters.stockCategory);
+    }
+    if (filters.partyName) {
+      result = result.filter(r => normalizeName(r.partyName) === normalizeName(filters.partyName));
+    }
+
+    return result;
+  }, [baseSales, filters, normalizeName]);
+
+  const filteredComplaints = useMemo(() => {
+    let result = baseComplaints;
+
+    if (filters.fromDate) {
+      result = result.filter(c => c.date >= filters.fromDate);
+    }
+    if (filters.toDate) {
+      result = result.filter(c => c.date <= filters.toDate);
+    }
+    if (filters.areas && filters.areas.length > 0) {
+      result = result.filter(c => filters.areas.includes(c.district));
+    }
+    if (filters.salesMen && filters.salesMen.length > 0) {
+      const normalizedFilters = filters.salesMen.map(sm => normalizeName(sm));
+      result = result.filter(c => {
+        const dealerInfo = allDealers.find(d => normalizeName(d.name) === normalizeName(c.dealer));
+        const salesManName = dealerInfo ? dealerInfo.salesOfficer : '';
+        return normalizedFilters.includes(normalizeName(salesManName));
+      });
+    }
+    if (filters.partyName) {
+      result = result.filter(c => normalizeName(c.dealer) === normalizeName(filters.partyName));
+    }
+
+    return result;
+  }, [baseComplaints, filters, allDealers, normalizeName]);
+
+  const filteredVisits = useMemo(() => {
+    let result = baseVisits;
+
+    if (filters.fromDate) {
+      result = result.filter(v => v.date >= filters.fromDate);
+    }
+    if (filters.toDate) {
+      result = result.filter(v => v.date <= filters.toDate);
+    }
+    if (filters.areas && filters.areas.length > 0) {
+      result = result.filter(v => {
+        const dealerInfo = allDealers.find(d => normalizeName(d.name) === normalizeName(v.dealer));
+        const district = dealerInfo ? dealerInfo.district : '';
+        return filters.areas.includes(district);
+      });
+    }
+    if (filters.salesMen && filters.salesMen.length > 0) {
+      const normalizedFilters = filters.salesMen.map(sm => normalizeName(sm));
+      result = result.filter(v => normalizedFilters.includes(normalizeName(v.salesMan)));
+    }
+    if (filters.partyName) {
+      result = result.filter(v => normalizeName(v.dealer) === normalizeName(filters.partyName));
+    }
+
+    return result;
+  }, [baseVisits, filters, allDealers, normalizeName]);
+
+  const clearFilters = useCallback(() => {
+    setFilters({
+      fromDate: '',
+      toDate: '',
+      areas: [],
+      salesMen: [],
+      stockGroup: '',
+      stockCategory: '',
+      partyName: '',
+    });
+  }, []);
 
   const roleConfig = useMemo(() => {
     switch (currentRole) {
@@ -203,6 +342,15 @@ export function RoleProvider({ children }) {
     allDistricts,
     allSalesOfficers,
     allDealers,
+    filters,
+    setFilters,
+    clearFilters,
+    availableAreas,
+    availableSalesMen,
+    availableStockGroups,
+    availableStockCategories,
+    availableDealers,
+    normalizeName,
   }), [
     currentRole,
     selectedState,
@@ -216,6 +364,14 @@ export function RoleProvider({ children }) {
     addSalesEntry,
     addVisitEntry,
     addComplaintEntry,
+    filters,
+    clearFilters,
+    availableAreas,
+    availableSalesMen,
+    availableStockGroups,
+    availableStockCategories,
+    availableDealers,
+    normalizeName,
   ]);
 
   return (

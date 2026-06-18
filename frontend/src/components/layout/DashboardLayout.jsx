@@ -1,5 +1,6 @@
 import Sidebar from './Sidebar';
 import Header from './Header';
+import FilterBar from '../common/FilterBar';
 import './DashboardLayout.css';
 
 export default function DashboardLayout({ children }) {
@@ -8,6 +9,7 @@ export default function DashboardLayout({ children }) {
       <Sidebar />
       <div className="dashboard-main">
         <Header />
+        <FilterBar />
         <main className="dashboard-content">
           {children}
         </main>

@@ -1,0 +1,410 @@
+/* ──────────────────────────────────────────────
+   FILTER BAR — Premium Eco-Industrial Theme
+   ────────────────────────────────────────────── */
+
+.filter-bar-wrapper {
+  position: sticky;
+  top: 64px; /* Align right under the sticky header */
+  z-index: 45;
+  background: #F6F4ED; /* Matches application body background */
+  border-bottom: 1px solid var(--card-border, #E4E1D6);
+  padding: var(--space-3) var(--space-6);
+  box-shadow: 0 4px 12px rgba(19, 23, 15, 0.03);
+}
+
+.filter-bar-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: flex-end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+}
+
+.filter-label {
+  font-family: var(--font-heading), 'Barlow Condensed', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted, #73726A);
+  letter-spacing: 0.8px;
+}
+
+/* Common form fields */
+.filter-select-field,
+.filter-dropdown-trigger,
+.filter-dealer-input,
+.filter-date-field {
+  height: 38px;
+  background: #FFFFFF;
+  border: 1px solid var(--card-border, #E4E1D6);
+  border-radius: var(--radius-md, 8px);
+  color: var(--text-primary, #13170F);
+  font-family: var(--font-body), 'Inter', sans-serif;
+  font-size: 0.85rem;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all var(--transition-fast, 0.15s) ease;
+  min-width: 140px;
+}
+
+.filter-select-field:focus,
+.filter-dropdown-trigger:hover,
+.filter-dealer-input:focus,
+.filter-date-field:focus {
+  outline: none;
+  border-color: var(--accent-primary, #82B22C);
+  box-shadow: 0 0 0 3px rgba(130, 178, 44, 0.12);
+}
+
+.filter-select-field {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2373726A' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+}
+
+.filter-dropdown-trigger.active {
+  border-color: var(--accent-primary, #82B22C);
+  font-weight: 600;
+}
+
+.dropdown-arrow-icon {
+  color: var(--text-muted, #73726A);
+  margin-left: 6px;
+}
+
+/* Date range specific */
+.date-range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #FFFFFF;
+  border: 1px solid var(--card-border, #E4E1D6);
+  border-radius: var(--radius-md, 8px);
+  padding: 2px 6px;
+  height: 38px;
+}
+
+.date-input-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.date-icon {
+  color: var(--text-muted, #73726A);
+}
+
+.filter-date-field {
+  border: none;
+  height: auto;
+  padding: 0;
+  min-width: 110px;
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  cursor: text;
+}
+
+.filter-date-field:focus {
+  box-shadow: none;
+}
+
+.date-range-sep {
+  font-size: 0.8rem;
+  color: var(--text-muted, #73726A);
+}
+
+.preset-dropdown-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted, #73726A);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.preset-dropdown-btn:hover {
+  background: var(--bg-main, #F6F4ED);
+  color: var(--accent-primary, #82B22C);
+}
+
+/* Presets Overlay Menu */
+.preset-dropdown-menu {
+  position: absolute;
+  top: 105%;
+  right: 0;
+  background: #FFFFFF;
+  border: 1px solid var(--card-border, #E4E1D6);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: 0 8px 24px rgba(19, 23, 15, 0.12);
+  width: 130px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+}
+
+.preset-dropdown-menu button {
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  font-family: var(--font-body), 'Inter', sans-serif;
+  color: var(--text-primary, #13170F);
+  cursor: pointer;
+}
+
+.preset-dropdown-menu button:hover {
+  background: var(--accent-primary-light, #F1F8E9);
+  color: var(--accent-primary, #82B22C);
+}
+
+/* Multi-select dropdown panel */
+.filter-dropdown-panel {
+  position: absolute;
+  top: 105%;
+  left: 0;
+  background: #FFFFFF;
+  border: 1px solid var(--card-border, #E4E1D6);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: 0 8px 24px rgba(19, 23, 15, 0.12);
+  width: 200px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dropdown-search-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--card-border, #E4E1D6);
+}
+
+.dropdown-search-input {
+  border: none;
+  font-size: 0.8rem;
+  font-family: var(--font-body), 'Inter', sans-serif;
+  width: 100%;
+}
+
+.dropdown-search-input:focus {
+  outline: none;
+}
+
+.dropdown-options-list {
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.dropdown-option-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.dropdown-option-row:hover {
+  background: var(--bg-main, #F6F4ED);
+}
+
+.checkbox-icon {
+  color: var(--text-muted, #73726A);
+}
+
+.checkbox-icon.checked {
+  color: var(--accent-primary, #82B22C);
+}
+
+.no-options {
+  padding: 12px;
+  font-size: 0.78rem;
+  color: var(--text-muted, #73726A);
+  text-align: center;
+}
+
+/* Dealer / Autocomplete field */
+.dealer-search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.filter-dealer-input {
+  padding-left: 32px;
+  padding-right: 28px;
+  min-width: 180px;
+}
+
+.dealer-search-box .search-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--text-muted, #73726A);
+  pointer-events: none;
+}
+
+.clear-dealer-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--text-muted, #73726A);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 50%;
+}
+
+.clear-dealer-btn:hover {
+  background: var(--bg-main, #F6F4ED);
+  color: var(--danger, #C0392B);
+}
+
+.dealer-suggestions-panel {
+  position: absolute;
+  top: 105%;
+  left: 0;
+  right: 0;
+  background: #FFFFFF;
+  border: 1px solid var(--card-border, #E4E1D6);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: 0 8px 24px rgba(19, 23, 15, 0.12);
+  max-height: 180px;
+  overflow-y: auto;
+  z-index: 100;
+  padding: 4px 0;
+}
+
+.dealer-suggestion-row {
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.dealer-suggestion-row:hover {
+  background: var(--accent-primary-light, #F1F8E9);
+  color: var(--accent-primary, #82B22C);
+}
+
+/* ── Active Chips Row ── */
+.active-filters-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--card-border, #E4E1D6);
+}
+
+.filter-status-prefix {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary, #73726A);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.filter-status-prefix .badge {
+  background: var(--accent-primary-light, #F1F8E9);
+  color: var(--accent-primary, #82B22C);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.filter-chip {
+  background: #FFFFFF;
+  border: 1px solid var(--card-border, #E4E1D6);
+  border-radius: 16px;
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  color: var(--text-primary, #13170F);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chip-remove-btn {
+  background: var(--bg-main, #F6F4ED);
+  border: none;
+  color: var(--text-muted, #73726A);
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.chip-remove-btn:hover {
+  background: #E4E1D6;
+  color: var(--text-primary, #13170F);
+}
+
+.clear-all-filters-btn {
+  background: none;
+  border: none;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--secondary-accent, #C8742C); /* Terracotta */
+  cursor: pointer;
+  padding: 2px 6px;
+  transition: opacity var(--transition-fast, 0.15s) ease;
+}
+
+.clear-all-filters-btn:hover {
+  text-decoration: underline;
+  opacity: 0.8;
+}
+
+/* Responsive adjust */
+@media (max-width: 768px) {
+  .filter-bar-wrapper {
+    padding: var(--space-3) var(--space-4);
+  }
+  .filter-bar-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-2);
+  }
+  .filter-group {
+    width: 100%;
+  }
+  .filter-dropdown-panel,
+  .dealer-suggestions-panel {
+    width: 100%;
+  }
+}
