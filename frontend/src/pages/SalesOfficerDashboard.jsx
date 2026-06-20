@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { IndianRupee, Users, ClipboardList, PlusCircle, Calendar, MessageSquare, CheckCircle, Clock } from 'lucide-react';
+import { IndianRupee, Users, ClipboardList, PlusCircle, MessageSquare, Clock, MapPin } from 'lucide-react';
 import KPICard from '../components/cards/KPICard';
 import ChartCard from '../components/common/ChartCard';
 import DataTable from '../components/common/DataTable';
@@ -18,9 +18,7 @@ export default function SalesOfficerDashboard({ data }) {
   const {
     roleConfig,
     filteredVisits,
-    filteredComplaints,
     addSalesEntry,
-    addVisitEntry,
     addComplaintEntry,
     allDealers
   } = useRole();
@@ -148,12 +146,25 @@ export default function SalesOfficerDashboard({ data }) {
     }).sort((a, b) => b.totalSales - a.totalSales);
   }, [data, myDealers]);
 
+  // Today's date string for comparing visits
+  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+
+  // Split visits: today's assigned vs upcoming
+  const todaysVisits = useMemo(() => {
+    return filteredVisits.filter(v => v.date === todayStr || v.date === latestDate);
+  }, [filteredVisits, todayStr, latestDate]);
+
+  const upcomingVisits = useMemo(() => {
+    return filteredVisits
+      .filter(v => v.status === 'Pending' && v.date !== todayStr && v.date !== latestDate)
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .slice(0, 5);
+  }, [filteredVisits, todayStr, latestDate]);
+
   // Modals Local State
-  const [activeModal, setActiveModal] = useState(null); // 'sales', 'visit', 'complaint', 'followup'
+  const [activeModal, setActiveModal] = useState(null); // 'sales', 'complaint'
   const [salesForm, setSalesForm] = useState({ dealer: '', product: '', qty: '', rate: '' });
-  const [visitForm, setVisitForm] = useState({ dealer: '', purpose: '', date: '', notes: '' });
   const [complaintForm, setComplaintForm] = useState({ dealer: '', type: '', desc: '' });
-  const [followupForm, setFollowupForm] = useState({ dealer: '', notes: '', nextDate: '' });
 
   // Standard Product List for selection
   const standardProducts = [
@@ -193,22 +204,6 @@ export default function SalesOfficerDashboard({ data }) {
     setSalesForm({ dealer: '', product: '', qty: '', rate: '' });
   };
 
-  const handleVisitSubmit = (e) => {
-    e.preventDefault();
-    if (!visitForm.dealer || !visitForm.purpose || !visitForm.date) return;
-
-    addVisitEntry({
-      dealer: visitForm.dealer,
-      salesMan: officerName,
-      purpose: visitForm.purpose,
-      date: visitForm.date,
-      notes: visitForm.notes,
-    });
-
-    setActiveModal(null);
-    setVisitForm({ dealer: '', purpose: '', date: '', notes: '' });
-  };
-
   const handleComplaintSubmit = (e) => {
     e.preventDefault();
     if (!complaintForm.dealer || !complaintForm.type || !complaintForm.desc) return;
@@ -225,21 +220,7 @@ export default function SalesOfficerDashboard({ data }) {
     setComplaintForm({ dealer: '', type: '', desc: '' });
   };
 
-  const handleFollowupSubmit = (e) => {
-    e.preventDefault();
-    if (!followupForm.dealer || !followupForm.notes || !followupForm.nextDate) return;
 
-    // Followups are logged as courteous visits scheduled for nextDate
-    addVisitEntry({
-      dealer: followupForm.dealer,
-      salesMan: officerName,
-      purpose: `Follow-up: ${followupForm.notes}`,
-      date: followupForm.nextDate,
-    });
-
-    setActiveModal(null);
-    setFollowupForm({ dealer: '', notes: '', nextDate: '' });
-  };
 
   // Columns for My Dealer Summary table
   const dealerColumns = [
@@ -266,14 +247,8 @@ export default function SalesOfficerDashboard({ data }) {
         <button className="action-btn sales" onClick={() => setActiveModal('sales')}>
           <PlusCircle size={15} /> Add Sales Entry
         </button>
-        <button className="action-btn visit" onClick={() => setActiveModal('visit')}>
-          <Calendar size={15} /> Add Visit Entry
-        </button>
         <button className="action-btn complaint" onClick={() => setActiveModal('complaint')}>
           <MessageSquare size={15} /> Add Complaint
-        </button>
-        <button className="action-btn followup" onClick={() => setActiveModal('followup')}>
-          <ClipboardList size={15} /> Follow-up Entry
         </button>
       </div>
 
@@ -298,10 +273,10 @@ export default function SalesOfficerDashboard({ data }) {
           color="orange"
         />
         <KPICard
-          icon={Calendar}
-          label="Pending Visits"
+          icon={MapPin}
+          label="Assigned Visits"
           value={formatNumber(pendingVisitsCount)}
-          color={pendingVisitsCount > 0 ? 'red' : 'green'}
+          color={pendingVisitsCount > 0 ? 'orange' : 'green'}
         />
       </div>
 
@@ -360,11 +335,41 @@ export default function SalesOfficerDashboard({ data }) {
           </div>
         </div>
 
-        {/* Right Panel: Upcoming Visits */}
+        {/* Right Panel: Assigned Visits */}
         <div className="so-charts-col-right">
-          <ChartCard title="Upcoming &amp; Pending Visits" subtitle="Next client touchpoints">
+          {/* Today's Assigned Tasks */}
+          <ChartCard title="Today's Assigned Tasks" subtitle={`Visits assigned to you for ${todayStr}`}>
             <div className="visit-card-list">
-              {pendingVisits.slice(0, 5).map((visit) => (
+              {todaysVisits.length > 0 ? todaysVisits.map((visit) => (
+                <div key={visit.id} className="visit-card today-task">
+                  <div className="visit-card-header">
+                    <span className="visit-card-dealer">{visit.dealer}</span>
+                    <span className="visit-card-badge today">Today</span>
+                  </div>
+                  <div className="visit-card-purpose">
+                    <MapPin size={11} style={{ marginRight: 4, verticalAlign: 'middle', color: 'var(--accent-primary)' }} />
+                    {visit.purpose}
+                  </div>
+                  {visit.notes && (
+                    <div className="visit-card-notes">{visit.notes}</div>
+                  )}
+                  <div className="visit-card-date">
+                    <Clock size={11} style={{ marginRight: 4, verticalAlign: 'middle' }} />
+                    {visit.date}
+                  </div>
+                </div>
+              )) : (
+                <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--space-4)' }}>
+                  ✓ No visits scheduled for today.
+                </div>
+              )}
+            </div>
+          </ChartCard>
+
+          {/* Upcoming Assigned Visits */}
+          <ChartCard title="Upcoming Visits" subtitle="Next scheduled dealer visits" style={{ marginTop: 'var(--space-4)' }}>
+            <div className="visit-card-list">
+              {upcomingVisits.length > 0 ? upcomingVisits.map((visit) => (
                 <div key={visit.id} className="visit-card">
                   <div className="visit-card-header">
                     <span className="visit-card-dealer">{visit.dealer}</span>
@@ -376,11 +381,9 @@ export default function SalesOfficerDashboard({ data }) {
                     {visit.date}
                   </div>
                 </div>
-              ))}
-
-              {pendingVisits.length === 0 && (
-                <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--space-6)' }}>
-                  No pending visits scheduled.
+              )) : (
+                <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 'var(--space-4)' }}>
+                  No upcoming visits scheduled.
                 </div>
               )}
             </div>
@@ -478,74 +481,7 @@ export default function SalesOfficerDashboard({ data }) {
         </div>
       )}
 
-      {/* 2. Add Visit Entry Modal */}
-      {activeModal === 'visit' && (
-        <div className="modal-overlay" onClick={() => setActiveModal(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3 className="modal-title">Add Visit Entry</h3>
-              <span className="modal-close" onClick={() => setActiveModal(null)}>&times;</span>
-            </div>
-            <form onSubmit={handleVisitSubmit}>
-              <div className="modal-body modal-form">
-                <div className="login-field">
-                  <label className="login-label">Dealer / Party Name</label>
-                  <select
-                    className="login-input"
-                    value={visitForm.dealer}
-                    onChange={(e) => setVisitForm(v => ({ ...v, dealer: e.target.value }))}
-                    required
-                  >
-                    <option value="">Select Dealer...</option>
-                    {myDealers.map(d => (
-                      <option key={d} value={d}>{d}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="login-field">
-                  <label className="login-label">Purpose of Visit</label>
-                  <select
-                    className="login-input"
-                    value={visitForm.purpose}
-                    onChange={(e) => setVisitForm(v => ({ ...v, purpose: e.target.value }))}
-                    required
-                  >
-                    <option value="">Select Purpose...</option>
-                    <option value="Product Demonstration & Feedback">Product Demonstration & Feedback</option>
-                    <option value="Outstanding Payment Collection">Outstanding Payment Collection</option>
-                    <option value="New Order Pitching">New Order Pitching</option>
-                    <option value="Routine Courtesy Visit">Routine Courtesy Visit</option>
-                  </select>
-                </div>
-                <div className="login-field">
-                  <label className="login-label">Scheduled Date</label>
-                  <input
-                    type="date"
-                    className="login-input"
-                    value={visitForm.date}
-                    onChange={(e) => setVisitForm(v => ({ ...v, date: e.target.value }))}
-                    required
-                  />
-                </div>
-                <div className="login-field">
-                  <label className="login-label">Notes (Optional)</label>
-                  <textarea
-                    className="login-input"
-                    rows="3"
-                    placeholder="Add notes about the planned visit..."
-                    value={visitForm.notes}
-                    onChange={(e) => setVisitForm(v => ({ ...v, notes: e.target.value }))}
-                  />
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="modal-btn-cancel" onClick={() => setActiveModal(null)}>Cancel</button>
-                <button type="submit" className="modal-btn-submit visit">Schedule Visit</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+
 
       {/* 3. Add Complaint Modal */}
       {activeModal === 'complaint' && (
@@ -607,60 +543,7 @@ export default function SalesOfficerDashboard({ data }) {
         </div>
       )}
 
-      {/* 4. Follow-up Entry Modal */}
-      {activeModal === 'followup' && (
-        <div className="modal-overlay" onClick={() => setActiveModal(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3 className="modal-title">Record Follow-up Action</h3>
-              <span className="modal-close" onClick={() => setActiveModal(null)}>&times;</span>
-            </div>
-            <form onSubmit={handleFollowupSubmit}>
-              <div className="modal-body modal-form">
-                <div className="login-field">
-                  <label className="login-label">Dealer Name</label>
-                  <select
-                    className="login-input"
-                    value={followupForm.dealer}
-                    onChange={(e) => setFollowupForm(f => ({ ...f, dealer: e.target.value }))}
-                    required
-                  >
-                    <option value="">Select Dealer...</option>
-                    {myDealers.map(d => (
-                      <option key={d} value={d}>{d}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="login-field">
-                  <label className="login-label">Follow-up Notes / Commitments</label>
-                  <textarea
-                    className="login-input"
-                    rows="3"
-                    placeholder="What was agreed or committed? (e.g. will pay ₹50k by Friday)"
-                    value={followupForm.notes}
-                    onChange={(e) => setFollowupForm(f => ({ ...f, notes: e.target.value }))}
-                    required
-                  />
-                </div>
-                <div className="login-field">
-                  <label className="login-label">Next Action Date</label>
-                  <input
-                    type="date"
-                    className="login-input"
-                    value={followupForm.nextDate}
-                    onChange={(e) => setFollowupForm(f => ({ ...f, nextDate: e.target.value }))}
-                    required
-                  />
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="modal-btn-cancel" onClick={() => setActiveModal(null)}>Cancel</button>
-                <button type="submit" className="modal-btn-submit followup">Save Action</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+
     </div>
   );
 }
