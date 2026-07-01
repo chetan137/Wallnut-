@@ -2,15 +2,23 @@ import { IndianRupee, Users, AlertCircle, Target } from 'lucide-react';
 import KPICard from './KPICard';
 import { abbreviateCurrency, formatNumber, formatPercent } from '../../utils/formatters';
 
-export default function KPIRow({ metrics }) {
+export default function KPIRow({ metrics, isYearly = false, showBothTrends = false }) {
+  const trendLabel = isYearly ? 'vs last year' : 'vs last month';
+  
+  const salesTrends = showBothTrends ? [
+    { value: metrics.salesTrendMonth, label: 'vs last month' },
+    { value: metrics.salesTrend, label: 'vs last year' }
+  ] : null;
+  
   return (
     <div className="kpi-row stagger-children" id="kpi-row">
       <KPICard
         icon={IndianRupee}
         label="Total Sales"
         value={abbreviateCurrency(metrics.totalSales)}
-        trend={metrics.salesTrend}
-        trendLabel="vs last month"
+        trend={showBothTrends ? null : metrics.salesTrend}
+        trendLabel={showBothTrends ? null : trendLabel}
+        trends={salesTrends}
         color="green"
       />
       <KPICard

@@ -3,7 +3,7 @@
  * Manages role-based view switching, district/officer scoping, and mutable sales/complaints/visits states.
  */
 
-import { createContext, useContext, useState, useMemo, useCallback } from 'react';
+import { createContext, useContext, useState, useMemo, useCallback, useEffect } from 'react';
 import { salesData, allDistricts, allSalesOfficers, allDealers, districtToState, allStates } from '../data/salesData';
 import { complaintsData } from '../data/complaintsData';
 import { visitsData } from '../data/visitsData';
@@ -28,6 +28,47 @@ export function RoleProvider({ children }) {
     const saved = localStorage.getItem('wallnut_sales_records');
     return saved ? JSON.parse(saved) : salesData;
   });
+
+  // Track data source for UI badge
+  const [dataSource, setDataSource] = useState('local');
+  const [dataLoading, setDataLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+  const [lastSync, setLastSync] = useState(null);
+
+  // Core sync function — fetches from Tally (or falls back to local demo data)
+  const syncFromTally = useCallback(async (silent = false) => {
+    if (!silent) setSyncing(true);
+    try {
+      const res  = await fetch('/api/tally/sync');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      // Always apply backend data — whether live Tally or local fallback
+      if (json.ok && Array.isArray(json.data?.salesData)) {
+        setSales(json.data.salesData);
+        setDataSource(json.source || 'local');
+        const syncTime = json.source === 'tally' ? (json.lastSync || new Date().toISOString()) : null;
+        if (syncTime) setLastSync(syncTime);
+        localStorage.setItem('wallnut_sales_records', JSON.stringify(json.data.salesData));
+        localStorage.setItem('wallnut_data_source', json.source || 'local');
+        localStorage.setItem('wallnut_last_sync', syncTime || '');
+      }
+    } catch {
+      // Backend unreachable — keep existing data
+    } finally {
+      if (!silent) setSyncing(false);
+      setDataLoading(false);
+    }
+  }, []);
+
+  // On mount: restore cached source, then trigger a background sync
+  useEffect(() => {
+    const cachedSource = localStorage.getItem('wallnut_data_source');
+    const cachedSync   = localStorage.getItem('wallnut_last_sync');
+    if (cachedSource) setDataSource(cachedSource);
+    if (cachedSync)   setLastSync(cachedSync);
+    syncFromTally(true); // silent = no spinner on first load
+  }, [syncFromTally]);
+
 
   const [complaints, setComplaints] = useState(() => {
     const saved = localStorage.getItem('wallnut_complaints_records');
@@ -351,6 +392,11 @@ export function RoleProvider({ children }) {
     availableStockCategories,
     availableDealers,
     normalizeName,
+    dataSource,
+    dataLoading,
+    syncing,
+    lastSync,
+    syncFromTally,
   }), [
     currentRole,
     selectedState,
@@ -372,6 +418,11 @@ export function RoleProvider({ children }) {
     availableStockCategories,
     availableDealers,
     normalizeName,
+    dataSource,
+    dataLoading,
+    syncing,
+    lastSync,
+    syncFromTally,
   ]);
 
   return (

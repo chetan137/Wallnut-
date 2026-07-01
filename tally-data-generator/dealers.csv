@@ -1,0 +1,93 @@
+Name,State,City,SalesOfficer
+TOOLS PARK,Kerala,Ernakulam,Mr. Nikhil
+Einstek Engineering Insulations,Kerala,Ernakulam,Mr. Nikhil
+Kerala Tile House,Kerala,Ernakulam,Mr. Nikhil
+Kochi Building Centre,Kerala,Ernakulam,Mr. Nikhil
+Nexa Tiles,Kerala,Ernakulam,Mr. Debin
+Metro Tiles,Kerala,Ernakulam,Mr. Debin
+Cochin Hardware Mart,Kerala,Ernakulam,Mr. Debin
+TVM Construction Hub,Kerala,Thiruvananthapuram,Mr. Arun
+Capital Hardware Store,Kerala,Thiruvananthapuram,Mr. Arun
+Southern Building Materials,Kerala,Thiruvananthapuram,Mr. Arun
+Malabar Tiles and Sanitary,Kerala,Kozhikode,Ms. Priya
+Kozhikode Hardware Depot,Kerala,Kozhikode,Ms. Priya
+Thrissur Building Mart,Kerala,Thrissur,Mr. Sajith
+Central Kerala Traders,Kerala,Thrissur,Mr. Sajith
+Mumbai Infra Supplies,Maharashtra,Mumbai,Mr. Rohan
+Dharavi Construction Co.,Maharashtra,Mumbai,Mr. Rohan
+Andheri Hardware House,Maharashtra,Mumbai,Mr. Rohan
+Western Tiles Gallery,Maharashtra,Mumbai,Mr. Aarav
+Bombay Building Depot,Maharashtra,Mumbai,Mr. Aarav
+Pune Construction Centre,Maharashtra,Pune,Mr. Vikrant
+Shivaji Hardware and Paints,Maharashtra,Pune,Mr. Vikrant
+Deccan Traders,Maharashtra,Pune,Mr. Vikrant
+Kolhapur Cement House,Maharashtra,Kolhapur,Ms. Swati
+Mahalaxmi Building Materials,Maharashtra,Kolhapur,Ms. Swati
+Nashik Hardware Hub,Maharashtra,Nashik,Mr. Ganesh
+Godavari Construction Supplies,Maharashtra,Nashik,Mr. Ganesh
+Bengaluru Tile World,Karnataka,Bengaluru,Mr. Karthik
+Whitefield Building Supplies,Karnataka,Bengaluru,Mr. Karthik
+Electronic City Hardware,Karnataka,Bengaluru,Mr. Karthik
+Silicon Valley Construction,Karnataka,Bengaluru,Mr. Venkat
+Jayanagar Infra Mart,Karnataka,Bengaluru,Mr. Venkat
+Royal Mysuru Traders,Karnataka,Mysuru,Ms. Lakshmi
+Palace City Hardware,Karnataka,Mysuru,Ms. Lakshmi
+Coastal Hardware Centre,Karnataka,Mangaluru,Mr. Suresh
+Mangalore Tiles Depot,Karnataka,Mangaluru,Mr. Suresh
+Hubli Construction Mart,Karnataka,Hubli,Mr. Basavaraj
+Dharwad Building Materials,Karnataka,Hubli,Mr. Basavaraj
+M/s Shree Cement House,Madhya Pradesh,Indore,Mr. Rajesh Sharma
+Indore Building Center,Madhya Pradesh,Indore,Mr. Rajesh Sharma
+Kumar Hardware and Paints,Madhya Pradesh,Indore,Mr. Rajesh Sharma
+Rajlaxmi Traders,Madhya Pradesh,Indore,Mr. Rajesh Sharma
+City Construction Supplies,Madhya Pradesh,Indore,Mr. Amit Verma
+Maheshwari Building Materials,Madhya Pradesh,Indore,Mr. Amit Verma
+New India Hardware,Madhya Pradesh,Indore,Mr. Amit Verma
+Bhopal Cement Depot,Madhya Pradesh,Bhopal,Mr. Sunil Patel
+Capital Construction Co.,Madhya Pradesh,Bhopal,Mr. Sunil Patel
+Sharma Building Solutions,Madhya Pradesh,Bhopal,Mr. Sunil Patel
+Singh Brothers Trading,Madhya Pradesh,Bhopal,Mr. Vikram Singh
+Royal Hardware Store,Madhya Pradesh,Bhopal,Mr. Vikram Singh
+MP Construction Hub,Madhya Pradesh,Bhopal,Mr. Vikram Singh
+Jabalpur Building Mart,Madhya Pradesh,Jabalpur,Mr. Manoj Tiwari
+Narmada Construction Supplies,Madhya Pradesh,Jabalpur,Mr. Manoj Tiwari
+Tiwari and Sons Hardware,Madhya Pradesh,Jabalpur,Mr. Manoj Tiwari
+Mahakoshal Traders,Madhya Pradesh,Jabalpur,Mr. Deepak Jain
+Jain Construction Materials,Madhya Pradesh,Jabalpur,Mr. Deepak Jain
+Ujjain Hardware Center,Madhya Pradesh,Ujjain,Mr. Prakash Gupta
+Mahakal Building Supplies,Madhya Pradesh,Ujjain,Mr. Prakash Gupta
+Gupta Trading Co.,Madhya Pradesh,Ujjain,Mr. Prakash Gupta
+Gwalior Construction Depot,Madhya Pradesh,Gwalior,Mr. Arvind Yadav
+Fort City Traders,Madhya Pradesh,Gwalior,Mr. Arvind Yadav
+Yadav Building Materials,Madhya Pradesh,Gwalior,Mr. Arvind Yadav
+Chambal Hardware House,Madhya Pradesh,Gwalior,Ms. Kiran Deshmukh
+Scindia Building Supplies,Madhya Pradesh,Gwalior,Ms. Kiran Deshmukh
+Chennai Tiles Emporium,Tamil Nadu,Chennai,Mr. Murugan
+Adyar Building Hub,Tamil Nadu,Chennai,Mr. Murugan
+T Nagar Hardware Store,Tamil Nadu,Chennai,Mr. Murugan
+OMR Construction Supplies,Tamil Nadu,Chennai,Ms. Divya
+Porur Infra Mart,Tamil Nadu,Chennai,Ms. Divya
+Coimbatore Hardware Palace,Tamil Nadu,Coimbatore,Mr. Senthil
+Kongu Traders,Tamil Nadu,Coimbatore,Mr. Senthil
+Tiruppur Building Centre,Tamil Nadu,Coimbatore,Mr. Senthil
+Madurai Construction Depot,Tamil Nadu,Madurai,Mr. Pandian
+Temple City Hardware,Tamil Nadu,Madurai,Mr. Pandian
+Ahmedabad Building Solutions,Gujarat,Ahmedabad,Mr. Bharat
+SG Highway Hardware,Gujarat,Ahmedabad,Mr. Bharat
+Sabarmati Traders,Gujarat,Ahmedabad,Mr. Bharat
+Naroda Construction Hub,Gujarat,Ahmedabad,Mr. Jayesh
+Gota Tiles Centre,Gujarat,Ahmedabad,Mr. Jayesh
+Surat Diamond Hardware,Gujarat,Surat,Mr. Hitesh
+Textile City Construction,Gujarat,Surat,Mr. Hitesh
+Varachha Building Mart,Gujarat,Surat,Mr. Hitesh
+Vadodara Infra Hub,Gujarat,Vadodara,Ms. Rinku
+Alkapuri Tiles and Paints,Gujarat,Vadodara,Ms. Rinku
+Pink City Hardware,Rajasthan,Jaipur,Mr. Mahendra
+Jaipur Royal Traders,Rajasthan,Jaipur,Mr. Mahendra
+Malviya Nagar Construction,Rajasthan,Jaipur,Mr. Mahendra
+Mansarovar Building Centre,Rajasthan,Jaipur,Mr. Lokesh
+Tonk Road Hardware,Rajasthan,Jaipur,Mr. Lokesh
+Jodhpur Blue City Hardware,Rajasthan,Jodhpur,Mr. Bhanu
+Suncity Construction Supplies,Rajasthan,Jodhpur,Mr. Bhanu
+Lake City Tiles,Rajasthan,Udaipur,Ms. Meera
+Udaipur Heritage Building Co.,Rajasthan,Udaipur,Ms. Meera

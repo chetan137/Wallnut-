@@ -390,21 +390,113 @@
   opacity: 0.8;
 }
 
+/* Mobile Toggle Styles */
+.filter-mobile-toggle-row {
+  display: none;
+}
+
 /* Responsive adjust */
 @media (max-width: 768px) {
   .filter-bar-wrapper {
     padding: var(--space-3) var(--space-4);
   }
+  
+  .filter-mobile-toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding-bottom: 2px;
+  }
+
+  .filter-mobile-summary {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .filter-summary-icon {
+    color: var(--accent-primary);
+  }
+
+  .filter-expand-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #FFFFFF;
+    border: 1px solid var(--card-border);
+    color: var(--text-secondary);
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .filter-expand-btn:hover {
+    background: var(--accent-primary-light);
+    color: var(--accent-primary);
+    border-color: var(--accent-primary);
+  }
+
+  .filter-expand-btn .chevron-icon {
+    transition: transform 0.2s ease;
+  }
+
+  .filter-expand-btn.expanded .chevron-icon {
+    transform: rotate(180deg);
+  }
+
   .filter-bar-container {
     flex-direction: column;
     align-items: stretch;
     gap: var(--space-2);
+    margin-top: var(--space-3);
+    padding-top: var(--space-3);
+    border-top: 1px dashed var(--card-border);
+    /* Transition animation when opening/closing */
+    max-height: 1000px;
+    opacity: 1;
+    overflow: visible;
+    transition: max-height 0.25s ease-out, opacity 0.25s ease-out, margin 0.25s ease-out;
   }
+  
+  .filter-bar-container.collapsed {
+    display: none !important;
+  }
+
   .filter-group {
     width: 100%;
   }
+
+  .filter-select-field,
+  .filter-dropdown-trigger,
+  .filter-dealer-input,
+  .filter-date-field,
+  .date-range-inputs {
+    width: 100%;
+  }
+  
+  .date-range-inputs {
+    justify-content: space-between;
+  }
+  
+  .filter-date-field {
+    width: auto;
+    flex: 1;
+    text-align: center;
+  }
+
   .filter-dropdown-panel,
   .dealer-suggestions-panel {
     width: 100%;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 110;
   }
 }

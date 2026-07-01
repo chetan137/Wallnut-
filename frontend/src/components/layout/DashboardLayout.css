@@ -44,10 +44,28 @@
 }
 
 @media (max-width: 768px) {
+  .dashboard-content {
+    padding: var(--space-4);
+  }
   .dashboard-footer {
     flex-direction: column;
     gap: var(--space-2);
     text-align: center;
     padding: var(--space-4);
   }
+}
+
+/* Mobile Sidebar Backdrop Overlay */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(19, 23, 15, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 95; /* Layered below the drawer (100) but above everything else (50) */
+  animation: fadeInOverlay 0.2s ease-out forwards;
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

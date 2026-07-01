@@ -1,11 +1,11 @@
-import { LayoutDashboard, Users, Network, LogOut, Info } from 'lucide-react';
+import { LayoutDashboard, Users, Network, LogOut, Info, X } from 'lucide-react';
 import { useRole, ROLES } from '../../context/RoleContext';
 import { useAuth } from '../../context/AuthContext';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.png';
 import './Sidebar.css';
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, onClose }) {
   const {
     currentRole,
     setRole,
@@ -31,13 +31,17 @@ export default function Sidebar() {
   const handleLogout = () => {
     logout();
     navigate('/login');
+    if (onClose) onClose();
   };
 
   return (
-    <aside className="sidebar" id="main-sidebar">
+    <aside className={`sidebar ${isOpen ? 'open' : ''}`} id="main-sidebar">
       {/* Brand */}
       <div className="sidebar-brand">
         <img src={logo} alt="Wallnut Logo" className="sidebar-logo-img" />
+        <button className="sidebar-close-btn" onClick={onClose} title="Close Menu">
+          <X size={18} />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -48,6 +52,7 @@ export default function Sidebar() {
           to="/dashboard"
           className={`sidebar-item-link ${currentPath === '/dashboard' ? 'active' : ''}`}
           id="nav-dashboard"
+          onClick={onClose}
         >
           <LayoutDashboard className="sidebar-item-icon" size={16} />
           <span>Dashboard</span>
@@ -58,6 +63,7 @@ export default function Sidebar() {
             to="/users"
             className={`sidebar-item-link ${currentPath === '/users' ? 'active' : ''}`}
             id="nav-users"
+            onClick={onClose}
           >
             <Users className="sidebar-item-icon" size={16} />
             <span>User Management</span>
@@ -68,6 +74,7 @@ export default function Sidebar() {
           to="/workflow"
           className={`sidebar-item-link ${currentPath === '/workflow' ? 'active' : ''}`}
           id="nav-workflow"
+          onClick={onClose}
         >
           <Network className="sidebar-item-icon" size={16} />
           <span>System Workflow</span>
@@ -77,6 +84,7 @@ export default function Sidebar() {
           to="/about"
           className={`sidebar-item-link ${currentPath === '/about' ? 'active' : ''}`}
           id="nav-about"
+          onClick={onClose}
         >
           <Info className="sidebar-item-icon" size={16} />
           <span>About Wallnut</span>

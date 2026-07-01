@@ -17,6 +17,9 @@ export default function FilterBar() {
     filteredSales
   } = useRole();
 
+  // Mobile layout state
+  const [isCollapsed, setIsCollapsed] = useState(true);
+
   // Dropdown open states
   const [activeDropdown, setActiveDropdown] = useState(null); // 'areas' | 'salesMen' | 'stockGroup' | 'stockCategory' | 'presets'
   const [dealerSearch, setDealerSearch] = useState('');
@@ -196,7 +199,26 @@ export default function FilterBar() {
 
   return (
     <div className="filter-bar-wrapper">
-      <div className="filter-bar-container" ref={dropdownRef}>
+      {/* Mobile Toggle Row */}
+      <div className="filter-mobile-toggle-row">
+        <div className="filter-mobile-summary">
+          <Filter size={14} className="filter-summary-icon" />
+          <span className="filter-summary-text">
+            {hasActiveFilters 
+              ? `${activeChips.length} active filters` 
+              : 'No active filters'}
+          </span>
+        </div>
+        <button 
+          className={`filter-expand-btn ${!isCollapsed ? 'expanded' : ''}`}
+          onClick={() => setIsCollapsed(!isCollapsed)}
+        >
+          <span>{isCollapsed ? 'Show Filters' : 'Hide Filters'}</span>
+          <ChevronDown size={14} className="chevron-icon" />
+        </button>
+      </div>
+
+      <div className={`filter-bar-container ${isCollapsed ? 'collapsed' : ''}`} ref={dropdownRef}>
         
         {/* Date From & Date To */}
         <div className="filter-group">

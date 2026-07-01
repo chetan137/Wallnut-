@@ -1,0 +1,546 @@
+Date,VchNo,VchType,Dealer,Product,Qty,Rate,Amount,UOM,SalesOfficer,Area,State
+20260401,WBKER-001/25-26,Sales,TOOLS PARK,Wallnut Floor Leveler (25 Kg)-FL,51,533,27183,Kgs,Mr. Nikhil,Ernakulam,Kerala
+20260402,WBKER-002/25-26,Sales,TOOLS PARK,Wallnut Block Jointing Mortar (40 Kg),99,553,54747,Kgs,Mr. Nikhil,Ernakulam,Kerala
+20260401,WBKER-003/25-26,Sales,Einstek Engineering Insulations,Wallnut Epoxy Grout (1 Kg)-E,98,895,87710,Nos,Mr. Nikhil,Ernakulam,Kerala
+20260402,WBKER-004/25-26,Sales,Kerala Tile House,Wallnut Tile Adhesive (20 Kg),60,448,26880,Kgs,Mr. Nikhil,Ernakulam,Kerala
+20260401,WBKER-005/25-26,Sales,Kerala Tile House,Calcibond Secure White (20 Kg)-N,110,549,60390,Kgs,Mr. Nikhil,Ernakulam,Kerala
+20260402,WBKER-006/25-26,Sales,Kochi Building Centre,Wallnut Crack Fill Paste (1 Kg),48,389,18672,Nos,Mr. Nikhil,Ernakulam,Kerala
+20260401,WBKER-007/25-26,Sales,Kochi Building Centre,Wallnut Wall Putty (40 Kg)-P,45,647,29115,Kgs,Mr. Nikhil,Ernakulam,Kerala
+20260402,WBKER-008/25-26,Sales,Nexa Tiles,Wallnut Plaster Bond (20 L)-PB,87,2280,198360,Nos,Mr. Debin,Ernakulam,Kerala
+20260401,WBKER-009/25-26,Sales,Metro Tiles,Wallnut Crack Fill Paste (1 Kg),92,360,33120,Nos,Mr. Debin,Ernakulam,Kerala
+20260402,WBKER-010/25-26,Sales,Metro Tiles,Calcibond Secure White (20 Kg)-N,79,515,40685,Kgs,Mr. Debin,Ernakulam,Kerala
+20260401,WBKER-011/25-26,Credit Note,Metro Tiles,Wallnut Tile Adhesive (20 Kg),47,469,22043,Kgs,Mr. Debin,Ernakulam,Kerala
+20260402,WBKER-012/25-26,Sales,Cochin Hardware Mart,Wallnut SBR Latex (5 L)-S,61,1561,95221,Nos,Mr. Debin,Ernakulam,Kerala
+20260401,WBKER-013/25-26,Sales,Cochin Hardware Mart,Wallnut Floor Leveler (25 Kg)-FL,101,563,56863,Kgs,Mr. Debin,Ernakulam,Kerala
+20260402,WBKER-014/25-26,Sales,TVM Construction Hub,Wallnut Anti-Corrosion Coat (4 L)-AC,87,1787,155469,Nos,Mr. Arun,Thiruvananthapuram,Kerala
+20260401,WBKER-015/25-26,Sales,TVM Construction Hub,Wallnut SBR Latex (5 L)-S,32,1433,45856,Nos,Mr. Arun,Thiruvananthapuram,Kerala
+20260402,WBKER-016/25-26,Sales,Capital Hardware Store,Wallnut Floor Leveler (25 Kg)-FL,15,558,8370,Kgs,Mr. Arun,Thiruvananthapuram,Kerala
+20260401,WBKER-017/25-26,Sales,Capital Hardware Store,Wallnut SBR Latex (5 L)-S,137,1425,195225,Nos,Mr. Arun,Thiruvananthapuram,Kerala
+20260402,WBKER-018/25-26,Sales,Southern Building Materials,Wallnut Crack Fill Paste (1 Kg),106,362,38372,Nos,Mr. Arun,Thiruvananthapuram,Kerala
+20260401,WBKER-019/25-26,Credit Note,Malabar Tiles and Sanitary,Wallnut Bonding Agent (5 L)-BA,75,1147,86025,Nos,Ms. Priya,Kozhikode,Kerala
+20260402,WBKER-020/25-26,Sales,Malabar Tiles and Sanitary,Wallnut Floor Leveler (25 Kg)-FL,104,559,58136,Kgs,Ms. Priya,Kozhikode,Kerala
+20260401,WBKER-021/25-26,Sales,Kozhikode Hardware Depot,Wallnut SBR Latex (5 L)-S,75,1359,101925,Nos,Ms. Priya,Kozhikode,Kerala
+20260402,WBKER-022/25-26,Sales,Kozhikode Hardware Depot,Wallnut Crack Fill Paste (1 Kg),48,403,19344,Nos,Ms. Priya,Kozhikode,Kerala
+20260401,WBKER-023/25-26,Sales,Thrissur Building Mart,Wallnut Wall Putty (40 Kg)-P,119,733,87227,Kgs,Mr. Sajith,Thrissur,Kerala
+20260402,WBKER-024/25-26,Sales,Thrissur Building Mart,Wallnut Stone Adhesive (25 Kg)-SA,101,777,78477,Kgs,Mr. Sajith,Thrissur,Kerala
+20260401,WBKER-025/25-26,Sales,Central Kerala Traders,Wallnut GP Adhesive (50 Kg)-GP,78,302,23556,Kgs,Mr. Sajith,Thrissur,Kerala
+20260402,WBMAH-026/25-26,Sales,Mumbai Infra Supplies,Wallnut SBR Latex (5 L)-S,120,1439,172680,Nos,Mr. Rohan,Mumbai,Maharashtra
+20260401,WBMAH-027/25-26,Sales,Mumbai Infra Supplies,Wallnut Primer Coat (20 L)-PC,152,2644,401888,Nos,Mr. Rohan,Mumbai,Maharashtra
+20260402,WBMAH-028/25-26,Sales,Mumbai Infra Supplies,Wallnut Crack Fill Paste (1 Kg),162,379,61398,Nos,Mr. Rohan,Mumbai,Maharashtra
+20260401,WBMAH-029/25-26,Sales,Dharavi Construction Co.,Wallnut Anti-Corrosion Coat (4 L)-AC,161,1717,276437,Nos,Mr. Rohan,Mumbai,Maharashtra
+20260402,WBMAH-030/25-26,Sales,Dharavi Construction Co.,Wallnut Plaster Bond (20 L)-PB,23,2456,56488,Nos,Mr. Rohan,Mumbai,Maharashtra
+20260401,WBMAH-031/25-26,Sales,Andheri Hardware House,Wallnut Grout (2 Kg) White-GW,180,242,43560,Nos,Mr. Rohan,Mumbai,Maharashtra
+20260402,WBMAH-032/25-26,Sales,Andheri Hardware House,Wallnut Waterproof Cement (50 Kg),100,766,76600,Kgs,Mr. Rohan,Mumbai,Maharashtra
+20260401,WBMAH-033/25-26,Sales,Western Tiles Gallery,Wallnut Primer Coat (20 L)-PC,176,2587,455312,Nos,Mr. Aarav,Mumbai,Maharashtra
+20260402,WBMAH-034/25-26,Sales,Western Tiles Gallery,Wallnut SBR Latex (5 L)-S,135,1469,198315,Nos,Mr. Aarav,Mumbai,Maharashtra
+20260401,WBMAH-035/25-26,Credit Note,Western Tiles Gallery,Wallnut Grout (2 Kg) White-GW,92,224,20608,Nos,Mr. Aarav,Mumbai,Maharashtra
+20260402,WBMAH-036/25-26,Credit Note,Bombay Building Depot,Wallnut Epoxy Grout (1 Kg)-E,159,872,138648,Nos,Mr. Aarav,Mumbai,Maharashtra
+20260401,WBMAH-037/25-26,Sales,Bombay Building Depot,Wallnut Waterproof Cement (50 Kg),150,792,118800,Kgs,Mr. Aarav,Mumbai,Maharashtra
+20260402,WBMAH-038/25-26,Sales,Pune Construction Centre,Wallnut SBR Latex (5 L)-S,142,1390,197380,Nos,Mr. Vikrant,Pune,Maharashtra
+20260401,WBMAH-039/25-26,Sales,Shivaji Hardware and Paints,Wallnut Grout (2 Kg) White-GW,62,229,14198,Nos,Mr. Vikrant,Pune,Maharashtra
+20260402,WBMAH-040/25-26,Sales,Shivaji Hardware and Paints,Wallnut Waterproof Coat (20 L)-W,35,3253,113855,Nos,Mr. Vikrant,Pune,Maharashtra
+20260401,WBMAH-041/25-26,Sales,Deccan Traders,Wallnut Crack Fill Paste (1 Kg),19,356,6764,Nos,Mr. Vikrant,Pune,Maharashtra
+20260402,WBMAH-042/25-26,Sales,Deccan Traders,Wallnut GP Adhesive (50 Kg)-GP,153,314,48042,Kgs,Mr. Vikrant,Pune,Maharashtra
+20260401,WBMAH-043/25-26,Sales,Kolhapur Cement House,Wallnut Anti-Corrosion Coat (4 L)-AC,19,1858,35302,Nos,Ms. Swati,Kolhapur,Maharashtra
+20260402,WBMAH-044/25-26,Sales,Mahalaxmi Building Materials,Wallnut GP Adhesive (50 Kg)-GP,155,309,47895,Kgs,Ms. Swati,Kolhapur,Maharashtra
+20260401,WBMAH-045/25-26,Sales,Mahalaxmi Building Materials,Wallnut Anti-Corrosion Coat (4 L)-AC,70,1825,127750,Nos,Ms. Swati,Kolhapur,Maharashtra
+20260402,WBMAH-046/25-26,Sales,Nashik Hardware Hub,Wallnut GP Adhesive (50 Kg)-GP,147,334,49098,Kgs,Mr. Ganesh,Nashik,Maharashtra
+20260401,WBMAH-047/25-26,Sales,Nashik Hardware Hub,Wallnut Epoxy Grout (1 Kg)-E,95,926,87970,Nos,Mr. Ganesh,Nashik,Maharashtra
+20260402,WBMAH-048/25-26,Sales,Godavari Construction Supplies,Calcibond Secure White (20 Kg)-N,115,500,57500,Kgs,Mr. Ganesh,Nashik,Maharashtra
+20260401,WBMAH-049/25-26,Sales,Godavari Construction Supplies,Wallnut Tile Adhesive (20 Kg),73,481,35113,Kgs,Mr. Ganesh,Nashik,Maharashtra
+20260402,WBKAR-050/25-26,Sales,Bengaluru Tile World,Wallnut Heavy Duty Adhesive (20 Kg)-HD,47,602,28294,Kgs,Mr. Karthik,Bengaluru,Karnataka
+20260401,WBKAR-051/25-26,Sales,Bengaluru Tile World,Wallnut Grout (2 Kg) White-GW,144,257,37008,Nos,Mr. Karthik,Bengaluru,Karnataka
+20260402,WBKAR-052/25-26,Sales,Whitefield Building Supplies,Wallnut Heavy Duty Adhesive (20 Kg)-HD,138,612,84456,Kgs,Mr. Karthik,Bengaluru,Karnataka
+20260401,WBKAR-053/25-26,Sales,Electronic City Hardware,Wallnut Anti-Corrosion Coat (4 L)-AC,109,1878,204702,Nos,Mr. Karthik,Bengaluru,Karnataka
+20260402,WBKAR-054/25-26,Credit Note,Silicon Valley Construction,Wallnut Crack Fill Paste (1 Kg),150,385,57750,Nos,Mr. Venkat,Bengaluru,Karnataka
+20260401,WBKAR-055/25-26,Sales,Jayanagar Infra Mart,Wallnut Crack Fill Paste (1 Kg),33,354,11682,Nos,Mr. Venkat,Bengaluru,Karnataka
+20260402,WBKAR-056/25-26,Credit Note,Jayanagar Infra Mart,Wallnut Epoxy Grout (1 Kg)-E,14,850,11900,Nos,Mr. Venkat,Bengaluru,Karnataka
+20260401,WBKAR-057/25-26,Sales,Jayanagar Infra Mart,Wallnut SBR Latex (5 L)-S,134,1350,180900,Nos,Mr. Venkat,Bengaluru,Karnataka
+20260402,WBKAR-058/25-26,Credit Note,Royal Mysuru Traders,Calcibond Secure White (20 Kg)-N,108,525,56700,Kgs,Ms. Lakshmi,Mysuru,Karnataka
+20260401,WBKAR-059/25-26,Sales,Palace City Hardware,Wallnut Bonding Agent (5 L)-BA,66,1146,75636,Nos,Ms. Lakshmi,Mysuru,Karnataka
+20260402,WBKAR-060/25-26,Sales,Palace City Hardware,Wallnut Roof Seal (10 L)-RS,115,4416,507840,Nos,Ms. Lakshmi,Mysuru,Karnataka
+20260401,WBKAR-061/25-26,Sales,Palace City Hardware,Wallnut Roof Seal (10 L)-RS,190,3912,743280,Nos,Ms. Lakshmi,Mysuru,Karnataka
+20260402,WBKAR-062/25-26,Sales,Coastal Hardware Centre,Wallnut Block Jointing Mortar (40 Kg),50,490,24500,Kgs,Mr. Suresh,Mangaluru,Karnataka
+20260401,WBKAR-063/25-26,Sales,Coastal Hardware Centre,Wallnut Tile Adhesive (20 Kg),193,432,83376,Kgs,Mr. Suresh,Mangaluru,Karnataka
+20260402,WBKAR-064/25-26,Sales,Coastal Hardware Centre,Wallnut Waterproof Coat (20 L)-W,37,3099,114663,Nos,Mr. Suresh,Mangaluru,Karnataka
+20260401,WBKAR-065/25-26,Sales,Mangalore Tiles Depot,Wallnut Bonding Agent (5 L)-BA,154,1164,179256,Nos,Mr. Suresh,Mangaluru,Karnataka
+20260402,WBKAR-066/25-26,Sales,Mangalore Tiles Depot,Wallnut Waterproof Cement (50 Kg),179,741,132639,Kgs,Mr. Suresh,Mangaluru,Karnataka
+20260401,WBKAR-067/25-26,Credit Note,Hubli Construction Mart,Wallnut Waterproof Coat (20 L)-W,50,2987,149350,Nos,Mr. Basavaraj,Hubli,Karnataka
+20260402,WBKAR-068/25-26,Sales,Hubli Construction Mart,Wallnut Epoxy Grout (1 Kg)-E,40,897,35880,Nos,Mr. Basavaraj,Hubli,Karnataka
+20260401,WBKAR-069/25-26,Sales,Hubli Construction Mart,Wallnut Heavy Duty Adhesive (20 Kg)-HD,88,610,53680,Kgs,Mr. Basavaraj,Hubli,Karnataka
+20260402,WBKAR-070/25-26,Sales,Dharwad Building Materials,Wallnut Waterproof Cement (50 Kg),73,775,56575,Kgs,Mr. Basavaraj,Hubli,Karnataka
+20260401,WBSIMK-071/25-26,Sales,M/s Shree Cement House,Wallnut SBR Latex (5 L)-S,91,1520,138320,Nos,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260402,WBSIMK-072/25-26,Sales,M/s Shree Cement House,Wallnut Waterproof Cement (50 Kg),35,737,25795,Kgs,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260401,WBSIMK-073/25-26,Sales,M/s Shree Cement House,Wallnut Waterproof Coat (20 L)-W,31,3390,105090,Nos,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260402,WBSIMK-074/25-26,Sales,Indore Building Center,Wallnut Wall Putty (40 Kg)-P,27,700,18900,Kgs,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260401,WBSIMK-075/25-26,Sales,Indore Building Center,Wallnut Waterproof Coat (20 L)-W,24,2984,71616,Nos,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260402,WBSIMK-076/25-26,Sales,Indore Building Center,Wallnut SBR Latex (5 L)-S,35,1375,48125,Nos,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260401,WBSIMK-077/25-26,Sales,Kumar Hardware and Paints,Wallnut Waterproof Cement (50 Kg),133,713,94829,Kgs,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260402,WBSIMK-078/25-26,Sales,Kumar Hardware and Paints,Wallnut Block Jointing Mortar (40 Kg),125,482,60250,Kgs,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260401,WBSIMK-079/25-26,Sales,Rajlaxmi Traders,Wallnut Roof Seal (10 L)-RS,84,4010,336840,Nos,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260402,WBSIMK-080/25-26,Credit Note,Rajlaxmi Traders,Wallnut Block Jointing Mortar (40 Kg),133,511,67963,Kgs,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260401,WBSIMK-081/25-26,Sales,City Construction Supplies,Wallnut Stone Adhesive (25 Kg)-SA,139,699,97161,Kgs,Mr. Amit Verma,Indore,Madhya Pradesh
+20260402,WBSIMK-082/25-26,Sales,City Construction Supplies,Wallnut Anti-Corrosion Coat (4 L)-AC,176,1751,308176,Nos,Mr. Amit Verma,Indore,Madhya Pradesh
+20260401,WBSIMK-083/25-26,Sales,City Construction Supplies,Wallnut Grout (2 Kg) White-GW,101,224,22624,Nos,Mr. Amit Verma,Indore,Madhya Pradesh
+20260402,WBSIMK-084/25-26,Sales,Maheshwari Building Materials,Wallnut SBR Latex (5 L)-S,50,1543,77150,Nos,Mr. Amit Verma,Indore,Madhya Pradesh
+20260401,WBSIMK-085/25-26,Sales,Maheshwari Building Materials,Calcibond Secure White (20 Kg)-N,135,488,65880,Kgs,Mr. Amit Verma,Indore,Madhya Pradesh
+20260402,WBSIMK-086/25-26,Credit Note,Maheshwari Building Materials,Wallnut GP Adhesive (50 Kg)-GP,83,326,27058,Kgs,Mr. Amit Verma,Indore,Madhya Pradesh
+20260401,WBSIMK-087/25-26,Sales,New India Hardware,Wallnut Plaster Bond (20 L)-PB,67,2577,172659,Nos,Mr. Amit Verma,Indore,Madhya Pradesh
+20260402,WBSIMK-088/25-26,Credit Note,New India Hardware,Wallnut Wall Putty (40 Kg)-P,142,725,102950,Kgs,Mr. Amit Verma,Indore,Madhya Pradesh
+20260401,WBSIMK-089/25-26,Sales,Bhopal Cement Depot,Wallnut Tile Adhesive (20 Kg),15,484,7260,Kgs,Mr. Sunil Patel,Bhopal,Madhya Pradesh
+20260402,WBSIMK-090/25-26,Sales,Capital Construction Co.,Calcibond Secure Grey (20 Kg)-N,152,488,74176,Kgs,Mr. Sunil Patel,Bhopal,Madhya Pradesh
+20260401,WBSIMK-091/25-26,Sales,Sharma Building Solutions,Wallnut Bonding Agent (5 L)-BA,31,1195,37045,Nos,Mr. Sunil Patel,Bhopal,Madhya Pradesh
+20260402,WBSIMK-092/25-26,Sales,Sharma Building Solutions,Calcibond Secure Grey (20 Kg)-N,113,446,50398,Kgs,Mr. Sunil Patel,Bhopal,Madhya Pradesh
+20260401,WBSIMK-093/25-26,Sales,Singh Brothers Trading,Wallnut Crack Fill Paste (1 Kg),123,370,45510,Nos,Mr. Vikram Singh,Bhopal,Madhya Pradesh
+20260402,WBSIMK-094/25-26,Sales,Singh Brothers Trading,Wallnut Primer Coat (20 L)-PC,90,2614,235260,Nos,Mr. Vikram Singh,Bhopal,Madhya Pradesh
+20260401,WBSIMK-095/25-26,Sales,Royal Hardware Store,Wallnut SBR Latex (5 L)-S,79,1405,110995,Nos,Mr. Vikram Singh,Bhopal,Madhya Pradesh
+20260402,WBSIMK-096/25-26,Sales,MP Construction Hub,Wallnut Grout (2 Kg) White-GW,108,237,25596,Nos,Mr. Vikram Singh,Bhopal,Madhya Pradesh
+20260401,WBSIMK-097/25-26,Sales,Jabalpur Building Mart,Wallnut Crack Fill Paste (1 Kg),131,389,50959,Nos,Mr. Manoj Tiwari,Jabalpur,Madhya Pradesh
+20260402,WBSIMK-098/25-26,Sales,Jabalpur Building Mart,Wallnut Anti-Corrosion Coat (4 L)-AC,117,1817,212589,Nos,Mr. Manoj Tiwari,Jabalpur,Madhya Pradesh
+20260401,WBSIMK-099/25-26,Sales,Jabalpur Building Mart,Wallnut Heavy Duty Adhesive (20 Kg)-HD,108,534,57672,Kgs,Mr. Manoj Tiwari,Jabalpur,Madhya Pradesh
+20260402,WBSIMK-100/25-26,Sales,Narmada Construction Supplies,Wallnut Epoxy Grout (1 Kg)-E,35,846,29610,Nos,Mr. Manoj Tiwari,Jabalpur,Madhya Pradesh
+20260401,WBSIMK-101/25-26,Sales,Narmada Construction Supplies,Wallnut Grout (2 Kg) White-GW,133,234,31122,Nos,Mr. Manoj Tiwari,Jabalpur,Madhya Pradesh
+20260402,WBSIMK-102/25-26,Sales,Tiwari and Sons Hardware,Wallnut Roof Seal (10 L)-RS,100,4153,415300,Nos,Mr. Manoj Tiwari,Jabalpur,Madhya Pradesh
+20260401,WBSIMK-103/25-26,Sales,Tiwari and Sons Hardware,Wallnut SBR Latex (5 L)-S,101,1563,157863,Nos,Mr. Manoj Tiwari,Jabalpur,Madhya Pradesh
+20260402,WBSIMK-104/25-26,Sales,Tiwari and Sons Hardware,Wallnut Crack Fill Paste (1 Kg),83,362,30046,Nos,Mr. Manoj Tiwari,Jabalpur,Madhya Pradesh
+20260401,WBSIMK-105/25-26,Sales,Mahakoshal Traders,Wallnut Wall Putty (40 Kg)-P,54,706,38124,Kgs,Mr. Deepak Jain,Jabalpur,Madhya Pradesh
+20260402,WBSIMK-106/25-26,Sales,Mahakoshal Traders,Wallnut GP Adhesive (50 Kg)-GP,58,299,17342,Kgs,Mr. Deepak Jain,Jabalpur,Madhya Pradesh
+20260401,WBSIMK-107/25-26,Credit Note,Jain Construction Materials,Wallnut Primer Coat (20 L)-PC,37,3007,111259,Nos,Mr. Deepak Jain,Jabalpur,Madhya Pradesh
+20260402,WBSIMK-108/25-26,Sales,Jain Construction Materials,Calcibond Secure Grey (20 Kg)-N,136,449,61064,Kgs,Mr. Deepak Jain,Jabalpur,Madhya Pradesh
+20260401,WBSIMK-109/25-26,Sales,Ujjain Hardware Center,Wallnut Waterproof Cement (50 Kg),102,728,74256,Kgs,Mr. Prakash Gupta,Ujjain,Madhya Pradesh
+20260402,WBSIMK-110/25-26,Sales,Ujjain Hardware Center,Wallnut SBR Latex (5 L)-S,98,1350,132300,Nos,Mr. Prakash Gupta,Ujjain,Madhya Pradesh
+20260401,WBSIMK-111/25-26,Sales,Mahakal Building Supplies,Calcibond Secure Grey (20 Kg)-N,113,474,53562,Kgs,Mr. Prakash Gupta,Ujjain,Madhya Pradesh
+20260402,WBSIMK-112/25-26,Sales,Gupta Trading Co.,Wallnut Waterproof Coat (20 L)-W,46,2950,135700,Nos,Mr. Prakash Gupta,Ujjain,Madhya Pradesh
+20260401,WBSIMK-113/25-26,Sales,Gwalior Construction Depot,Wallnut Tile Adhesive (20 Kg),124,424,52576,Kgs,Mr. Arvind Yadav,Gwalior,Madhya Pradesh
+20260402,WBSIMK-114/25-26,Sales,Gwalior Construction Depot,Wallnut Tile Adhesive (20 Kg),97,414,40158,Kgs,Mr. Arvind Yadav,Gwalior,Madhya Pradesh
+20260401,WBSIMK-115/25-26,Sales,Gwalior Construction Depot,Wallnut Waterproof Coat (20 L)-W,103,3250,334750,Nos,Mr. Arvind Yadav,Gwalior,Madhya Pradesh
+20260402,WBSIMK-116/25-26,Sales,Fort City Traders,Calcibond Secure White (20 Kg)-N,41,551,22591,Kgs,Mr. Arvind Yadav,Gwalior,Madhya Pradesh
+20260401,WBSIMK-117/25-26,Sales,Yadav Building Materials,Wallnut Epoxy Grout (1 Kg)-E,88,840,73920,Nos,Mr. Arvind Yadav,Gwalior,Madhya Pradesh
+20260402,WBSIMK-118/25-26,Sales,Yadav Building Materials,Wallnut Heavy Duty Adhesive (20 Kg)-HD,18,567,10206,Kgs,Mr. Arvind Yadav,Gwalior,Madhya Pradesh
+20260401,WBSIMK-119/25-26,Sales,Chambal Hardware House,Calcibond Secure White (20 Kg)-N,54,488,26352,Kgs,Ms. Kiran Deshmukh,Gwalior,Madhya Pradesh
+20260402,WBSIMK-120/25-26,Sales,Scindia Building Supplies,Wallnut Anti-Corrosion Coat (4 L)-AC,32,1720,55040,Nos,Ms. Kiran Deshmukh,Gwalior,Madhya Pradesh
+20260401,WBTN-121/25-26,Sales,Chennai Tiles Emporium,Wallnut Grout (2 Kg) White-GW,91,258,23478,Nos,Mr. Murugan,Chennai,Tamil Nadu
+20260402,WBTN-122/25-26,Sales,Adyar Building Hub,Wallnut Primer Coat (20 L)-PC,76,2668,202768,Nos,Mr. Murugan,Chennai,Tamil Nadu
+20260401,WBTN-123/25-26,Sales,T Nagar Hardware Store,Wallnut Tile Adhesive (20 Kg),64,470,30080,Kgs,Mr. Murugan,Chennai,Tamil Nadu
+20260402,WBTN-124/25-26,Sales,T Nagar Hardware Store,Wallnut Epoxy Grout (1 Kg)-E,10,852,8520,Nos,Mr. Murugan,Chennai,Tamil Nadu
+20260401,WBTN-125/25-26,Sales,T Nagar Hardware Store,Wallnut Crack Fill Paste (1 Kg),14,357,4998,Nos,Mr. Murugan,Chennai,Tamil Nadu
+20260402,WBTN-126/25-26,Sales,OMR Construction Supplies,Wallnut GP Adhesive (50 Kg)-GP,113,294,33222,Kgs,Ms. Divya,Chennai,Tamil Nadu
+20260401,WBTN-127/25-26,Sales,Porur Infra Mart,Wallnut Floor Leveler (25 Kg)-FL,80,602,48160,Kgs,Ms. Divya,Chennai,Tamil Nadu
+20260402,WBTN-128/25-26,Sales,Porur Infra Mart,Wallnut Wall Putty (40 Kg)-P,87,699,60813,Kgs,Ms. Divya,Chennai,Tamil Nadu
+20260401,WBTN-129/25-26,Credit Note,Porur Infra Mart,Wallnut Stone Adhesive (25 Kg)-SA,64,729,46656,Kgs,Ms. Divya,Chennai,Tamil Nadu
+20260402,WBTN-130/25-26,Sales,Coimbatore Hardware Palace,Wallnut Tile Adhesive (20 Kg),201,421,84621,Kgs,Mr. Senthil,Coimbatore,Tamil Nadu
+20260401,WBTN-131/25-26,Sales,Coimbatore Hardware Palace,Wallnut Grout (2 Kg) White-GW,117,223,26091,Nos,Mr. Senthil,Coimbatore,Tamil Nadu
+20260402,WBTN-132/25-26,Sales,Kongu Traders,Wallnut Grout (2 Kg) White-GW,73,228,16644,Nos,Mr. Senthil,Coimbatore,Tamil Nadu
+20260401,WBTN-133/25-26,Sales,Tiruppur Building Centre,Calcibond Secure White (20 Kg)-N,16,516,8256,Kgs,Mr. Senthil,Coimbatore,Tamil Nadu
+20260402,WBTN-134/25-26,Sales,Tiruppur Building Centre,Wallnut Crack Fill Paste (1 Kg),188,385,72380,Nos,Mr. Senthil,Coimbatore,Tamil Nadu
+20260401,WBTN-135/25-26,Sales,Madurai Construction Depot,Wallnut Heavy Duty Adhesive (20 Kg)-HD,121,597,72237,Kgs,Mr. Pandian,Madurai,Tamil Nadu
+20260402,WBTN-136/25-26,Sales,Madurai Construction Depot,Calcibond Secure White (20 Kg)-N,129,535,69015,Kgs,Mr. Pandian,Madurai,Tamil Nadu
+20260401,WBTN-137/25-26,Sales,Madurai Construction Depot,Wallnut Waterproof Coat (20 L)-W,112,3077,344624,Nos,Mr. Pandian,Madurai,Tamil Nadu
+20260402,WBTN-138/25-26,Credit Note,Temple City Hardware,Calcibond Secure White (20 Kg)-N,49,556,27244,Kgs,Mr. Pandian,Madurai,Tamil Nadu
+20260401,WBTN-139/25-26,Sales,Temple City Hardware,Calcibond Secure Grey (20 Kg)-N,65,490,31850,Kgs,Mr. Pandian,Madurai,Tamil Nadu
+20260402,WBGUJ-140/25-26,Sales,Ahmedabad Building Solutions,Wallnut Roof Seal (10 L)-RS,94,4026,378444,Nos,Mr. Bharat,Ahmedabad,Gujarat
+20260401,WBGUJ-141/25-26,Sales,Ahmedabad Building Solutions,Wallnut Wall Putty (40 Kg)-P,38,675,25650,Kgs,Mr. Bharat,Ahmedabad,Gujarat
+20260402,WBGUJ-142/25-26,Sales,Ahmedabad Building Solutions,Wallnut Stone Adhesive (25 Kg)-SA,105,686,72030,Kgs,Mr. Bharat,Ahmedabad,Gujarat
+20260401,WBGUJ-143/25-26,Sales,SG Highway Hardware,Wallnut Block Jointing Mortar (40 Kg),60,495,29700,Kgs,Mr. Bharat,Ahmedabad,Gujarat
+20260402,WBGUJ-144/25-26,Sales,SG Highway Hardware,Wallnut Crack Fill Paste (1 Kg),59,352,20768,Nos,Mr. Bharat,Ahmedabad,Gujarat
+20260401,WBGUJ-145/25-26,Credit Note,Sabarmati Traders,Wallnut Tile Adhesive (20 Kg),19,482,9158,Kgs,Mr. Bharat,Ahmedabad,Gujarat
+20260402,WBGUJ-146/25-26,Sales,Naroda Construction Hub,Wallnut Primer Coat (20 L)-PC,38,2750,104500,Nos,Mr. Jayesh,Ahmedabad,Gujarat
+20260401,WBGUJ-147/25-26,Sales,Naroda Construction Hub,Wallnut Waterproof Coat (20 L)-W,113,3448,389624,Nos,Mr. Jayesh,Ahmedabad,Gujarat
+20260402,WBGUJ-148/25-26,Sales,Naroda Construction Hub,Wallnut Plaster Bond (20 L)-PB,124,2279,282596,Nos,Mr. Jayesh,Ahmedabad,Gujarat
+20260401,WBGUJ-149/25-26,Sales,Gota Tiles Centre,Wallnut Waterproof Coat (20 L)-W,107,3156,337692,Nos,Mr. Jayesh,Ahmedabad,Gujarat
+20260402,WBGUJ-150/25-26,Credit Note,Gota Tiles Centre,Wallnut GP Adhesive (50 Kg)-GP,14,341,4774,Kgs,Mr. Jayesh,Ahmedabad,Gujarat
+20260401,WBGUJ-151/25-26,Sales,Gota Tiles Centre,Wallnut GP Adhesive (50 Kg)-GP,128,339,43392,Kgs,Mr. Jayesh,Ahmedabad,Gujarat
+20260402,WBGUJ-152/25-26,Credit Note,Surat Diamond Hardware,Wallnut Crack Fill Paste (1 Kg),95,377,35815,Nos,Mr. Hitesh,Surat,Gujarat
+20260401,WBGUJ-153/25-26,Sales,Surat Diamond Hardware,Wallnut Block Jointing Mortar (40 Kg),102,547,55794,Kgs,Mr. Hitesh,Surat,Gujarat
+20260402,WBGUJ-154/25-26,Sales,Surat Diamond Hardware,Wallnut Waterproof Cement (50 Kg),90,775,69750,Kgs,Mr. Hitesh,Surat,Gujarat
+20260401,WBGUJ-155/25-26,Credit Note,Textile City Construction,Wallnut Anti-Corrosion Coat (4 L)-AC,147,1740,255780,Nos,Mr. Hitesh,Surat,Gujarat
+20260402,WBGUJ-156/25-26,Sales,Varachha Building Mart,Wallnut Primer Coat (20 L)-PC,51,2901,147951,Nos,Mr. Hitesh,Surat,Gujarat
+20260401,WBGUJ-157/25-26,Sales,Vadodara Infra Hub,Wallnut Anti-Corrosion Coat (4 L)-AC,73,1900,138700,Nos,Ms. Rinku,Vadodara,Gujarat
+20260402,WBGUJ-158/25-26,Sales,Vadodara Infra Hub,Wallnut Bonding Agent (5 L)-BA,72,1153,83016,Nos,Ms. Rinku,Vadodara,Gujarat
+20260401,WBGUJ-159/25-26,Sales,Vadodara Infra Hub,Wallnut Epoxy Grout (1 Kg)-E,122,878,107116,Nos,Ms. Rinku,Vadodara,Gujarat
+20260402,WBGUJ-160/25-26,Sales,Alkapuri Tiles and Paints,Wallnut Bonding Agent (5 L)-BA,77,1117,86009,Nos,Ms. Rinku,Vadodara,Gujarat
+20260401,WBRAJ-161/25-26,Sales,Pink City Hardware,Wallnut Grout (2 Kg) White-GW,66,244,16104,Nos,Mr. Mahendra,Jaipur,Rajasthan
+20260402,WBRAJ-162/25-26,Sales,Pink City Hardware,Calcibond Secure Grey (20 Kg)-N,27,477,12879,Kgs,Mr. Mahendra,Jaipur,Rajasthan
+20260401,WBRAJ-163/25-26,Sales,Jaipur Royal Traders,Calcibond Secure Grey (20 Kg)-N,134,488,65392,Kgs,Mr. Mahendra,Jaipur,Rajasthan
+20260402,WBRAJ-164/25-26,Sales,Jaipur Royal Traders,Wallnut SBR Latex (5 L)-S,49,1466,71834,Nos,Mr. Mahendra,Jaipur,Rajasthan
+20260401,WBRAJ-165/25-26,Sales,Jaipur Royal Traders,Wallnut Bonding Agent (5 L)-BA,92,1156,106352,Nos,Mr. Mahendra,Jaipur,Rajasthan
+20260402,WBRAJ-166/25-26,Sales,Malviya Nagar Construction,Wallnut Anti-Corrosion Coat (4 L)-AC,146,1681,245426,Nos,Mr. Mahendra,Jaipur,Rajasthan
+20260401,WBRAJ-167/25-26,Sales,Mansarovar Building Centre,Wallnut Bonding Agent (5 L)-BA,129,1153,148737,Nos,Mr. Lokesh,Jaipur,Rajasthan
+20260402,WBRAJ-168/25-26,Sales,Mansarovar Building Centre,Calcibond Secure Grey (20 Kg)-N,130,449,58370,Kgs,Mr. Lokesh,Jaipur,Rajasthan
+20260401,WBRAJ-169/25-26,Sales,Tonk Road Hardware,Wallnut Plaster Bond (20 L)-PB,49,2432,119168,Nos,Mr. Lokesh,Jaipur,Rajasthan
+20260402,WBRAJ-170/25-26,Sales,Jodhpur Blue City Hardware,Wallnut Anti-Corrosion Coat (4 L)-AC,58,1665,96570,Nos,Mr. Bhanu,Jodhpur,Rajasthan
+20260401,WBRAJ-171/25-26,Credit Note,Jodhpur Blue City Hardware,Wallnut Heavy Duty Adhesive (20 Kg)-HD,34,548,18632,Kgs,Mr. Bhanu,Jodhpur,Rajasthan
+20260402,WBRAJ-172/25-26,Sales,Jodhpur Blue City Hardware,Wallnut Plaster Bond (20 L)-PB,97,2383,231151,Nos,Mr. Bhanu,Jodhpur,Rajasthan
+20260401,WBRAJ-173/25-26,Sales,Suncity Construction Supplies,Wallnut Primer Coat (20 L)-PC,83,2757,228831,Nos,Mr. Bhanu,Jodhpur,Rajasthan
+20260402,WBRAJ-174/25-26,Sales,Suncity Construction Supplies,Wallnut Epoxy Grout (1 Kg)-E,72,961,69192,Nos,Mr. Bhanu,Jodhpur,Rajasthan
+20260401,WBRAJ-175/25-26,Credit Note,Lake City Tiles,Wallnut Primer Coat (20 L)-PC,126,2624,330624,Nos,Ms. Meera,Udaipur,Rajasthan
+20260402,WBRAJ-176/25-26,Sales,Lake City Tiles,Wallnut Heavy Duty Adhesive (20 Kg)-HD,102,609,62118,Kgs,Ms. Meera,Udaipur,Rajasthan
+20260401,WBRAJ-177/25-26,Sales,Lake City Tiles,Wallnut Anti-Corrosion Coat (4 L)-AC,62,1660,102920,Nos,Ms. Meera,Udaipur,Rajasthan
+20260402,WBRAJ-178/25-26,Sales,Udaipur Heritage Building Co.,Wallnut Anti-Corrosion Coat (4 L)-AC,53,1887,100011,Nos,Ms. Meera,Udaipur,Rajasthan
+20260401,WBRAJ-179/25-26,Credit Note,Udaipur Heritage Building Co.,Wallnut Anti-Corrosion Coat (4 L)-AC,105,1854,194670,Nos,Ms. Meera,Udaipur,Rajasthan
+20260402,WBRAJ-180/25-26,Sales,Udaipur Heritage Building Co.,Wallnut GP Adhesive (50 Kg)-GP,87,329,28623,Kgs,Ms. Meera,Udaipur,Rajasthan
+20260501,WBKER-181/25-26,Sales,TOOLS PARK,Wallnut Anti-Corrosion Coat (4 L)-AC,100,1673,167300,Nos,Mr. Nikhil,Ernakulam,Kerala
+20260502,WBKER-182/25-26,Sales,TOOLS PARK,Wallnut GP Adhesive (50 Kg)-GP,181,323,58463,Kgs,Mr. Nikhil,Ernakulam,Kerala
+20260501,WBKER-183/25-26,Sales,Einstek Engineering Insulations,Wallnut Stone Adhesive (25 Kg)-SA,35,754,26390,Kgs,Mr. Nikhil,Ernakulam,Kerala
+20260502,WBKER-184/25-26,Sales,Einstek Engineering Insulations,Wallnut Waterproof Cement (50 Kg),75,701,52575,Kgs,Mr. Nikhil,Ernakulam,Kerala
+20260501,WBKER-185/25-26,Sales,Einstek Engineering Insulations,Wallnut Stone Adhesive (25 Kg)-SA,61,698,42578,Kgs,Mr. Nikhil,Ernakulam,Kerala
+20260502,WBKER-186/25-26,Sales,Kerala Tile House,Wallnut Anti-Corrosion Coat (4 L)-AC,45,1773,79785,Nos,Mr. Nikhil,Ernakulam,Kerala
+20260501,WBKER-187/25-26,Sales,Kerala Tile House,Wallnut Epoxy Grout (1 Kg)-E,121,906,109626,Nos,Mr. Nikhil,Ernakulam,Kerala
+20260502,WBKER-188/25-26,Sales,Kerala Tile House,Wallnut Anti-Corrosion Coat (4 L)-AC,86,1818,156348,Nos,Mr. Nikhil,Ernakulam,Kerala
+20260501,WBKER-189/25-26,Sales,Kochi Building Centre,Wallnut Anti-Corrosion Coat (4 L)-AC,121,1705,206305,Nos,Mr. Nikhil,Ernakulam,Kerala
+20260502,WBKER-190/25-26,Sales,Nexa Tiles,Wallnut Block Jointing Mortar (40 Kg),57,508,28956,Kgs,Mr. Debin,Ernakulam,Kerala
+20260501,WBKER-191/25-26,Sales,Metro Tiles,Wallnut Epoxy Grout (1 Kg)-E,25,935,23375,Nos,Mr. Debin,Ernakulam,Kerala
+20260502,WBKER-192/25-26,Sales,Cochin Hardware Mart,Wallnut Plaster Bond (20 L)-PB,128,2285,292480,Nos,Mr. Debin,Ernakulam,Kerala
+20260501,WBKER-193/25-26,Sales,Cochin Hardware Mart,Wallnut SBR Latex (5 L)-S,166,1395,231570,Nos,Mr. Debin,Ernakulam,Kerala
+20260502,WBKER-194/25-26,Sales,TVM Construction Hub,Wallnut Grout (2 Kg) White-GW,102,225,22950,Nos,Mr. Arun,Thiruvananthapuram,Kerala
+20260501,WBKER-195/25-26,Sales,Capital Hardware Store,Wallnut Tile Adhesive (20 Kg),62,467,28954,Kgs,Mr. Arun,Thiruvananthapuram,Kerala
+20260502,WBKER-196/25-26,Sales,Southern Building Materials,Wallnut Wall Putty (40 Kg)-P,12,705,8460,Kgs,Mr. Arun,Thiruvananthapuram,Kerala
+20260501,WBKER-197/25-26,Sales,Southern Building Materials,Wallnut Plaster Bond (20 L)-PB,102,2412,246024,Nos,Mr. Arun,Thiruvananthapuram,Kerala
+20260502,WBKER-198/25-26,Sales,Southern Building Materials,Wallnut Heavy Duty Adhesive (20 Kg)-HD,41,612,25092,Kgs,Mr. Arun,Thiruvananthapuram,Kerala
+20260501,WBKER-199/25-26,Sales,Malabar Tiles and Sanitary,Wallnut Anti-Corrosion Coat (4 L)-AC,132,1724,227568,Nos,Ms. Priya,Kozhikode,Kerala
+20260502,WBKER-200/25-26,Sales,Malabar Tiles and Sanitary,Wallnut Roof Seal (10 L)-RS,136,4374,594864,Nos,Ms. Priya,Kozhikode,Kerala
+20260501,WBKER-201/25-26,Sales,Kozhikode Hardware Depot,Wallnut Anti-Corrosion Coat (4 L)-AC,40,1906,76240,Nos,Ms. Priya,Kozhikode,Kerala
+20260502,WBKER-202/25-26,Credit Note,Thrissur Building Mart,Wallnut Grout (2 Kg) White-GW,107,256,27392,Nos,Mr. Sajith,Thrissur,Kerala
+20260501,WBKER-203/25-26,Credit Note,Thrissur Building Mart,Wallnut Bonding Agent (5 L)-BA,45,1230,55350,Nos,Mr. Sajith,Thrissur,Kerala
+20260502,WBKER-204/25-26,Sales,Central Kerala Traders,Wallnut Epoxy Grout (1 Kg)-E,39,839,32721,Nos,Mr. Sajith,Thrissur,Kerala
+20260501,WBKER-205/25-26,Credit Note,Central Kerala Traders,Wallnut SBR Latex (5 L)-S,108,1540,166320,Nos,Mr. Sajith,Thrissur,Kerala
+20260502,WBMAH-206/25-26,Sales,Mumbai Infra Supplies,Wallnut Crack Fill Paste (1 Kg),123,394,48462,Nos,Mr. Rohan,Mumbai,Maharashtra
+20260501,WBMAH-207/25-26,Sales,Mumbai Infra Supplies,Wallnut Anti-Corrosion Coat (4 L)-AC,93,1838,170934,Nos,Mr. Rohan,Mumbai,Maharashtra
+20260502,WBMAH-208/25-26,Sales,Dharavi Construction Co.,Calcibond Secure White (20 Kg)-N,60,566,33960,Kgs,Mr. Rohan,Mumbai,Maharashtra
+20260501,WBMAH-209/25-26,Sales,Andheri Hardware House,Wallnut Block Jointing Mortar (40 Kg),47,552,25944,Kgs,Mr. Rohan,Mumbai,Maharashtra
+20260502,WBMAH-210/25-26,Sales,Andheri Hardware House,Wallnut Bonding Agent (5 L)-BA,142,1262,179204,Nos,Mr. Rohan,Mumbai,Maharashtra
+20260501,WBMAH-211/25-26,Sales,Andheri Hardware House,Wallnut Stone Adhesive (25 Kg)-SA,109,673,73357,Kgs,Mr. Rohan,Mumbai,Maharashtra
+20260502,WBMAH-212/25-26,Sales,Western Tiles Gallery,Wallnut Roof Seal (10 L)-RS,134,4372,585848,Nos,Mr. Aarav,Mumbai,Maharashtra
+20260501,WBMAH-213/25-26,Sales,Bombay Building Depot,Calcibond Secure White (20 Kg)-N,48,525,25200,Kgs,Mr. Aarav,Mumbai,Maharashtra
+20260502,WBMAH-214/25-26,Sales,Bombay Building Depot,Wallnut Waterproof Cement (50 Kg),107,800,85600,Kgs,Mr. Aarav,Mumbai,Maharashtra
+20260501,WBMAH-215/25-26,Sales,Bombay Building Depot,Wallnut Roof Seal (10 L)-RS,48,4011,192528,Nos,Mr. Aarav,Mumbai,Maharashtra
+20260502,WBMAH-216/25-26,Sales,Pune Construction Centre,Wallnut Waterproof Cement (50 Kg),24,735,17640,Kgs,Mr. Vikrant,Pune,Maharashtra
+20260501,WBMAH-217/25-26,Sales,Pune Construction Centre,Wallnut Wall Putty (40 Kg)-P,98,665,65170,Kgs,Mr. Vikrant,Pune,Maharashtra
+20260502,WBMAH-218/25-26,Sales,Pune Construction Centre,Wallnut Block Jointing Mortar (40 Kg),135,502,67770,Kgs,Mr. Vikrant,Pune,Maharashtra
+20260501,WBMAH-219/25-26,Sales,Shivaji Hardware and Paints,Wallnut Roof Seal (10 L)-RS,21,4137,86877,Nos,Mr. Vikrant,Pune,Maharashtra
+20260502,WBMAH-220/25-26,Sales,Shivaji Hardware and Paints,Wallnut Floor Leveler (25 Kg)-FL,38,579,22002,Kgs,Mr. Vikrant,Pune,Maharashtra
+20260501,WBMAH-221/25-26,Sales,Shivaji Hardware and Paints,Wallnut Grout (2 Kg) White-GW,88,248,21824,Nos,Mr. Vikrant,Pune,Maharashtra
+20260502,WBMAH-222/25-26,Sales,Deccan Traders,Wallnut Waterproof Coat (20 L)-W,15,3085,46275,Nos,Mr. Vikrant,Pune,Maharashtra
+20260501,WBMAH-223/25-26,Credit Note,Deccan Traders,Wallnut Tile Adhesive (20 Kg),42,467,19614,Kgs,Mr. Vikrant,Pune,Maharashtra
+20260502,WBMAH-224/25-26,Sales,Kolhapur Cement House,Wallnut Waterproof Coat (20 L)-W,99,3421,338679,Nos,Ms. Swati,Kolhapur,Maharashtra
+20260501,WBMAH-225/25-26,Sales,Kolhapur Cement House,Wallnut SBR Latex (5 L)-S,22,1407,30954,Nos,Ms. Swati,Kolhapur,Maharashtra
+20260502,WBMAH-226/25-26,Credit Note,Mahalaxmi Building Materials,Wallnut Roof Seal (10 L)-RS,124,4447,551428,Nos,Ms. Swati,Kolhapur,Maharashtra
+20260501,WBMAH-227/25-26,Sales,Mahalaxmi Building Materials,Wallnut Primer Coat (20 L)-PC,128,2852,365056,Nos,Ms. Swati,Kolhapur,Maharashtra
+20260502,WBMAH-228/25-26,Credit Note,Mahalaxmi Building Materials,Wallnut Epoxy Grout (1 Kg)-E,26,871,22646,Nos,Ms. Swati,Kolhapur,Maharashtra
+20260501,WBMAH-229/25-26,Sales,Nashik Hardware Hub,Wallnut Waterproof Cement (50 Kg),117,740,86580,Kgs,Mr. Ganesh,Nashik,Maharashtra
+20260502,WBMAH-230/25-26,Credit Note,Nashik Hardware Hub,Wallnut Epoxy Grout (1 Kg)-E,41,934,38294,Nos,Mr. Ganesh,Nashik,Maharashtra
+20260501,WBMAH-231/25-26,Sales,Nashik Hardware Hub,Wallnut Floor Leveler (25 Kg)-FL,96,602,57792,Kgs,Mr. Ganesh,Nashik,Maharashtra
+20260502,WBMAH-232/25-26,Sales,Godavari Construction Supplies,Wallnut Heavy Duty Adhesive (20 Kg)-HD,164,567,92988,Kgs,Mr. Ganesh,Nashik,Maharashtra
+20260501,WBKAR-233/25-26,Sales,Bengaluru Tile World,Wallnut Anti-Corrosion Coat (4 L)-AC,15,1706,25590,Nos,Mr. Karthik,Bengaluru,Karnataka
+20260502,WBKAR-234/25-26,Sales,Bengaluru Tile World,Wallnut Roof Seal (10 L)-RS,18,4480,80640,Nos,Mr. Karthik,Bengaluru,Karnataka
+20260501,WBKAR-235/25-26,Sales,Whitefield Building Supplies,Wallnut Waterproof Cement (50 Kg),19,726,13794,Kgs,Mr. Karthik,Bengaluru,Karnataka
+20260502,WBKAR-236/25-26,Sales,Whitefield Building Supplies,Wallnut Stone Adhesive (25 Kg)-SA,120,718,86160,Kgs,Mr. Karthik,Bengaluru,Karnataka
+20260501,WBKAR-237/25-26,Sales,Whitefield Building Supplies,Wallnut Anti-Corrosion Coat (4 L)-AC,14,1779,24906,Nos,Mr. Karthik,Bengaluru,Karnataka
+20260502,WBKAR-238/25-26,Sales,Electronic City Hardware,Wallnut GP Adhesive (50 Kg)-GP,133,328,43624,Kgs,Mr. Karthik,Bengaluru,Karnataka
+20260501,WBKAR-239/25-26,Sales,Electronic City Hardware,Wallnut Floor Leveler (25 Kg)-FL,57,593,33801,Kgs,Mr. Karthik,Bengaluru,Karnataka
+20260502,WBKAR-240/25-26,Sales,Silicon Valley Construction,Wallnut SBR Latex (5 L)-S,109,1354,147586,Nos,Mr. Venkat,Bengaluru,Karnataka
+20260501,WBKAR-241/25-26,Sales,Silicon Valley Construction,Wallnut Wall Putty (40 Kg)-P,84,709,59556,Kgs,Mr. Venkat,Bengaluru,Karnataka
+20260502,WBKAR-242/25-26,Sales,Jayanagar Infra Mart,Wallnut Waterproof Coat (20 L)-W,68,3256,221408,Nos,Mr. Venkat,Bengaluru,Karnataka
+20260501,WBKAR-243/25-26,Credit Note,Jayanagar Infra Mart,Wallnut GP Adhesive (50 Kg)-GP,73,336,24528,Kgs,Mr. Venkat,Bengaluru,Karnataka
+20260502,WBKAR-244/25-26,Sales,Royal Mysuru Traders,Calcibond Secure Grey (20 Kg)-N,74,480,35520,Kgs,Ms. Lakshmi,Mysuru,Karnataka
+20260501,WBKAR-245/25-26,Sales,Royal Mysuru Traders,Wallnut Stone Adhesive (25 Kg)-SA,83,686,56938,Kgs,Ms. Lakshmi,Mysuru,Karnataka
+20260502,WBKAR-246/25-26,Sales,Royal Mysuru Traders,Wallnut Heavy Duty Adhesive (20 Kg)-HD,82,563,46166,Kgs,Ms. Lakshmi,Mysuru,Karnataka
+20260501,WBKAR-247/25-26,Sales,Palace City Hardware,Wallnut SBR Latex (5 L)-S,53,1342,71126,Nos,Ms. Lakshmi,Mysuru,Karnataka
+20260502,WBKAR-248/25-26,Sales,Coastal Hardware Centre,Wallnut Waterproof Cement (50 Kg),118,804,94872,Kgs,Mr. Suresh,Mangaluru,Karnataka
+20260501,WBKAR-249/25-26,Sales,Coastal Hardware Centre,Wallnut Tile Adhesive (20 Kg),31,415,12865,Kgs,Mr. Suresh,Mangaluru,Karnataka
+20260502,WBKAR-250/25-26,Sales,Mangalore Tiles Depot,Wallnut Bonding Agent (5 L)-BA,44,1113,48972,Nos,Mr. Suresh,Mangaluru,Karnataka
+20260501,WBKAR-251/25-26,Sales,Hubli Construction Mart,Wallnut Plaster Bond (20 L)-PB,140,2350,329000,Nos,Mr. Basavaraj,Hubli,Karnataka
+20260502,WBKAR-252/25-26,Sales,Dharwad Building Materials,Wallnut Waterproof Cement (50 Kg),130,745,96850,Kgs,Mr. Basavaraj,Hubli,Karnataka
+20260501,WBSIMK-253/25-26,Sales,M/s Shree Cement House,Wallnut Epoxy Grout (1 Kg)-E,31,941,29171,Nos,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260502,WBSIMK-254/25-26,Sales,M/s Shree Cement House,Wallnut Block Jointing Mortar (40 Kg),14,481,6734,Kgs,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260501,WBSIMK-255/25-26,Sales,M/s Shree Cement House,Wallnut Waterproof Coat (20 L)-W,109,2965,323185,Nos,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260502,WBSIMK-256/25-26,Sales,Indore Building Center,Wallnut Heavy Duty Adhesive (20 Kg)-HD,84,560,47040,Kgs,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260501,WBSIMK-257/25-26,Sales,Indore Building Center,Wallnut Grout (2 Kg) White-GW,115,259,29785,Nos,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260502,WBSIMK-258/25-26,Credit Note,Indore Building Center,Wallnut Primer Coat (20 L)-PC,81,2897,234657,Nos,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260501,WBSIMK-259/25-26,Sales,Kumar Hardware and Paints,Wallnut Roof Seal (10 L)-RS,14,4172,58408,Nos,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260502,WBSIMK-260/25-26,Sales,Kumar Hardware and Paints,Wallnut Roof Seal (10 L)-RS,87,4423,384801,Nos,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260501,WBSIMK-261/25-26,Sales,Rajlaxmi Traders,Wallnut Roof Seal (10 L)-RS,110,4480,492800,Nos,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260502,WBSIMK-262/25-26,Sales,Rajlaxmi Traders,Wallnut Primer Coat (20 L)-PC,95,2829,268755,Nos,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260501,WBSIMK-263/25-26,Sales,City Construction Supplies,Wallnut Waterproof Cement (50 Kg),45,757,34065,Kgs,Mr. Amit Verma,Indore,Madhya Pradesh
+20260502,WBSIMK-264/25-26,Sales,City Construction Supplies,Wallnut Waterproof Coat (20 L)-W,116,3083,357628,Nos,Mr. Amit Verma,Indore,Madhya Pradesh
+20260501,WBSIMK-265/25-26,Sales,City Construction Supplies,Wallnut GP Adhesive (50 Kg)-GP,105,304,31920,Kgs,Mr. Amit Verma,Indore,Madhya Pradesh
+20260502,WBSIMK-266/25-26,Sales,Maheshwari Building Materials,Wallnut Heavy Duty Adhesive (20 Kg)-HD,62,596,36952,Kgs,Mr. Amit Verma,Indore,Madhya Pradesh
+20260501,WBSIMK-267/25-26,Sales,Maheshwari Building Materials,Wallnut Waterproof Coat (20 L)-W,17,3199,54383,Nos,Mr. Amit Verma,Indore,Madhya Pradesh
+20260502,WBSIMK-268/25-26,Sales,New India Hardware,Wallnut Epoxy Grout (1 Kg)-E,62,936,58032,Nos,Mr. Amit Verma,Indore,Madhya Pradesh
+20260501,WBSIMK-269/25-26,Credit Note,New India Hardware,Wallnut Waterproof Coat (20 L)-W,99,3059,302841,Nos,Mr. Amit Verma,Indore,Madhya Pradesh
+20260502,WBSIMK-270/25-26,Sales,New India Hardware,Wallnut GP Adhesive (50 Kg)-GP,104,322,33488,Kgs,Mr. Amit Verma,Indore,Madhya Pradesh
+20260501,WBSIMK-271/25-26,Sales,Bhopal Cement Depot,Wallnut Bonding Agent (5 L)-BA,98,1211,118678,Nos,Mr. Sunil Patel,Bhopal,Madhya Pradesh
+20260502,WBSIMK-272/25-26,Sales,Bhopal Cement Depot,Wallnut Primer Coat (20 L)-PC,29,2891,83839,Nos,Mr. Sunil Patel,Bhopal,Madhya Pradesh
+20260501,WBSIMK-273/25-26,Sales,Bhopal Cement Depot,Calcibond Secure Grey (20 Kg)-N,74,481,35594,Kgs,Mr. Sunil Patel,Bhopal,Madhya Pradesh
+20260502,WBSIMK-274/25-26,Sales,Capital Construction Co.,Calcibond Secure Grey (20 Kg)-N,80,482,38560,Kgs,Mr. Sunil Patel,Bhopal,Madhya Pradesh
+20260501,WBSIMK-275/25-26,Credit Note,Capital Construction Co.,Wallnut Anti-Corrosion Coat (4 L)-AC,68,1808,122944,Nos,Mr. Sunil Patel,Bhopal,Madhya Pradesh
+20260502,WBSIMK-276/25-26,Sales,Capital Construction Co.,Wallnut Wall Putty (40 Kg)-P,31,655,20305,Kgs,Mr. Sunil Patel,Bhopal,Madhya Pradesh
+20260501,WBSIMK-277/25-26,Credit Note,Sharma Building Solutions,Wallnut Primer Coat (20 L)-PC,25,2796,69900,Nos,Mr. Sunil Patel,Bhopal,Madhya Pradesh
+20260502,WBSIMK-278/25-26,Sales,Singh Brothers Trading,Wallnut Roof Seal (10 L)-RS,63,4475,281925,Nos,Mr. Vikram Singh,Bhopal,Madhya Pradesh
+20260501,WBSIMK-279/25-26,Sales,Singh Brothers Trading,Wallnut GP Adhesive (50 Kg)-GP,49,331,16219,Kgs,Mr. Vikram Singh,Bhopal,Madhya Pradesh
+20260502,WBSIMK-280/25-26,Sales,Royal Hardware Store,Wallnut Waterproof Coat (20 L)-W,44,3046,134024,Nos,Mr. Vikram Singh,Bhopal,Madhya Pradesh
+20260501,WBSIMK-281/25-26,Sales,MP Construction Hub,Wallnut Anti-Corrosion Coat (4 L)-AC,21,1763,37023,Nos,Mr. Vikram Singh,Bhopal,Madhya Pradesh
+20260502,WBSIMK-282/25-26,Sales,MP Construction Hub,Wallnut Stone Adhesive (25 Kg)-SA,94,746,70124,Kgs,Mr. Vikram Singh,Bhopal,Madhya Pradesh
+20260501,WBSIMK-283/25-26,Sales,Jabalpur Building Mart,Wallnut GP Adhesive (50 Kg)-GP,33,338,11154,Kgs,Mr. Manoj Tiwari,Jabalpur,Madhya Pradesh
+20260502,WBSIMK-284/25-26,Sales,Narmada Construction Supplies,Wallnut Stone Adhesive (25 Kg)-SA,79,665,52535,Kgs,Mr. Manoj Tiwari,Jabalpur,Madhya Pradesh
+20260501,WBSIMK-285/25-26,Sales,Narmada Construction Supplies,Wallnut Grout (2 Kg) White-GW,130,247,32110,Nos,Mr. Manoj Tiwari,Jabalpur,Madhya Pradesh
+20260502,WBSIMK-286/25-26,Sales,Tiwari and Sons Hardware,Wallnut Epoxy Grout (1 Kg)-E,29,903,26187,Nos,Mr. Manoj Tiwari,Jabalpur,Madhya Pradesh
+20260501,WBSIMK-287/25-26,Sales,Tiwari and Sons Hardware,Wallnut Heavy Duty Adhesive (20 Kg)-HD,23,566,13018,Kgs,Mr. Manoj Tiwari,Jabalpur,Madhya Pradesh
+20260502,WBSIMK-288/25-26,Sales,Mahakoshal Traders,Wallnut SBR Latex (5 L)-S,114,1407,160398,Nos,Mr. Deepak Jain,Jabalpur,Madhya Pradesh
+20260501,WBSIMK-289/25-26,Sales,Mahakoshal Traders,Wallnut Wall Putty (40 Kg)-P,72,656,47232,Kgs,Mr. Deepak Jain,Jabalpur,Madhya Pradesh
+20260502,WBSIMK-290/25-26,Sales,Mahakoshal Traders,Wallnut SBR Latex (5 L)-S,41,1528,62648,Nos,Mr. Deepak Jain,Jabalpur,Madhya Pradesh
+20260501,WBSIMK-291/25-26,Sales,Jain Construction Materials,Wallnut Bonding Agent (5 L)-BA,112,1253,140336,Nos,Mr. Deepak Jain,Jabalpur,Madhya Pradesh
+20260502,WBSIMK-292/25-26,Sales,Jain Construction Materials,Wallnut Grout (2 Kg) White-GW,40,239,9560,Nos,Mr. Deepak Jain,Jabalpur,Madhya Pradesh
+20260501,WBSIMK-293/25-26,Sales,Ujjain Hardware Center,Wallnut Heavy Duty Adhesive (20 Kg)-HD,57,610,34770,Kgs,Mr. Prakash Gupta,Ujjain,Madhya Pradesh
+20260502,WBSIMK-294/25-26,Credit Note,Mahakal Building Supplies,Wallnut Plaster Bond (20 L)-PB,44,2424,106656,Nos,Mr. Prakash Gupta,Ujjain,Madhya Pradesh
+20260501,WBSIMK-295/25-26,Sales,Mahakal Building Supplies,Wallnut Wall Putty (40 Kg)-P,93,686,63798,Kgs,Mr. Prakash Gupta,Ujjain,Madhya Pradesh
+20260502,WBSIMK-296/25-26,Sales,Gupta Trading Co.,Wallnut Waterproof Coat (20 L)-W,11,3123,34353,Nos,Mr. Prakash Gupta,Ujjain,Madhya Pradesh
+20260501,WBSIMK-297/25-26,Sales,Gwalior Construction Depot,Calcibond Secure Grey (20 Kg)-N,103,459,47277,Kgs,Mr. Arvind Yadav,Gwalior,Madhya Pradesh
+20260502,WBSIMK-298/25-26,Sales,Fort City Traders,Wallnut Bonding Agent (5 L)-BA,58,1207,70006,Nos,Mr. Arvind Yadav,Gwalior,Madhya Pradesh
+20260501,WBSIMK-299/25-26,Sales,Fort City Traders,Wallnut Block Jointing Mortar (40 Kg),111,492,54612,Kgs,Mr. Arvind Yadav,Gwalior,Madhya Pradesh
+20260502,WBSIMK-300/25-26,Sales,Yadav Building Materials,Wallnut Block Jointing Mortar (40 Kg),25,485,12125,Kgs,Mr. Arvind Yadav,Gwalior,Madhya Pradesh
+20260501,WBSIMK-301/25-26,Sales,Chambal Hardware House,Wallnut Anti-Corrosion Coat (4 L)-AC,19,1891,35929,Nos,Ms. Kiran Deshmukh,Gwalior,Madhya Pradesh
+20260502,WBSIMK-302/25-26,Credit Note,Chambal Hardware House,Wallnut Plaster Bond (20 L)-PB,128,2278,291584,Nos,Ms. Kiran Deshmukh,Gwalior,Madhya Pradesh
+20260501,WBSIMK-303/25-26,Sales,Chambal Hardware House,Wallnut Crack Fill Paste (1 Kg),148,395,58460,Nos,Ms. Kiran Deshmukh,Gwalior,Madhya Pradesh
+20260502,WBSIMK-304/25-26,Sales,Scindia Building Supplies,Calcibond Secure Grey (20 Kg)-N,147,498,73206,Kgs,Ms. Kiran Deshmukh,Gwalior,Madhya Pradesh
+20260501,WBTN-305/25-26,Sales,Chennai Tiles Emporium,Wallnut Waterproof Coat (20 L)-W,84,3347,281148,Nos,Mr. Murugan,Chennai,Tamil Nadu
+20260502,WBTN-306/25-26,Sales,Chennai Tiles Emporium,Wallnut Block Jointing Mortar (40 Kg),114,551,62814,Kgs,Mr. Murugan,Chennai,Tamil Nadu
+20260501,WBTN-307/25-26,Sales,Chennai Tiles Emporium,Wallnut Primer Coat (20 L)-PC,112,2994,335328,Nos,Mr. Murugan,Chennai,Tamil Nadu
+20260502,WBTN-308/25-26,Sales,Adyar Building Hub,Wallnut Wall Putty (40 Kg)-P,29,644,18676,Kgs,Mr. Murugan,Chennai,Tamil Nadu
+20260501,WBTN-309/25-26,Sales,T Nagar Hardware Store,Wallnut Bonding Agent (5 L)-BA,59,1263,74517,Nos,Mr. Murugan,Chennai,Tamil Nadu
+20260502,WBTN-310/25-26,Sales,T Nagar Hardware Store,Wallnut Stone Adhesive (25 Kg)-SA,91,733,66703,Kgs,Mr. Murugan,Chennai,Tamil Nadu
+20260501,WBTN-311/25-26,Sales,OMR Construction Supplies,Wallnut SBR Latex (5 L)-S,95,1416,134520,Nos,Ms. Divya,Chennai,Tamil Nadu
+20260502,WBTN-312/25-26,Sales,Porur Infra Mart,Wallnut Waterproof Cement (50 Kg),116,798,92568,Kgs,Ms. Divya,Chennai,Tamil Nadu
+20260501,WBTN-313/25-26,Sales,Coimbatore Hardware Palace,Wallnut Wall Putty (40 Kg)-P,112,644,72128,Kgs,Mr. Senthil,Coimbatore,Tamil Nadu
+20260502,WBTN-314/25-26,Sales,Coimbatore Hardware Palace,Wallnut Primer Coat (20 L)-PC,24,2730,65520,Nos,Mr. Senthil,Coimbatore,Tamil Nadu
+20260501,WBTN-315/25-26,Sales,Coimbatore Hardware Palace,Wallnut Wall Putty (40 Kg)-P,145,663,96135,Kgs,Mr. Senthil,Coimbatore,Tamil Nadu
+20260502,WBTN-316/25-26,Sales,Kongu Traders,Wallnut Primer Coat (20 L)-PC,16,2830,45280,Nos,Mr. Senthil,Coimbatore,Tamil Nadu
+20260501,WBTN-317/25-26,Sales,Kongu Traders,Wallnut Wall Putty (40 Kg)-P,89,633,56337,Kgs,Mr. Senthil,Coimbatore,Tamil Nadu
+20260502,WBTN-318/25-26,Sales,Tiruppur Building Centre,Wallnut Grout (2 Kg) White-GW,63,246,15498,Nos,Mr. Senthil,Coimbatore,Tamil Nadu
+20260501,WBTN-319/25-26,Sales,Tiruppur Building Centre,Wallnut Grout (2 Kg) White-GW,95,222,21090,Nos,Mr. Senthil,Coimbatore,Tamil Nadu
+20260502,WBTN-320/25-26,Sales,Tiruppur Building Centre,Wallnut SBR Latex (5 L)-S,151,1526,230426,Nos,Mr. Senthil,Coimbatore,Tamil Nadu
+20260501,WBTN-321/25-26,Credit Note,Madurai Construction Depot,Calcibond Secure White (20 Kg)-N,75,552,41400,Kgs,Mr. Pandian,Madurai,Tamil Nadu
+20260502,WBTN-322/25-26,Sales,Madurai Construction Depot,Wallnut Crack Fill Paste (1 Kg),28,356,9968,Nos,Mr. Pandian,Madurai,Tamil Nadu
+20260501,WBTN-323/25-26,Sales,Madurai Construction Depot,Wallnut GP Adhesive (50 Kg)-GP,33,315,10395,Kgs,Mr. Pandian,Madurai,Tamil Nadu
+20260502,WBTN-324/25-26,Credit Note,Temple City Hardware,Calcibond Secure Grey (20 Kg)-N,11,488,5368,Kgs,Mr. Pandian,Madurai,Tamil Nadu
+20260501,WBTN-325/25-26,Sales,Temple City Hardware,Wallnut Epoxy Grout (1 Kg)-E,48,877,42096,Nos,Mr. Pandian,Madurai,Tamil Nadu
+20260502,WBGUJ-326/25-26,Credit Note,Ahmedabad Building Solutions,Wallnut Waterproof Coat (20 L)-W,65,3210,208650,Nos,Mr. Bharat,Ahmedabad,Gujarat
+20260501,WBGUJ-327/25-26,Sales,Ahmedabad Building Solutions,Wallnut Stone Adhesive (25 Kg)-SA,45,682,30690,Kgs,Mr. Bharat,Ahmedabad,Gujarat
+20260502,WBGUJ-328/25-26,Sales,SG Highway Hardware,Wallnut Bonding Agent (5 L)-BA,88,1200,105600,Nos,Mr. Bharat,Ahmedabad,Gujarat
+20260501,WBGUJ-329/25-26,Sales,SG Highway Hardware,Wallnut SBR Latex (5 L)-S,28,1499,41972,Nos,Mr. Bharat,Ahmedabad,Gujarat
+20260502,WBGUJ-330/25-26,Sales,SG Highway Hardware,Wallnut Grout (2 Kg) White-GW,57,238,13566,Nos,Mr. Bharat,Ahmedabad,Gujarat
+20260501,WBGUJ-331/25-26,Sales,Sabarmati Traders,Wallnut Crack Fill Paste (1 Kg),115,374,43010,Nos,Mr. Bharat,Ahmedabad,Gujarat
+20260502,WBGUJ-332/25-26,Sales,Sabarmati Traders,Wallnut Epoxy Grout (1 Kg)-E,37,907,33559,Nos,Mr. Bharat,Ahmedabad,Gujarat
+20260501,WBGUJ-333/25-26,Sales,Naroda Construction Hub,Wallnut Primer Coat (20 L)-PC,83,2779,230657,Nos,Mr. Jayesh,Ahmedabad,Gujarat
+20260502,WBGUJ-334/25-26,Sales,Naroda Construction Hub,Wallnut Heavy Duty Adhesive (20 Kg)-HD,24,612,14688,Kgs,Mr. Jayesh,Ahmedabad,Gujarat
+20260501,WBGUJ-335/25-26,Sales,Naroda Construction Hub,Wallnut Plaster Bond (20 L)-PB,14,2585,36190,Nos,Mr. Jayesh,Ahmedabad,Gujarat
+20260502,WBGUJ-336/25-26,Sales,Gota Tiles Centre,Wallnut SBR Latex (5 L)-S,36,1425,51300,Nos,Mr. Jayesh,Ahmedabad,Gujarat
+20260501,WBGUJ-337/25-26,Sales,Gota Tiles Centre,Wallnut Anti-Corrosion Coat (4 L)-AC,66,1896,125136,Nos,Mr. Jayesh,Ahmedabad,Gujarat
+20260502,WBGUJ-338/25-26,Sales,Surat Diamond Hardware,Wallnut Waterproof Cement (50 Kg),157,716,112412,Kgs,Mr. Hitesh,Surat,Gujarat
+20260501,WBGUJ-339/25-26,Sales,Surat Diamond Hardware,Wallnut Plaster Bond (20 L)-PB,67,2415,161805,Nos,Mr. Hitesh,Surat,Gujarat
+20260502,WBGUJ-340/25-26,Sales,Textile City Construction,Wallnut Waterproof Coat (20 L)-W,40,3374,134960,Nos,Mr. Hitesh,Surat,Gujarat
+20260501,WBGUJ-341/25-26,Sales,Textile City Construction,Wallnut Plaster Bond (20 L)-PB,75,2301,172575,Nos,Mr. Hitesh,Surat,Gujarat
+20260502,WBGUJ-342/25-26,Sales,Textile City Construction,Wallnut Tile Adhesive (20 Kg),145,416,60320,Kgs,Mr. Hitesh,Surat,Gujarat
+20260501,WBGUJ-343/25-26,Sales,Varachha Building Mart,Wallnut Wall Putty (40 Kg)-P,31,661,20491,Kgs,Mr. Hitesh,Surat,Gujarat
+20260502,WBGUJ-344/25-26,Sales,Varachha Building Mart,Wallnut SBR Latex (5 L)-S,176,1343,236368,Nos,Mr. Hitesh,Surat,Gujarat
+20260501,WBGUJ-345/25-26,Sales,Varachha Building Mart,Wallnut Bonding Agent (5 L)-BA,120,1289,154680,Nos,Mr. Hitesh,Surat,Gujarat
+20260502,WBGUJ-346/25-26,Sales,Vadodara Infra Hub,Wallnut SBR Latex (5 L)-S,39,1340,52260,Nos,Ms. Rinku,Vadodara,Gujarat
+20260501,WBGUJ-347/25-26,Sales,Alkapuri Tiles and Paints,Wallnut Roof Seal (10 L)-RS,43,4274,183782,Nos,Ms. Rinku,Vadodara,Gujarat
+20260502,WBRAJ-348/25-26,Sales,Pink City Hardware,Wallnut Anti-Corrosion Coat (4 L)-AC,40,1930,77200,Nos,Mr. Mahendra,Jaipur,Rajasthan
+20260501,WBRAJ-349/25-26,Sales,Pink City Hardware,Wallnut GP Adhesive (50 Kg)-GP,135,323,43605,Kgs,Mr. Mahendra,Jaipur,Rajasthan
+20260502,WBRAJ-350/25-26,Sales,Pink City Hardware,Calcibond Secure White (20 Kg)-N,111,488,54168,Kgs,Mr. Mahendra,Jaipur,Rajasthan
+20260501,WBRAJ-351/25-26,Sales,Jaipur Royal Traders,Wallnut Stone Adhesive (25 Kg)-SA,42,752,31584,Kgs,Mr. Mahendra,Jaipur,Rajasthan
+20260502,WBRAJ-352/25-26,Sales,Malviya Nagar Construction,Wallnut Tile Adhesive (20 Kg),128,421,53888,Kgs,Mr. Mahendra,Jaipur,Rajasthan
+20260501,WBRAJ-353/25-26,Sales,Malviya Nagar Construction,Wallnut Waterproof Cement (50 Kg),54,781,42174,Kgs,Mr. Mahendra,Jaipur,Rajasthan
+20260502,WBRAJ-354/25-26,Sales,Mansarovar Building Centre,Wallnut Epoxy Grout (1 Kg)-E,88,889,78232,Nos,Mr. Lokesh,Jaipur,Rajasthan
+20260501,WBRAJ-355/25-26,Credit Note,Tonk Road Hardware,Wallnut Bonding Agent (5 L)-BA,90,1174,105660,Nos,Mr. Lokesh,Jaipur,Rajasthan
+20260502,WBRAJ-356/25-26,Sales,Tonk Road Hardware,Wallnut Anti-Corrosion Coat (4 L)-AC,32,1734,55488,Nos,Mr. Lokesh,Jaipur,Rajasthan
+20260501,WBRAJ-357/25-26,Sales,Tonk Road Hardware,Wallnut SBR Latex (5 L)-S,93,1394,129642,Nos,Mr. Lokesh,Jaipur,Rajasthan
+20260502,WBRAJ-358/25-26,Sales,Jodhpur Blue City Hardware,Calcibond Secure White (20 Kg)-N,18,497,8946,Kgs,Mr. Bhanu,Jodhpur,Rajasthan
+20260501,WBRAJ-359/25-26,Sales,Jodhpur Blue City Hardware,Wallnut Roof Seal (10 L)-RS,89,4017,357513,Nos,Mr. Bhanu,Jodhpur,Rajasthan
+20260502,WBRAJ-360/25-26,Sales,Suncity Construction Supplies,Wallnut Wall Putty (40 Kg)-P,65,633,41145,Kgs,Mr. Bhanu,Jodhpur,Rajasthan
+20260501,WBRAJ-361/25-26,Sales,Suncity Construction Supplies,Wallnut Block Jointing Mortar (40 Kg),27,558,15066,Kgs,Mr. Bhanu,Jodhpur,Rajasthan
+20260502,WBRAJ-362/25-26,Sales,Lake City Tiles,Calcibond Secure Grey (20 Kg)-N,23,453,10419,Kgs,Ms. Meera,Udaipur,Rajasthan
+20260501,WBRAJ-363/25-26,Sales,Lake City Tiles,Wallnut Waterproof Cement (50 Kg),132,784,103488,Kgs,Ms. Meera,Udaipur,Rajasthan
+20260502,WBRAJ-364/25-26,Sales,Lake City Tiles,Wallnut Heavy Duty Adhesive (20 Kg)-HD,89,567,50463,Kgs,Ms. Meera,Udaipur,Rajasthan
+20260501,WBRAJ-365/25-26,Sales,Udaipur Heritage Building Co.,Wallnut Anti-Corrosion Coat (4 L)-AC,46,1823,83858,Nos,Ms. Meera,Udaipur,Rajasthan
+20260502,WBRAJ-366/25-26,Sales,Udaipur Heritage Building Co.,Wallnut Waterproof Coat (20 L)-W,128,3001,384128,Nos,Ms. Meera,Udaipur,Rajasthan
+20260601,WBKER-367/25-26,Sales,TOOLS PARK,Wallnut Heavy Duty Adhesive (20 Kg)-HD,54,566,30564,Kgs,Mr. Nikhil,Ernakulam,Kerala
+20260602,WBKER-368/25-26,Sales,Einstek Engineering Insulations,Wallnut Plaster Bond (20 L)-PB,163,2461,401143,Nos,Mr. Nikhil,Ernakulam,Kerala
+20260601,WBKER-369/25-26,Credit Note,Kerala Tile House,Wallnut Primer Coat (20 L)-PC,46,2819,129674,Nos,Mr. Nikhil,Ernakulam,Kerala
+20260602,WBKER-370/25-26,Sales,Kerala Tile House,Wallnut Primer Coat (20 L)-PC,87,2915,253605,Nos,Mr. Nikhil,Ernakulam,Kerala
+20260601,WBKER-371/25-26,Sales,Kochi Building Centre,Calcibond Secure White (20 Kg)-N,146,544,79424,Kgs,Mr. Nikhil,Ernakulam,Kerala
+20260602,WBKER-372/25-26,Sales,Kochi Building Centre,Wallnut Anti-Corrosion Coat (4 L)-AC,46,1688,77648,Nos,Mr. Nikhil,Ernakulam,Kerala
+20260601,WBKER-373/25-26,Sales,Kochi Building Centre,Wallnut SBR Latex (5 L)-S,44,1371,60324,Nos,Mr. Nikhil,Ernakulam,Kerala
+20260602,WBKER-374/25-26,Sales,Nexa Tiles,Wallnut Grout (2 Kg) White-GW,63,250,15750,Nos,Mr. Debin,Ernakulam,Kerala
+20260601,WBKER-375/25-26,Sales,Metro Tiles,Wallnut Grout (2 Kg) White-GW,132,241,31812,Nos,Mr. Debin,Ernakulam,Kerala
+20260602,WBKER-376/25-26,Sales,Metro Tiles,Wallnut Bonding Agent (5 L)-BA,120,1227,147240,Nos,Mr. Debin,Ernakulam,Kerala
+20260601,WBKER-377/25-26,Sales,Metro Tiles,Wallnut Grout (2 Kg) White-GW,73,258,18834,Nos,Mr. Debin,Ernakulam,Kerala
+20260602,WBKER-378/25-26,Sales,Cochin Hardware Mart,Wallnut Plaster Bond (20 L)-PB,38,2542,96596,Nos,Mr. Debin,Ernakulam,Kerala
+20260601,WBKER-379/25-26,Sales,Cochin Hardware Mart,Wallnut Anti-Corrosion Coat (4 L)-AC,156,1940,302640,Nos,Mr. Debin,Ernakulam,Kerala
+20260602,WBKER-380/25-26,Sales,Cochin Hardware Mart,Wallnut Plaster Bond (20 L)-PB,164,2212,362768,Nos,Mr. Debin,Ernakulam,Kerala
+20260601,WBKER-381/25-26,Sales,TVM Construction Hub,Wallnut Floor Leveler (25 Kg)-FL,116,578,67048,Kgs,Mr. Arun,Thiruvananthapuram,Kerala
+20260602,WBKER-382/25-26,Sales,TVM Construction Hub,Calcibond Secure Grey (20 Kg)-N,62,446,27652,Kgs,Mr. Arun,Thiruvananthapuram,Kerala
+20260601,WBKER-383/25-26,Sales,TVM Construction Hub,Wallnut Roof Seal (10 L)-RS,13,4388,57044,Nos,Mr. Arun,Thiruvananthapuram,Kerala
+20260602,WBKER-384/25-26,Sales,Capital Hardware Store,Wallnut Stone Adhesive (25 Kg)-SA,124,745,92380,Kgs,Mr. Arun,Thiruvananthapuram,Kerala
+20260601,WBKER-385/25-26,Sales,Southern Building Materials,Wallnut Waterproof Cement (50 Kg),53,706,37418,Kgs,Mr. Arun,Thiruvananthapuram,Kerala
+20260602,WBKER-386/25-26,Sales,Malabar Tiles and Sanitary,Wallnut Wall Putty (40 Kg)-P,29,701,20329,Kgs,Ms. Priya,Kozhikode,Kerala
+20260601,WBKER-387/25-26,Sales,Malabar Tiles and Sanitary,Wallnut GP Adhesive (50 Kg)-GP,117,304,35568,Kgs,Ms. Priya,Kozhikode,Kerala
+20260602,WBKER-388/25-26,Sales,Kozhikode Hardware Depot,Wallnut SBR Latex (5 L)-S,36,1484,53424,Nos,Ms. Priya,Kozhikode,Kerala
+20260601,WBKER-389/25-26,Sales,Kozhikode Hardware Depot,Wallnut Roof Seal (10 L)-RS,23,4084,93932,Nos,Ms. Priya,Kozhikode,Kerala
+20260602,WBKER-390/25-26,Credit Note,Thrissur Building Mart,Wallnut Plaster Bond (20 L)-PB,74,2277,168498,Nos,Mr. Sajith,Thrissur,Kerala
+20260601,WBKER-391/25-26,Sales,Thrissur Building Mart,Wallnut Epoxy Grout (1 Kg)-E,122,846,103212,Nos,Mr. Sajith,Thrissur,Kerala
+20260602,WBKER-392/25-26,Sales,Central Kerala Traders,Wallnut Crack Fill Paste (1 Kg),139,377,52403,Nos,Mr. Sajith,Thrissur,Kerala
+20260601,WBKER-393/25-26,Sales,Central Kerala Traders,Wallnut SBR Latex (5 L)-S,75,1441,108075,Nos,Mr. Sajith,Thrissur,Kerala
+20260602,WBKER-394/25-26,Sales,Central Kerala Traders,Calcibond Secure White (20 Kg)-N,26,550,14300,Kgs,Mr. Sajith,Thrissur,Kerala
+20260601,WBMAH-395/25-26,Sales,Mumbai Infra Supplies,Wallnut Grout (2 Kg) White-GW,117,225,26325,Nos,Mr. Rohan,Mumbai,Maharashtra
+20260602,WBMAH-396/25-26,Sales,Dharavi Construction Co.,Wallnut Crack Fill Paste (1 Kg),61,382,23302,Nos,Mr. Rohan,Mumbai,Maharashtra
+20260601,WBMAH-397/25-26,Sales,Dharavi Construction Co.,Wallnut GP Adhesive (50 Kg)-GP,108,334,36072,Kgs,Mr. Rohan,Mumbai,Maharashtra
+20260602,WBMAH-398/25-26,Sales,Andheri Hardware House,Wallnut Roof Seal (10 L)-RS,33,4213,139029,Nos,Mr. Rohan,Mumbai,Maharashtra
+20260601,WBMAH-399/25-26,Sales,Andheri Hardware House,Wallnut Plaster Bond (20 L)-PB,89,2540,226060,Nos,Mr. Rohan,Mumbai,Maharashtra
+20260602,WBMAH-400/25-26,Credit Note,Western Tiles Gallery,Wallnut Primer Coat (20 L)-PC,55,2977,163735,Nos,Mr. Aarav,Mumbai,Maharashtra
+20260601,WBMAH-401/25-26,Sales,Bombay Building Depot,Wallnut Crack Fill Paste (1 Kg),61,350,21350,Nos,Mr. Aarav,Mumbai,Maharashtra
+20260602,WBMAH-402/25-26,Sales,Pune Construction Centre,Wallnut SBR Latex (5 L)-S,39,1528,59592,Nos,Mr. Vikrant,Pune,Maharashtra
+20260601,WBMAH-403/25-26,Sales,Pune Construction Centre,Wallnut Stone Adhesive (25 Kg)-SA,83,707,58681,Kgs,Mr. Vikrant,Pune,Maharashtra
+20260602,WBMAH-404/25-26,Sales,Pune Construction Centre,Calcibond Secure White (20 Kg)-N,53,525,27825,Kgs,Mr. Vikrant,Pune,Maharashtra
+20260601,WBMAH-405/25-26,Sales,Shivaji Hardware and Paints,Wallnut Heavy Duty Adhesive (20 Kg)-HD,113,605,68365,Kgs,Mr. Vikrant,Pune,Maharashtra
+20260602,WBMAH-406/25-26,Sales,Shivaji Hardware and Paints,Wallnut Floor Leveler (25 Kg)-FL,35,588,20580,Kgs,Mr. Vikrant,Pune,Maharashtra
+20260601,WBMAH-407/25-26,Sales,Deccan Traders,Wallnut Epoxy Grout (1 Kg)-E,30,926,27780,Nos,Mr. Vikrant,Pune,Maharashtra
+20260602,WBMAH-408/25-26,Sales,Deccan Traders,Calcibond Secure White (20 Kg)-N,97,498,48306,Kgs,Mr. Vikrant,Pune,Maharashtra
+20260601,WBMAH-409/25-26,Sales,Deccan Traders,Wallnut Anti-Corrosion Coat (4 L)-AC,79,1832,144728,Nos,Mr. Vikrant,Pune,Maharashtra
+20260602,WBMAH-410/25-26,Sales,Kolhapur Cement House,Wallnut Crack Fill Paste (1 Kg),143,402,57486,Nos,Ms. Swati,Kolhapur,Maharashtra
+20260601,WBMAH-411/25-26,Sales,Kolhapur Cement House,Calcibond Secure White (20 Kg)-N,82,500,41000,Kgs,Ms. Swati,Kolhapur,Maharashtra
+20260602,WBMAH-412/25-26,Sales,Kolhapur Cement House,Wallnut Floor Leveler (25 Kg)-FL,43,591,25413,Kgs,Ms. Swati,Kolhapur,Maharashtra
+20260601,WBMAH-413/25-26,Sales,Mahalaxmi Building Materials,Wallnut Bonding Agent (5 L)-BA,63,1160,73080,Nos,Ms. Swati,Kolhapur,Maharashtra
+20260602,WBMAH-414/25-26,Sales,Nashik Hardware Hub,Wallnut Stone Adhesive (25 Kg)-SA,42,711,29862,Kgs,Mr. Ganesh,Nashik,Maharashtra
+20260601,WBMAH-415/25-26,Sales,Nashik Hardware Hub,Wallnut Epoxy Grout (1 Kg)-E,13,835,10855,Nos,Mr. Ganesh,Nashik,Maharashtra
+20260602,WBMAH-416/25-26,Sales,Godavari Construction Supplies,Wallnut Anti-Corrosion Coat (4 L)-AC,44,1698,74712,Nos,Mr. Ganesh,Nashik,Maharashtra
+20260601,WBKAR-417/25-26,Sales,Bengaluru Tile World,Wallnut Primer Coat (20 L)-PC,60,2605,156300,Nos,Mr. Karthik,Bengaluru,Karnataka
+20260602,WBKAR-418/25-26,Sales,Whitefield Building Supplies,Wallnut Plaster Bond (20 L)-PB,71,2338,165998,Nos,Mr. Karthik,Bengaluru,Karnataka
+20260601,WBKAR-419/25-26,Sales,Whitefield Building Supplies,Wallnut Tile Adhesive (20 Kg),84,470,39480,Kgs,Mr. Karthik,Bengaluru,Karnataka
+20260602,WBKAR-420/25-26,Sales,Electronic City Hardware,Wallnut Primer Coat (20 L)-PC,106,2900,307400,Nos,Mr. Karthik,Bengaluru,Karnataka
+20260601,WBKAR-421/25-26,Sales,Silicon Valley Construction,Wallnut Crack Fill Paste (1 Kg),13,397,5161,Nos,Mr. Venkat,Bengaluru,Karnataka
+20260602,WBKAR-422/25-26,Sales,Silicon Valley Construction,Wallnut Crack Fill Paste (1 Kg),42,370,15540,Nos,Mr. Venkat,Bengaluru,Karnataka
+20260601,WBKAR-423/25-26,Sales,Silicon Valley Construction,Wallnut Bonding Agent (5 L)-BA,46,1250,57500,Nos,Mr. Venkat,Bengaluru,Karnataka
+20260602,WBKAR-424/25-26,Sales,Jayanagar Infra Mart,Wallnut SBR Latex (5 L)-S,74,1488,110112,Nos,Mr. Venkat,Bengaluru,Karnataka
+20260601,WBKAR-425/25-26,Sales,Jayanagar Infra Mart,Wallnut Roof Seal (10 L)-RS,73,4352,317696,Nos,Mr. Venkat,Bengaluru,Karnataka
+20260602,WBKAR-426/25-26,Credit Note,Jayanagar Infra Mart,Wallnut Wall Putty (40 Kg)-P,10,719,7190,Kgs,Mr. Venkat,Bengaluru,Karnataka
+20260601,WBKAR-427/25-26,Sales,Royal Mysuru Traders,Wallnut Block Jointing Mortar (40 Kg),92,551,50692,Kgs,Ms. Lakshmi,Mysuru,Karnataka
+20260602,WBKAR-428/25-26,Sales,Royal Mysuru Traders,Wallnut Bonding Agent (5 L)-BA,84,1163,97692,Nos,Ms. Lakshmi,Mysuru,Karnataka
+20260601,WBKAR-429/25-26,Sales,Palace City Hardware,Wallnut Bonding Agent (5 L)-BA,88,1249,109912,Nos,Ms. Lakshmi,Mysuru,Karnataka
+20260602,WBKAR-430/25-26,Credit Note,Palace City Hardware,Wallnut Waterproof Cement (50 Kg),95,720,68400,Kgs,Ms. Lakshmi,Mysuru,Karnataka
+20260601,WBKAR-431/25-26,Credit Note,Coastal Hardware Centre,Wallnut Grout (2 Kg) White-GW,70,241,16870,Nos,Mr. Suresh,Mangaluru,Karnataka
+20260602,WBKAR-432/25-26,Sales,Mangalore Tiles Depot,Wallnut Wall Putty (40 Kg)-P,112,726,81312,Kgs,Mr. Suresh,Mangaluru,Karnataka
+20260601,WBKAR-433/25-26,Sales,Mangalore Tiles Depot,Wallnut Floor Leveler (25 Kg)-FL,23,579,13317,Kgs,Mr. Suresh,Mangaluru,Karnataka
+20260602,WBKAR-434/25-26,Sales,Hubli Construction Mart,Wallnut Stone Adhesive (25 Kg)-SA,38,725,27550,Kgs,Mr. Basavaraj,Hubli,Karnataka
+20260601,WBKAR-435/25-26,Sales,Hubli Construction Mart,Wallnut Waterproof Cement (50 Kg),22,696,15312,Kgs,Mr. Basavaraj,Hubli,Karnataka
+20260602,WBKAR-436/25-26,Sales,Dharwad Building Materials,Wallnut Floor Leveler (25 Kg)-FL,50,534,26700,Kgs,Mr. Basavaraj,Hubli,Karnataka
+20260601,WBKAR-437/25-26,Sales,Dharwad Building Materials,Wallnut Block Jointing Mortar (40 Kg),80,560,44800,Kgs,Mr. Basavaraj,Hubli,Karnataka
+20260602,WBSIMK-438/25-26,Sales,M/s Shree Cement House,Wallnut Plaster Bond (20 L)-PB,120,2583,309960,Nos,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260601,WBSIMK-439/25-26,Sales,M/s Shree Cement House,Wallnut Heavy Duty Adhesive (20 Kg)-HD,36,594,21384,Kgs,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260602,WBSIMK-440/25-26,Sales,M/s Shree Cement House,Calcibond Secure Grey (20 Kg)-N,59,477,28143,Kgs,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260601,WBSIMK-441/25-26,Sales,Indore Building Center,Wallnut Crack Fill Paste (1 Kg),112,395,44240,Nos,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260602,WBSIMK-442/25-26,Sales,Indore Building Center,Wallnut Block Jointing Mortar (40 Kg),47,504,23688,Kgs,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260601,WBSIMK-443/25-26,Sales,Kumar Hardware and Paints,Wallnut Grout (2 Kg) White-GW,46,256,11776,Nos,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260602,WBSIMK-444/25-26,Sales,Kumar Hardware and Paints,Wallnut Crack Fill Paste (1 Kg),145,378,54810,Nos,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260601,WBSIMK-445/25-26,Sales,Kumar Hardware and Paints,Wallnut Waterproof Cement (50 Kg),121,801,96921,Kgs,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260602,WBSIMK-446/25-26,Sales,Rajlaxmi Traders,Wallnut Floor Leveler (25 Kg)-FL,88,556,48928,Kgs,Mr. Rajesh Sharma,Indore,Madhya Pradesh
+20260601,WBSIMK-447/25-26,Sales,City Construction Supplies,Wallnut Waterproof Cement (50 Kg),94,776,72944,Kgs,Mr. Amit Verma,Indore,Madhya Pradesh
+20260602,WBSIMK-448/25-26,Sales,City Construction Supplies,Wallnut Anti-Corrosion Coat (4 L)-AC,69,1844,127236,Nos,Mr. Amit Verma,Indore,Madhya Pradesh
+20260601,WBSIMK-449/25-26,Sales,City Construction Supplies,Wallnut Waterproof Coat (20 L)-W,53,3247,172091,Nos,Mr. Amit Verma,Indore,Madhya Pradesh
+20260602,WBSIMK-450/25-26,Sales,Maheshwari Building Materials,Wallnut Stone Adhesive (25 Kg)-SA,119,680,80920,Kgs,Mr. Amit Verma,Indore,Madhya Pradesh
+20260601,WBSIMK-451/25-26,Sales,Maheshwari Building Materials,Wallnut Tile Adhesive (20 Kg),152,461,70072,Kgs,Mr. Amit Verma,Indore,Madhya Pradesh
+20260602,WBSIMK-452/25-26,Sales,Maheshwari Building Materials,Calcibond Secure White (20 Kg)-N,18,554,9972,Kgs,Mr. Amit Verma,Indore,Madhya Pradesh
+20260601,WBSIMK-453/25-26,Credit Note,New India Hardware,Wallnut Stone Adhesive (25 Kg)-SA,31,689,21359,Kgs,Mr. Amit Verma,Indore,Madhya Pradesh
+20260602,WBSIMK-454/25-26,Sales,New India Hardware,Wallnut SBR Latex (5 L)-S,140,1358,190120,Nos,Mr. Amit Verma,Indore,Madhya Pradesh
+20260601,WBSIMK-455/25-26,Sales,New India Hardware,Wallnut Stone Adhesive (25 Kg)-SA,34,777,26418,Kgs,Mr. Amit Verma,Indore,Madhya Pradesh
+20260602,WBSIMK-456/25-26,Sales,Bhopal Cement Depot,Wallnut Anti-Corrosion Coat (4 L)-AC,32,1757,56224,Nos,Mr. Sunil Patel,Bhopal,Madhya Pradesh
+20260601,WBSIMK-457/25-26,Sales,Bhopal Cement Depot,Wallnut Wall Putty (40 Kg)-P,32,636,20352,Kgs,Mr. Sunil Patel,Bhopal,Madhya Pradesh
+20260602,WBSIMK-458/25-26,Sales,Bhopal Cement Depot,Wallnut Bonding Agent (5 L)-BA,80,1152,92160,Nos,Mr. Sunil Patel,Bhopal,Madhya Pradesh
+20260601,WBSIMK-459/25-26,Sales,Capital Construction Co.,Wallnut Wall Putty (40 Kg)-P,40,681,27240,Kgs,Mr. Sunil Patel,Bhopal,Madhya Pradesh
+20260602,WBSIMK-460/25-26,Sales,Capital Construction Co.,Wallnut Block Jointing Mortar (40 Kg),43,522,22446,Kgs,Mr. Sunil Patel,Bhopal,Madhya Pradesh
+20260601,WBSIMK-461/25-26,Sales,Sharma Building Solutions,Calcibond Secure Grey (20 Kg)-N,15,445,6675,Kgs,Mr. Sunil Patel,Bhopal,Madhya Pradesh
+20260602,WBSIMK-462/25-26,Sales,Sharma Building Solutions,Calcibond Secure White (20 Kg)-N,19,499,9481,Kgs,Mr. Sunil Patel,Bhopal,Madhya Pradesh
+20260601,WBSIMK-463/25-26,Sales,Sharma Building Solutions,Wallnut Primer Coat (20 L)-PC,62,2842,176204,Nos,Mr. Sunil Patel,Bhopal,Madhya Pradesh
+20260602,WBSIMK-464/25-26,Sales,Singh Brothers Trading,Wallnut Roof Seal (10 L)-RS,43,4174,179482,Nos,Mr. Vikram Singh,Bhopal,Madhya Pradesh
+20260601,WBSIMK-465/25-26,Sales,Royal Hardware Store,Calcibond Secure Grey (20 Kg)-N,45,511,22995,Kgs,Mr. Vikram Singh,Bhopal,Madhya Pradesh
+20260602,WBSIMK-466/25-26,Credit Note,Royal Hardware Store,Wallnut Floor Leveler (25 Kg)-FL,73,526,38398,Kgs,Mr. Vikram Singh,Bhopal,Madhya Pradesh
+20260601,WBSIMK-467/25-26,Sales,MP Construction Hub,Wallnut Anti-Corrosion Coat (4 L)-AC,41,1765,72365,Nos,Mr. Vikram Singh,Bhopal,Madhya Pradesh
+20260602,WBSIMK-468/25-26,Credit Note,MP Construction Hub,Wallnut Crack Fill Paste (1 Kg),45,408,18360,Nos,Mr. Vikram Singh,Bhopal,Madhya Pradesh
+20260601,WBSIMK-469/25-26,Sales,Jabalpur Building Mart,Wallnut Roof Seal (10 L)-RS,83,4047,335901,Nos,Mr. Manoj Tiwari,Jabalpur,Madhya Pradesh
+20260602,WBSIMK-470/25-26,Sales,Jabalpur Building Mart,Wallnut Wall Putty (40 Kg)-P,79,690,54510,Kgs,Mr. Manoj Tiwari,Jabalpur,Madhya Pradesh
+20260601,WBSIMK-471/25-26,Sales,Jabalpur Building Mart,Wallnut Anti-Corrosion Coat (4 L)-AC,150,1784,267600,Nos,Mr. Manoj Tiwari,Jabalpur,Madhya Pradesh
+20260602,WBSIMK-472/25-26,Sales,Narmada Construction Supplies,Wallnut Block Jointing Mortar (40 Kg),18,507,9126,Kgs,Mr. Manoj Tiwari,Jabalpur,Madhya Pradesh
+20260601,WBSIMK-473/25-26,Sales,Narmada Construction Supplies,Wallnut Primer Coat (20 L)-PC,45,2695,121275,Nos,Mr. Manoj Tiwari,Jabalpur,Madhya Pradesh
+20260602,WBSIMK-474/25-26,Sales,Narmada Construction Supplies,Wallnut Grout (2 Kg) White-GW,105,251,26355,Nos,Mr. Manoj Tiwari,Jabalpur,Madhya Pradesh
+20260601,WBSIMK-475/25-26,Sales,Tiwari and Sons Hardware,Wallnut Primer Coat (20 L)-PC,32,2877,92064,Nos,Mr. Manoj Tiwari,Jabalpur,Madhya Pradesh
+20260602,WBSIMK-476/25-26,Credit Note,Mahakoshal Traders,Wallnut Primer Coat (20 L)-PC,142,2725,386950,Nos,Mr. Deepak Jain,Jabalpur,Madhya Pradesh
+20260601,WBSIMK-477/25-26,Sales,Mahakoshal Traders,Wallnut Block Jointing Mortar (40 Kg),102,488,49776,Kgs,Mr. Deepak Jain,Jabalpur,Madhya Pradesh
+20260602,WBSIMK-478/25-26,Sales,Jain Construction Materials,Wallnut Heavy Duty Adhesive (20 Kg)-HD,138,589,81282,Kgs,Mr. Deepak Jain,Jabalpur,Madhya Pradesh
+20260601,WBSIMK-479/25-26,Sales,Ujjain Hardware Center,Wallnut SBR Latex (5 L)-S,117,1389,162513,Nos,Mr. Prakash Gupta,Ujjain,Madhya Pradesh
+20260602,WBSIMK-480/25-26,Sales,Mahakal Building Supplies,Wallnut Block Jointing Mortar (40 Kg),61,505,30805,Kgs,Mr. Prakash Gupta,Ujjain,Madhya Pradesh
+20260601,WBSIMK-481/25-26,Sales,Mahakal Building Supplies,Wallnut Floor Leveler (25 Kg)-FL,36,588,21168,Kgs,Mr. Prakash Gupta,Ujjain,Madhya Pradesh
+20260602,WBSIMK-482/25-26,Sales,Gupta Trading Co.,Calcibond Secure Grey (20 Kg)-N,123,504,61992,Kgs,Mr. Prakash Gupta,Ujjain,Madhya Pradesh
+20260601,WBSIMK-483/25-26,Sales,Gupta Trading Co.,Wallnut Primer Coat (20 L)-PC,43,2620,112660,Nos,Mr. Prakash Gupta,Ujjain,Madhya Pradesh
+20260602,WBSIMK-484/25-26,Sales,Gwalior Construction Depot,Wallnut Primer Coat (20 L)-PC,137,2885,395245,Nos,Mr. Arvind Yadav,Gwalior,Madhya Pradesh
+20260601,WBSIMK-485/25-26,Sales,Fort City Traders,Wallnut Stone Adhesive (25 Kg)-SA,116,736,85376,Kgs,Mr. Arvind Yadav,Gwalior,Madhya Pradesh
+20260602,WBSIMK-486/25-26,Sales,Yadav Building Materials,Wallnut Plaster Bond (20 L)-PB,18,2464,44352,Nos,Mr. Arvind Yadav,Gwalior,Madhya Pradesh
+20260601,WBSIMK-487/25-26,Sales,Yadav Building Materials,Wallnut Bonding Agent (5 L)-BA,107,1106,118342,Nos,Mr. Arvind Yadav,Gwalior,Madhya Pradesh
+20260602,WBSIMK-488/25-26,Credit Note,Yadav Building Materials,Wallnut Primer Coat (20 L)-PC,133,2627,349391,Nos,Mr. Arvind Yadav,Gwalior,Madhya Pradesh
+20260601,WBSIMK-489/25-26,Sales,Chambal Hardware House,Wallnut Heavy Duty Adhesive (20 Kg)-HD,110,540,59400,Kgs,Ms. Kiran Deshmukh,Gwalior,Madhya Pradesh
+20260602,WBSIMK-490/25-26,Sales,Chambal Hardware House,Wallnut Anti-Corrosion Coat (4 L)-AC,70,1803,126210,Nos,Ms. Kiran Deshmukh,Gwalior,Madhya Pradesh
+20260601,WBSIMK-491/25-26,Sales,Scindia Building Supplies,Wallnut Crack Fill Paste (1 Kg),49,365,17885,Nos,Ms. Kiran Deshmukh,Gwalior,Madhya Pradesh
+20260602,WBSIMK-492/25-26,Sales,Scindia Building Supplies,Wallnut Plaster Bond (20 L)-PB,123,2448,301104,Nos,Ms. Kiran Deshmukh,Gwalior,Madhya Pradesh
+20260601,WBSIMK-493/25-26,Sales,Scindia Building Supplies,Wallnut Wall Putty (40 Kg)-P,76,709,53884,Kgs,Ms. Kiran Deshmukh,Gwalior,Madhya Pradesh
+20260602,WBTN-494/25-26,Credit Note,Chennai Tiles Emporium,Wallnut Plaster Bond (20 L)-PB,61,2437,148657,Nos,Mr. Murugan,Chennai,Tamil Nadu
+20260601,WBTN-495/25-26,Sales,Adyar Building Hub,Wallnut Primer Coat (20 L)-PC,70,2776,194320,Nos,Mr. Murugan,Chennai,Tamil Nadu
+20260602,WBTN-496/25-26,Sales,T Nagar Hardware Store,Wallnut Wall Putty (40 Kg)-P,27,650,17550,Kgs,Mr. Murugan,Chennai,Tamil Nadu
+20260601,WBTN-497/25-26,Sales,T Nagar Hardware Store,Wallnut Epoxy Grout (1 Kg)-E,17,820,13940,Nos,Mr. Murugan,Chennai,Tamil Nadu
+20260602,WBTN-498/25-26,Sales,T Nagar Hardware Store,Calcibond Secure Grey (20 Kg)-N,21,495,10395,Kgs,Mr. Murugan,Chennai,Tamil Nadu
+20260601,WBTN-499/25-26,Sales,OMR Construction Supplies,Wallnut Waterproof Cement (50 Kg),9,694,6246,Kgs,Ms. Divya,Chennai,Tamil Nadu
+20260602,WBTN-500/25-26,Credit Note,OMR Construction Supplies,Wallnut Grout (2 Kg) White-GW,14,224,3136,Nos,Ms. Divya,Chennai,Tamil Nadu
+20260601,WBTN-501/25-26,Sales,Porur Infra Mart,Wallnut Wall Putty (40 Kg)-P,62,689,42718,Kgs,Ms. Divya,Chennai,Tamil Nadu
+20260602,WBTN-502/25-26,Credit Note,Porur Infra Mart,Wallnut Grout (2 Kg) White-GW,91,233,21203,Nos,Ms. Divya,Chennai,Tamil Nadu
+20260601,WBTN-503/25-26,Sales,Coimbatore Hardware Palace,Wallnut Block Jointing Mortar (40 Kg),41,533,21853,Kgs,Mr. Senthil,Coimbatore,Tamil Nadu
+20260602,WBTN-504/25-26,Sales,Coimbatore Hardware Palace,Wallnut Plaster Bond (20 L)-PB,88,2310,203280,Nos,Mr. Senthil,Coimbatore,Tamil Nadu
+20260601,WBTN-505/25-26,Sales,Coimbatore Hardware Palace,Wallnut SBR Latex (5 L)-S,53,1505,79765,Nos,Mr. Senthil,Coimbatore,Tamil Nadu
+20260602,WBTN-506/25-26,Sales,Kongu Traders,Wallnut GP Adhesive (50 Kg)-GP,43,326,14018,Kgs,Mr. Senthil,Coimbatore,Tamil Nadu
+20260601,WBTN-507/25-26,Sales,Tiruppur Building Centre,Wallnut Tile Adhesive (20 Kg),28,458,12824,Kgs,Mr. Senthil,Coimbatore,Tamil Nadu
+20260602,WBTN-508/25-26,Sales,Madurai Construction Depot,Calcibond Secure White (20 Kg)-N,60,554,33240,Kgs,Mr. Pandian,Madurai,Tamil Nadu
+20260601,WBTN-509/25-26,Credit Note,Temple City Hardware,Wallnut Floor Leveler (25 Kg)-FL,70,557,38990,Kgs,Mr. Pandian,Madurai,Tamil Nadu
+20260602,WBTN-510/25-26,Sales,Temple City Hardware,Wallnut Anti-Corrosion Coat (4 L)-AC,136,1865,253640,Nos,Mr. Pandian,Madurai,Tamil Nadu
+20260601,WBGUJ-511/25-26,Sales,Ahmedabad Building Solutions,Wallnut SBR Latex (5 L)-S,130,1341,174330,Nos,Mr. Bharat,Ahmedabad,Gujarat
+20260602,WBGUJ-512/25-26,Sales,SG Highway Hardware,Calcibond Secure Grey (20 Kg)-N,51,451,23001,Kgs,Mr. Bharat,Ahmedabad,Gujarat
+20260601,WBGUJ-513/25-26,Sales,Sabarmati Traders,Wallnut Crack Fill Paste (1 Kg),147,389,57183,Nos,Mr. Bharat,Ahmedabad,Gujarat
+20260602,WBGUJ-514/25-26,Sales,Sabarmati Traders,Wallnut Tile Adhesive (20 Kg),40,462,18480,Kgs,Mr. Bharat,Ahmedabad,Gujarat
+20260601,WBGUJ-515/25-26,Sales,Naroda Construction Hub,Wallnut Plaster Bond (20 L)-PB,23,2343,53889,Nos,Mr. Jayesh,Ahmedabad,Gujarat
+20260602,WBGUJ-516/25-26,Sales,Naroda Construction Hub,Wallnut Crack Fill Paste (1 Kg),39,355,13845,Nos,Mr. Jayesh,Ahmedabad,Gujarat
+20260601,WBGUJ-517/25-26,Sales,Gota Tiles Centre,Wallnut Grout (2 Kg) White-GW,102,226,23052,Nos,Mr. Jayesh,Ahmedabad,Gujarat
+20260602,WBGUJ-518/25-26,Sales,Surat Diamond Hardware,Wallnut Anti-Corrosion Coat (4 L)-AC,21,1810,38010,Nos,Mr. Hitesh,Surat,Gujarat
+20260601,WBGUJ-519/25-26,Sales,Surat Diamond Hardware,Wallnut Plaster Bond (20 L)-PB,34,2545,86530,Nos,Mr. Hitesh,Surat,Gujarat
+20260602,WBGUJ-520/25-26,Sales,Surat Diamond Hardware,Wallnut Floor Leveler (25 Kg)-FL,106,573,60738,Kgs,Mr. Hitesh,Surat,Gujarat
+20260601,WBGUJ-521/25-26,Sales,Textile City Construction,Wallnut Waterproof Cement (50 Kg),80,733,58640,Kgs,Mr. Hitesh,Surat,Gujarat
+20260602,WBGUJ-522/25-26,Sales,Varachha Building Mart,Wallnut GP Adhesive (50 Kg)-GP,34,317,10778,Kgs,Mr. Hitesh,Surat,Gujarat
+20260601,WBGUJ-523/25-26,Sales,Vadodara Infra Hub,Wallnut SBR Latex (5 L)-S,76,1396,106096,Nos,Ms. Rinku,Vadodara,Gujarat
+20260602,WBGUJ-524/25-26,Sales,Vadodara Infra Hub,Wallnut Block Jointing Mortar (40 Kg),65,504,32760,Kgs,Ms. Rinku,Vadodara,Gujarat
+20260601,WBGUJ-525/25-26,Sales,Vadodara Infra Hub,Wallnut Primer Coat (20 L)-PC,41,2916,119556,Nos,Ms. Rinku,Vadodara,Gujarat
+20260602,WBGUJ-526/25-26,Credit Note,Alkapuri Tiles and Paints,Calcibond Secure Grey (20 Kg)-N,39,454,17706,Kgs,Ms. Rinku,Vadodara,Gujarat
+20260601,WBGUJ-527/25-26,Sales,Alkapuri Tiles and Paints,Wallnut Tile Adhesive (20 Kg),77,435,33495,Kgs,Ms. Rinku,Vadodara,Gujarat
+20260602,WBGUJ-528/25-26,Sales,Alkapuri Tiles and Paints,Wallnut Crack Fill Paste (1 Kg),101,371,37471,Nos,Ms. Rinku,Vadodara,Gujarat
+20260601,WBRAJ-529/25-26,Credit Note,Pink City Hardware,Wallnut Tile Adhesive (20 Kg),74,477,35298,Kgs,Mr. Mahendra,Jaipur,Rajasthan
+20260602,WBRAJ-530/25-26,Credit Note,Pink City Hardware,Wallnut Tile Adhesive (20 Kg),53,449,23797,Kgs,Mr. Mahendra,Jaipur,Rajasthan
+20260601,WBRAJ-531/25-26,Sales,Jaipur Royal Traders,Wallnut Block Jointing Mortar (40 Kg),8,507,4056,Kgs,Mr. Mahendra,Jaipur,Rajasthan
+20260602,WBRAJ-532/25-26,Sales,Malviya Nagar Construction,Wallnut Heavy Duty Adhesive (20 Kg)-HD,48,594,28512,Kgs,Mr. Mahendra,Jaipur,Rajasthan
+20260601,WBRAJ-533/25-26,Sales,Malviya Nagar Construction,Wallnut Anti-Corrosion Coat (4 L)-AC,14,1916,26824,Nos,Mr. Mahendra,Jaipur,Rajasthan
+20260602,WBRAJ-534/25-26,Sales,Malviya Nagar Construction,Wallnut Epoxy Grout (1 Kg)-E,58,844,48952,Nos,Mr. Mahendra,Jaipur,Rajasthan
+20260601,WBRAJ-535/25-26,Sales,Mansarovar Building Centre,Wallnut Bonding Agent (5 L)-BA,37,1145,42365,Nos,Mr. Lokesh,Jaipur,Rajasthan
+20260602,WBRAJ-536/25-26,Sales,Mansarovar Building Centre,Calcibond Secure Grey (20 Kg)-N,22,513,11286,Kgs,Mr. Lokesh,Jaipur,Rajasthan
+20260601,WBRAJ-537/25-26,Sales,Tonk Road Hardware,Wallnut SBR Latex (5 L)-S,8,1457,11656,Nos,Mr. Lokesh,Jaipur,Rajasthan
+20260602,WBRAJ-538/25-26,Sales,Tonk Road Hardware,Wallnut Roof Seal (10 L)-RS,48,4370,209760,Nos,Mr. Lokesh,Jaipur,Rajasthan
+20260601,WBRAJ-539/25-26,Sales,Jodhpur Blue City Hardware,Wallnut GP Adhesive (50 Kg)-GP,89,328,29192,Kgs,Mr. Bhanu,Jodhpur,Rajasthan
+20260602,WBRAJ-540/25-26,Sales,Jodhpur Blue City Hardware,Wallnut Anti-Corrosion Coat (4 L)-AC,40,1704,68160,Nos,Mr. Bhanu,Jodhpur,Rajasthan
+20260601,WBRAJ-541/25-26,Sales,Suncity Construction Supplies,Wallnut GP Adhesive (50 Kg)-GP,114,342,38988,Kgs,Mr. Bhanu,Jodhpur,Rajasthan
+20260602,WBRAJ-542/25-26,Sales,Lake City Tiles,Wallnut Primer Coat (20 L)-PC,16,2915,46640,Nos,Ms. Meera,Udaipur,Rajasthan
+20260601,WBRAJ-543/25-26,Sales,Udaipur Heritage Building Co.,Wallnut Wall Putty (40 Kg)-P,54,640,34560,Kgs,Ms. Meera,Udaipur,Rajasthan
+20260602,WBRAJ-544/25-26,Sales,Udaipur Heritage Building Co.,Wallnut Anti-Corrosion Coat (4 L)-AC,14,1740,24360,Nos,Ms. Meera,Udaipur,Rajasthan
+20260601,WBRAJ-545/25-26,Sales,Udaipur Heritage Building Co.,Wallnut Crack Fill Paste (1 Kg),117,354,41418,Nos,Ms. Meera,Udaipur,Rajasthan

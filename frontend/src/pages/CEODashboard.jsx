@@ -1,6 +1,6 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import KPIRow from '../components/cards/KPIRow';
-import MonthlySalesTrend from '../components/charts/MonthlySalesTrend';
+import YearlySalesTrend from '../components/charts/YearlySalesTrend';
 import IndiaMap from '../components/charts/IndiaMap';
 import StockGroupBreakdown from '../components/charts/StockGroupBreakdown';
 import TopProducts from '../components/charts/TopProducts';
@@ -12,32 +12,153 @@ import ChartCard from '../components/common/ChartCard';
 import { useRole } from '../context/RoleContext';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
 import { abbreviateCurrency } from '../utils/formatters';
+import { stateTarget } from '../data/targetData';
 import {
-  getKPIMetrics,
-  getMonthlySalesTrend,
   getDistrictPerformance,
   getStockCategoryBreakdown,
   getTopProducts,
   getTopSalesOfficers,
-  getFallingSalesAlerts,
   getHighOutstandingDealers,
   getDealerPerformanceSummary,
 } from '../utils/dataProcessors';
 import './StateSalesHeadDashboard.css'; // Share layout CSS
 
+function getYearlyKPIMetrics(allData, selectedYear) {
+  const yearsWithData = [...new Set(allData.map(d => d.date.slice(0, 4)))].sort();
+  const latestYear = yearsWithData[yearsWithData.length - 1] || '2026';
+  const currentYear = selectedYear === 'All' ? latestYear : selectedYear;
+  const prevYear = String(Number(currentYear) - 1);
+
+  const currentYearSales = allData
+    .filter(d => d.date.startsWith(currentYear))
+    .reduce((sum, d) => sum + d.amount, 0);
+
+  const prevYearSales = allData
+    .filter(d => d.date.startsWith(prevYear))
+    .reduce((sum, d) => sum + d.amount, 0);
+
+  const salesTrend = currentYearSales && prevYearSales 
+    ? ((currentYearSales - prevYearSales) / prevYearSales) * 100 
+    : 0;
+
+  const scopedData = selectedYear === 'All' 
+    ? allData 
+    : allData.filter(d => d.date.startsWith(selectedYear));
+
+  const totalSales = scopedData.reduce((sum, d) => sum + d.amount, 0);
+  const activeDealers = new Set(scopedData.map(d => d.partyName)).size;
+  const totalOutstanding = scopedData.reduce((sum, d) => sum + d.finalOutstanding, 0);
+
+  const yearCount = selectedYear === 'All' ? (yearsWithData.length || 1) : 1;
+  const targetForPeriod = (stateTarget.monthly * 12) * yearCount;
+  const targetAchievement = (totalSales / targetForPeriod) * 100;
+
+  // Group scopedData by month key "YYYY-MM" to find the latest month in current scope
+  const monthsInScope = [...new Set(scopedData.map(d => d.date.slice(0, 7)).filter(m => m && m.length === 7))].sort();
+  let salesTrendMonth = 0;
+  
+  if (monthsInScope.length > 0) {
+    const currentMonth = monthsInScope[monthsInScope.length - 1]; // e.g. "2026-06"
+    
+    // Parse year and month to get the calendar previous month
+    const [cYear, cMonth] = currentMonth.split('-').map(Number);
+    let pYear = cYear;
+    let pMonth = cMonth - 1;
+    if (pMonth === 0) {
+      pMonth = 12;
+      pYear = cYear - 1;
+    }
+    const prevMonthStr = `${pYear}-${String(pMonth).padStart(2, '0')}`;
+
+    const currentMonthSales = allData
+      .filter(d => d.date.startsWith(currentMonth))
+      .reduce((sum, d) => sum + d.amount, 0);
+
+    const prevMonthSales = allData
+      .filter(d => d.date.startsWith(prevMonthStr))
+      .reduce((sum, d) => sum + d.amount, 0);
+
+    salesTrendMonth = currentMonthSales && prevMonthSales
+      ? ((currentMonthSales - prevMonthSales) / prevMonthSales) * 100
+      : 0;
+  }
+
+  return {
+    totalSales,
+    activeDealers,
+    totalOutstanding,
+    targetAchievement: Math.min(targetAchievement, 150),
+    salesTrend,
+    salesTrendMonth,
+  };
+}
+
+function getYearlySalesAndOutstanding(allData) {
+  const grouped = {};
+  for (const row of allData) {
+    const year = row.date.slice(0, 4);
+    if (!grouped[year]) {
+      grouped[year] = { year, sales: 0, outstanding: 0 };
+    }
+    grouped[year].sales += row.amount;
+    grouped[year].outstanding += row.finalOutstanding;
+  }
+  return Object.values(grouped).sort((a, b) => a.year.localeCompare(b.year));
+}
+
+function getYearlyFallingSalesAlerts(allData, selectedYear) {
+  const yearsWithData = [...new Set(allData.map(d => d.date.slice(0, 4)))].sort();
+  const latestYear = yearsWithData[yearsWithData.length - 1] || '2026';
+  const currentYear = selectedYear === 'All' ? latestYear : selectedYear;
+  const prevYear = String(Number(currentYear) - 1);
+
+  const currentSales = {};
+  const prevSales = {};
+
+  for (const row of allData) {
+    const year = row.date.slice(0, 4);
+    if (year === currentYear) {
+      currentSales[row.partyName] = (currentSales[row.partyName] || 0) + row.amount;
+    } else if (year === prevYear) {
+      prevSales[row.partyName] = (prevSales[row.partyName] || 0) + row.amount;
+    }
+  }
+
+  const alerts = [];
+  for (const [dealer, prevAmt] of Object.entries(prevSales)) {
+    const currAmt = currentSales[dealer] || 0;
+    if (currAmt < prevAmt) {
+      const change = ((currAmt - prevAmt) / prevAmt) * 100;
+      alerts.push({
+        dealer,
+        currentSales: currAmt,
+        previousSales: prevAmt,
+        change: Math.round(change * 10) / 10,
+      });
+    }
+  }
+
+  return alerts.sort((a, b) => a.change - b.change);
+}
+
 export default function CEODashboard({ data }) {
   const { filteredComplaints } = useRole();
-  const metrics = useMemo(() => getKPIMetrics(data), [data]);
-  const monthlyTrend = useMemo(() => getMonthlySalesTrend(data), [data]);
-  const districtPerf = useMemo(() => getDistrictPerformance(data), [data]);
-  const stockBreakdown = useMemo(() => getStockCategoryBreakdown(data), [data]);
-  const topProducts = useMemo(() => getTopProducts(data, 10), [data]);
-  const topOfficers = useMemo(() => getTopSalesOfficers(data, 9), [data]);
-  const fallingAlerts = useMemo(() => getFallingSalesAlerts(data), [data]);
-  const highOutstanding = useMemo(() => getHighOutstandingDealers(data, 8), [data]);
-  const dealerSummary = useMemo(() => getDealerPerformanceSummary(data), [data]);
+  const [selectedYear, setSelectedYear] = useState('2026');
 
-  // CEO Specific: State Performance (using real MP data and dummy other states for visual completeness)
+  const filteredData = useMemo(() => {
+    if (selectedYear === 'All') return data;
+    return data.filter(r => r.date.startsWith(selectedYear));
+  }, [data, selectedYear]);
+
+  const metrics = useMemo(() => getYearlyKPIMetrics(data, selectedYear), [data, selectedYear]);
+  const districtPerf = useMemo(() => getDistrictPerformance(filteredData), [filteredData]);
+  const stockBreakdown = useMemo(() => getStockCategoryBreakdown(filteredData), [filteredData]);
+  const topProducts = useMemo(() => getTopProducts(filteredData, 10), [filteredData]);
+  const topOfficers = useMemo(() => getTopSalesOfficers(filteredData, 9), [filteredData]);
+  const fallingAlerts = useMemo(() => getYearlyFallingSalesAlerts(data, selectedYear), [data, selectedYear]);
+  const highOutstanding = useMemo(() => getHighOutstandingDealers(filteredData, 8), [filteredData]);
+  const dealerSummary = useMemo(() => getDealerPerformanceSummary(filteredData), [filteredData]);
+
   const statePerformanceData = useMemo(() => {
     const mpSales = metrics.totalSales;
     return [
@@ -48,22 +169,66 @@ export default function CEODashboard({ data }) {
     ];
   }, [metrics.totalSales]);
 
+  const availableYears = useMemo(() => {
+    const years = new Set(data.map(d => d.date.slice(0, 4)).filter(y => y && y.length === 4));
+    return [...years].sort((a, b) => b.localeCompare(a));
+  }, [data]);
+
   return (
     <div className="ssh-dashboard" id="ceo-dashboard">
-      {/* KPI Cards */}
-      <KPIRow metrics={metrics} />
+      <div className="dashboard-control-bar" style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 'var(--space-4)',
+        padding: '10px 16px',
+        background: 'var(--card-bg)',
+        border: '1px solid var(--card-border)',
+        borderRadius: 'var(--border-radius-lg)',
+      }}>
+        <div className="control-bar-left">
+          <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+            CEO VIEW SCOPE SELECTOR
+          </span>
+        </div>
+        <div className="control-bar-right" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '500' }}>Select Year:</span>
+          <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(e.target.value)}
+            style={{
+              padding: '6px 14px',
+              borderRadius: '6px',
+              background: 'var(--bg-main)',
+              color: 'var(--text-main)',
+              border: '1px solid var(--card-border)',
+              fontFamily: 'inherit',
+              fontSize: '12px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              outline: 'none',
+            }}
+          >
+            <option value="All">All Years</option>
+            {availableYears.map(year => (
+              <option key={year} value={year}>{year}</option>
+            ))}
+            {!availableYears.includes('2026') && <option value="2026">2026</option>}
+            {!availableYears.includes('2025') && <option value="2025">2025</option>}
+            {!availableYears.includes('2024') && <option value="2024">2024</option>}
+          </select>
+        </div>
+      </div>
 
-      {/* Charts + Alerts Side Panel */}
+      <KPIRow metrics={metrics} isYearly={true} showBothTrends={true} />
+
       <div className="charts-with-alerts">
         <div className="charts-main">
-          {/* Geographical Map + Monthly Trend */}
           <div className="charts-row">
-            <IndiaMap data={data} isNational={true} />
-            <MonthlySalesTrend data={monthlyTrend} />
+            <IndiaMap data={filteredData} isNational={true} />
+            <YearlySalesTrend data={data} selectedYear={selectedYear} />
           </div>
 
-
-          {/* CEO State Performance & Stock Breakdown */}
           <div className="charts-row">
             <ChartCard title="All-India State Performance" subtitle="Active vs Expansion Markets">
               <ResponsiveContainer width="100%" height={260}>
@@ -83,14 +248,12 @@ export default function CEODashboard({ data }) {
             <StockGroupBreakdown data={stockBreakdown} />
           </div>
 
-          {/* Top Products + Top Officers */}
           <div className="charts-bottom-row">
             <TopProducts data={topProducts} />
             <TopSalesOfficers data={topOfficers} />
           </div>
         </div>
 
-        {/* Alerts Panel */}
         <AlertsPanel
           fallingAlerts={fallingAlerts}
           highOutstanding={highOutstanding}
@@ -98,7 +261,6 @@ export default function CEODashboard({ data }) {
         />
       </div>
 
-      {/* Bottom Tables */}
       <div className="tables-section">
         <DistrictPerformanceTable data={districtPerf} />
         <DealerPerformanceTable data={dealerSummary} />
