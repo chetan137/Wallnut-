@@ -7,6 +7,11 @@ import { createContext, useContext, useState, useMemo, useCallback, useEffect } 
 import { salesData } from '../data/salesData';
 import { complaintsData } from '../data/complaintsData';
 import { visitsData } from '../data/visitsData';
+import { useAuth } from './AuthContext';
+
+// Sent as X-API-Key so the backend can reject requests that don't come from
+// this app — set in Vercel project env vars, must match API_KEY on the server.
+const API_KEY = import.meta.env.VITE_API_KEY || '';
 
 export const ROLES = {
   CEO: 'ceo',
@@ -18,6 +23,7 @@ export const ROLES = {
 const RoleContext = createContext(null);
 
 export function RoleProvider({ children }) {
+  const { isAuthenticated } = useAuth();
   const [currentRole, setCurrentRole] = useState(ROLES.STATE_SALES_HEAD);
   const [selectedState, setSelectedState] = useState('Madhya Pradesh');
   const [selectedDistrict, setSelectedDistrict] = useState('Indore');
@@ -78,14 +84,14 @@ export function RoleProvider({ children }) {
   const syncFromTally = useCallback(async (silent = false) => {
     if (!silent) setSyncing(true);
     try {
-      const res  = await fetch('/api/tally/sync');
+      const res  = await fetch('/api/tally/sync', { headers: { 'X-API-Key': API_KEY } });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = await res.json();
-      // Always apply backend data — whether live Tally or local fallback
+      // Always apply backend data — whether live Tally/Postgres or local fallback
       if (json.ok && Array.isArray(json.data?.salesData)) {
         setSales(json.data.salesData);
         setDataSource(json.source || 'local');
-        const syncTime = json.source === 'tally' ? (json.lastSync || new Date().toISOString()) : null;
+        const syncTime = json.source === 'tally' || json.source === 'db' ? (json.lastSync || new Date().toISOString()) : null;
         if (syncTime) setLastSync(syncTime);
         localStorage.setItem('wallnut_sales_records', JSON.stringify(json.data.salesData));
         localStorage.setItem('wallnut_data_source', json.source || 'local');
@@ -99,14 +105,17 @@ export function RoleProvider({ children }) {
     }
   }, []);
 
-  // On mount: restore cached source, then trigger a background sync
+  // Only fetch real data once logged in — an unauthenticated visitor should
+  // never trigger a request to the sales API, not just be blocked from
+  // seeing it rendered.
   useEffect(() => {
+    if (!isAuthenticated) return;
     const cachedSource = localStorage.getItem('wallnut_data_source');
     const cachedSync   = localStorage.getItem('wallnut_last_sync');
     if (cachedSource) setDataSource(cachedSource);
     if (cachedSync)   setLastSync(cachedSync);
     syncFromTally(true); // silent = no spinner on first load
-  }, [syncFromTally]);
+  }, [isAuthenticated, syncFromTally]);
 
 
   const [complaints, setComplaints] = useState(() => {
