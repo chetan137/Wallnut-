@@ -122,3 +122,14 @@ export function percentChange(current, previous) {
   if (!previous || previous === 0) return current > 0 ? 100 : 0;
   return ((current - previous) / previous) * 100;
 }
+
+/**
+ * Truncate a label for fixed-width chart axes (e.g. horizontal bar charts).
+ * Real names vary far more in length than curated demo data — this keeps
+ * axis labels on one line instead of wrapping and overlapping neighbours.
+ * Full text still belongs in a tooltip.
+ */
+export function truncateLabel(text, maxLen = 24) {
+  if (!text) return '';
+  return text.length > maxLen ? `${text.slice(0, maxLen - 1).trimEnd()}…` : text;
+}

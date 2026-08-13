@@ -1,12 +1,14 @@
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
 import ChartCard from '../common/ChartCard';
-import { abbreviateCurrency } from '../../utils/formatters';
+import { abbreviateCurrency, truncateLabel } from '../../utils/formatters';
 
-function CustomTooltip({ active, payload, label }) {
+function CustomTooltip({ active, payload }) {
   if (!active || !payload?.length) return null;
+  // Full untruncated name from the data point, not the (possibly cut-off) axis label
+  const fullName = payload[0].payload.product;
   return (
     <div className="custom-tooltip">
-      <div className="custom-tooltip-label">{label}</div>
+      <div className="custom-tooltip-label">{fullName}</div>
       <div className="custom-tooltip-value">{abbreviateCurrency(payload[0].value)}</div>
     </div>
   );
@@ -22,7 +24,10 @@ function shortenName(name) {
 export default function TopProducts({ data }) {
   const chartData = data.map(d => ({
     ...d,
-    shortName: shortenName(d.product),
+    // Real product names (and the occasional stray narration text synced as
+    // an item name) run much longer than the demo dataset's — truncate so
+    // labels never wrap and overlap the row above/below.
+    shortName: truncateLabel(shortenName(d.product), 24),
   }));
 
   return (
