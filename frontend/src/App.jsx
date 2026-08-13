@@ -7,6 +7,7 @@ import ManageUsers from './pages/ManageUsers';
 import SystemWorkflow from './pages/SystemWorkflow';
 import AboutPage from './pages/AboutPage';
 import CEODashboard from './pages/CEODashboard';
+import FinancialsPage from './pages/FinancialsPage';
 import StateSalesHeadDashboard from './pages/StateSalesHeadDashboard';
 import DistrictManagerDashboard from './pages/DistrictManagerDashboard';
 import SalesOfficerDashboard from './pages/SalesOfficerDashboard';
@@ -99,6 +100,17 @@ function MainApp() {
           <ProtectedRoute>
             <DashboardLayout>
               <ManageUsers />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/financials"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <FinancialsPage />
             </DashboardLayout>
           </ProtectedRoute>
         }
