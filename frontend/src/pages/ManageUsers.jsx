@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useAuth, ROLE_LABELS, CAN_CREATE_ROLE } from '../context/AuthContext';
-import { allDistricts, allSalesOfficers } from '../data/salesData';
+import { useRole } from '../context/RoleContext';
 import { UserPlus, Trash2 } from 'lucide-react';
 import './ManageUsers.css';
 
 export default function ManageUsers() {
   const { currentUser, getManagedUsers, addUser, deleteUser, canManageUsers } = useAuth();
+  const { allDistricts, allSalesOfficers } = useRole();
   const [showForm, setShowForm] = useState(false);
   const [formError, setFormError] = useState('');
   const [form, setForm] = useState({ name: '', email: '', password: '', scope: '' });

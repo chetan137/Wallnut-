@@ -11,7 +11,7 @@ export default function Header({ onMenuClick }) {
     year: 'numeric',
   });
 
-  const isLive  = dataSource === 'tally';
+  const isLive  = dataSource === 'tally' || dataSource === 'db';
   const isSyncing = syncing;
 
   // Format last sync time
@@ -59,11 +59,11 @@ export default function Header({ onMenuClick }) {
           <span
             className={`header-data-badge ${isLive ? 'tally' : 'local'}`}
             title={isLive
-              ? `Live data from Tally Prime${syncLabel ? ` · Last synced ${syncLabel}` : ''}`
-              : 'Demo data — Tally unavailable or no vouchers found'}
+              ? `Live data from ${dataSource === 'db' ? 'PostgreSQL' : 'Tally Prime'}${syncLabel ? ` · Last synced ${syncLabel}` : ''}`
+              : 'Demo data — backend unavailable or no records found'}
           >
             {isLive
-              ? <><Zap size={11} /> Tally Live</>
+              ? <><Zap size={11} /> Live Data</>
               : <><Database size={11} /> Demo Data</>}
           </span>
         )}

@@ -4,7 +4,7 @@
  */
 
 import { createContext, useContext, useState, useMemo, useCallback, useEffect } from 'react';
-import { salesData, allDistricts, allSalesOfficers, allDealers, districtToState, allStates } from '../data/salesData';
+import { salesData } from '../data/salesData';
 import { complaintsData } from '../data/complaintsData';
 import { visitsData } from '../data/visitsData';
 
@@ -28,6 +28,45 @@ export function RoleProvider({ children }) {
     const saved = localStorage.getItem('wallnut_sales_records');
     return saved ? JSON.parse(saved) : salesData;
   });
+
+  // Reference lists (states/districts/officers/dealers) are derived from the
+  // live `sales` array rather than the static mock — once /api/tally/sync
+  // returns real Tally/Postgres records, these are the actual states,
+  // districts, officers and dealers that appear in that data, so role-based
+  // filtering below still matches instead of filtering against a permanently
+  // fictional roster.
+  const allStates = useMemo(
+    () => [...new Set(sales.map((r) => r.state).filter(Boolean))].sort(),
+    [sales]
+  );
+
+  const districtToState = useMemo(() => {
+    const map = {};
+    sales.forEach((r) => { if (r.areaCity) map[r.areaCity] = r.state; });
+    return map;
+  }, [sales]);
+
+  const allDistricts = useMemo(() => Object.keys(districtToState), [districtToState]);
+
+  const allSalesOfficers = useMemo(() => {
+    const map = {};
+    sales.forEach((r) => {
+      if (r.salesMan && !map[r.salesMan]) {
+        map[r.salesMan] = { name: r.salesMan, district: r.areaCity, state: r.state };
+      }
+    });
+    return Object.values(map);
+  }, [sales]);
+
+  const allDealers = useMemo(() => {
+    const map = {};
+    sales.forEach((r) => {
+      if (r.partyName && !map[r.partyName]) {
+        map[r.partyName] = { name: r.partyName, salesOfficer: r.salesMan, district: r.areaCity, state: r.state };
+      }
+    });
+    return Object.values(map);
+  }, [sales]);
 
   // Track data source for UI badge
   const [dataSource, setDataSource] = useState('local');
@@ -410,6 +449,10 @@ export function RoleProvider({ children }) {
     addSalesEntry,
     addVisitEntry,
     addComplaintEntry,
+    allStates,
+    allDistricts,
+    allSalesOfficers,
+    allDealers,
     filters,
     clearFilters,
     availableAreas,
