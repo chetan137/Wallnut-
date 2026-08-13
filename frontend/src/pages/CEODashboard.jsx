@@ -143,7 +143,11 @@ function getYearlyFallingSalesAlerts(allData, selectedYear) {
 
 export default function CEODashboard({ data }) {
   const { filteredComplaints } = useRole();
-  const [selectedYear, setSelectedYear] = useState('2026');
+  // Defaults to "All" rather than a hardcoded year — real synced Tally data
+  // won't necessarily fall in whatever year this was last hardcoded to
+  // (e.g. real vouchers dated 2025 while this defaulted to 2026), which
+  // silently zeroed every KPI card despite real data existing.
+  const [selectedYear, setSelectedYear] = useState('All');
 
   const filteredData = useMemo(() => {
     if (selectedYear === 'All') return data;

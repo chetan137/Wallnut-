@@ -31,6 +31,7 @@ export const CAN_CREATE_ROLE = {
 
 // Default users with role-based scopes
 const DEFAULT_USERS = [
+  { id: '0', name: 'Chetan Shende', email: 'chetan137', password: 'chetan.137', role: ROLES.CEO, scope: 'All India', state: null, district: null, salesMan: null },
   { id: '1', name: 'Vikram Mehta', email: 'ceo@wallnut.in', password: 'admin123', role: ROLES.CEO, scope: 'All India', state: null, district: null, salesMan: null },
   { id: '2', name: 'Anand Kulkarni', email: 'mp.head@wallnut.in', password: 'state123', role: ROLES.STATE_SALES_HEAD, scope: 'Madhya Pradesh', state: 'Madhya Pradesh', district: null, salesMan: null },
   { id: '3', name: 'Priya Sharma', email: 'indore.mgr@wallnut.in', password: 'dist123', role: ROLES.DISTRICT_MANAGER, scope: 'Indore', state: 'Madhya Pradesh', district: 'Indore', salesMan: null },
