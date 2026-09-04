@@ -8,6 +8,7 @@ import SystemWorkflow from './pages/SystemWorkflow';
 import AboutPage from './pages/AboutPage';
 import CEODashboard from './pages/CEODashboard';
 import FinancialsPage from './pages/FinancialsPage';
+import AnalyticsPage from './pages/AnalyticsPage';
 import StateSalesHeadDashboard from './pages/StateSalesHeadDashboard';
 import DistrictManagerDashboard from './pages/DistrictManagerDashboard';
 import SalesOfficerDashboard from './pages/SalesOfficerDashboard';
@@ -111,6 +112,17 @@ function MainApp() {
           <ProtectedRoute>
             <DashboardLayout>
               <FinancialsPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/analytics"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <AnalyticsPage />
             </DashboardLayout>
           </ProtectedRoute>
         }

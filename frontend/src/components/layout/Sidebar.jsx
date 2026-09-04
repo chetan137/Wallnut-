@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Network, LogOut, Info, X, Landmark } from 'lucide-react';
+import { LayoutDashboard, Users, Network, LogOut, Info, X, Landmark, BarChart3 } from 'lucide-react';
 import { useRole, ROLES } from '../../context/RoleContext';
 import { useAuth } from '../../context/AuthContext';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -79,6 +79,18 @@ export default function Sidebar({ isOpen, onClose }) {
           >
             <Landmark className="sidebar-item-icon" size={16} />
             <span>Financials</span>
+          </Link>
+        )}
+
+        {currentRole === ROLES.CEO && (
+          <Link
+            to="/analytics"
+            className={`sidebar-item-link ${currentPath === '/analytics' ? 'active' : ''}`}
+            id="nav-analytics"
+            onClick={onClose}
+          >
+            <BarChart3 className="sidebar-item-icon" size={16} />
+            <span>Analytics</span>
           </Link>
         )}
 

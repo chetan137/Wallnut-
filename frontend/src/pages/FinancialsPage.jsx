@@ -18,6 +18,7 @@ const API_KEY = import.meta.env.VITE_API_KEY || '';
  */
 function useFinancialsData() {
   const [payables, setPayables] = useState(null);
+  const [receivables, setReceivables] = useState(null);
   const [cashFlow, setCashFlow] = useState(null);
   const [financials, setFinancials] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -29,21 +30,23 @@ function useFinancialsData() {
     (async () => {
       try {
         const headers = { 'X-API-Key': API_KEY };
-        const [payablesRes, cashFlowRes, financialsRes] = await Promise.all([
+        const [payablesRes, receivablesRes, cashFlowRes, financialsRes] = await Promise.all([
           fetch('/api/tally/payables', { headers }).then((r) => r.json()),
+          fetch('/api/tally/receivables-aging', { headers }).then((r) => r.json()),
           fetch('/api/tally/cashflow', { headers }).then((r) => r.json()),
           fetch('/api/tally/financials', { headers }).then((r) => r.json()),
         ]);
         if (cancelled) return;
 
-        if (!payablesRes.ok || !cashFlowRes.ok || !financialsRes.ok) {
+        if (!payablesRes.ok || !receivablesRes.ok || !cashFlowRes.ok || !financialsRes.ok) {
           setError(
-            payablesRes.message || cashFlowRes.message || financialsRes.message ||
+            payablesRes.message || receivablesRes.message || cashFlowRes.message || financialsRes.message ||
             'Financial data requires a live Postgres connection.'
           );
           return;
         }
         setPayables(payablesRes.data);
+        setReceivables(receivablesRes.data);
         setCashFlow(cashFlowRes.data);
         setFinancials(financialsRes.data);
       } catch {
@@ -56,22 +59,33 @@ function useFinancialsData() {
     return () => { cancelled = true; };
   }, []);
 
-  return { payables, cashFlow, financials, loading, error };
+  return { payables, receivables, cashFlow, financials, loading, error };
 }
 
 const AGING_ORDER = ['Not Due', '1-30 days', '31-60 days', '61-90 days', '90+ days'];
 
 export default function FinancialsPage() {
-  const { payables, cashFlow, financials, loading, error } = useFinancialsData();
+  const { payables, receivables, cashFlow, financials, loading, error } = useFinancialsData();
 
-  const agingChartData = useMemo(() => {
+  const payablesAgingData = useMemo(() => {
     if (!payables) return [];
     return [...payables.aging].sort((a, b) => AGING_ORDER.indexOf(a.bucket) - AGING_ORDER.indexOf(b.bucket));
   }, [payables]);
 
+  const receivablesAgingData = useMemo(() => {
+    if (!receivables) return [];
+    return [...receivables.aging].sort((a, b) => AGING_ORDER.indexOf(a.bucket) - AGING_ORDER.indexOf(b.bucket));
+  }, [receivables]);
+
   const vendorColumns = useMemo(() => [
     { header: 'Vendor', accessor: 'partyName' },
     { header: 'Amount Payable', accessor: 'amountPayable', numeric: true, render: (v) => abbreviateCurrency(v) },
+  ], []);
+
+  const customerColumns = useMemo(() => [
+    { header: 'Customer', accessor: 'partyName' },
+    { header: 'Bills', accessor: 'billCount', numeric: true },
+    { header: 'Amount Receivable', accessor: 'amountReceivable', numeric: true, render: (v) => abbreviateCurrency(v) },
   ], []);
 
   if (loading) {
@@ -94,7 +108,7 @@ export default function FinancialsPage() {
 
       <div className="kpi-row stagger-children">
         <KPICard icon={Wallet} label="Total Payable" value={abbreviateCurrency(payables.totalPayable)} color="orange" />
-        <KPICard icon={Landmark} label="Vendors Owed" value={formatNumber(payables.totalVendors)} color="blue" />
+        <KPICard icon={Landmark} label="Total Receivable" value={abbreviateCurrency(receivables.totalReceivable)} color="blue" />
         {cashFlow.companies.map((c) => (
           <KPICard
             key={c.companyId}
@@ -109,13 +123,13 @@ export default function FinancialsPage() {
       <div className="charts-row">
         <ChartCard title="Payables Aging" subtitle="Bills payable, grouped by how overdue">
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={agingChartData} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
+            <BarChart data={payablesAgingData} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
               <XAxis dataKey="bucket" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={(v) => abbreviateCurrency(v)} />
               <Tooltip formatter={(v) => abbreviateCurrency(v)} />
               <Bar dataKey="amount" radius={[4, 4, 0, 0]} maxBarSize={40}>
-                {agingChartData.map((entry, i) => (
+                {payablesAgingData.map((entry, i) => (
                   <Cell
                     key={i}
                     fill={entry.bucket === 'Not Due' ? 'var(--accent-primary)' : entry.bucket === '90+ days' ? 'var(--danger)' : 'var(--accent-secondary)'}
@@ -127,6 +141,29 @@ export default function FinancialsPage() {
         </ChartCard>
 
         <DataTable title="Top Vendors (Payables)" columns={vendorColumns} data={payables.payables} />
+      </div>
+
+      <div className="charts-row" style={{ marginTop: 'var(--space-4)' }}>
+        <ChartCard title="Debtors Aging" subtitle="Bills receivable, grouped by how overdue">
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={receivablesAgingData} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
+              <XAxis dataKey="bucket" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={(v) => abbreviateCurrency(v)} />
+              <Tooltip formatter={(v) => abbreviateCurrency(v)} />
+              <Bar dataKey="amount" radius={[4, 4, 0, 0]} maxBarSize={40}>
+                {receivablesAgingData.map((entry, i) => (
+                  <Cell
+                    key={i}
+                    fill={entry.bucket === 'Not Due' ? 'var(--accent-primary)' : entry.bucket === '90+ days' ? 'var(--danger)' : 'var(--accent-secondary)'}
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
+        <DataTable title="Top Customers (Receivables)" columns={customerColumns} data={receivables.customers} />
       </div>
 
       {financials.companies.map((c) => (
