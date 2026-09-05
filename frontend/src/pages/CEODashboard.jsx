@@ -230,9 +230,6 @@ export default function CEODashboard({ data }) {
             {availableYears.map(year => (
               <option key={year} value={year}>{year}</option>
             ))}
-            {!availableYears.includes('2026') && <option value="2026">2026</option>}
-            {!availableYears.includes('2025') && <option value="2025">2025</option>}
-            {!availableYears.includes('2024') && <option value="2024">2024</option>}
           </select>
         </div>
       </div>
