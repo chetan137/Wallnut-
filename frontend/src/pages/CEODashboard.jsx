@@ -22,45 +22,50 @@ import {
 } from '../utils/dataProcessors';
 import './StateSalesHeadDashboard.css'; // Share layout CSS
 
+// BUG FIX: trend calcs used to fall back to 0 whenever the prior period had
+// no sales, which renders as "+0.0%" — indistinguishable from a real "no
+// change" reading. With real Tally data only going back a few months, that
+// made every early period look like flat/zero growth instead of "no prior
+// period to compare against yet". null lets KPICard hide the trend line
+// entirely instead of showing a misleading number.
+function pctChange(current, prev) {
+  return prev > 0 ? ((current - prev) / prev) * 100 : null;
+}
+
+const aggSales = (rows) => rows.reduce((sum, d) => sum + d.amount, 0);
+const aggDealers = (rows) => new Set(rows.map(d => d.partyName)).size;
+const aggOutstanding = (rows) => rows.reduce((sum, d) => sum + d.finalOutstanding, 0);
+
 function getYearlyKPIMetrics(allData, selectedYear) {
   const yearsWithData = [...new Set(allData.map(d => d.date.slice(0, 4)))].sort();
   const latestYear = yearsWithData[yearsWithData.length - 1] || '2026';
   const currentYear = selectedYear === 'All' ? latestYear : selectedYear;
   const prevYear = String(Number(currentYear) - 1);
 
-  const currentYearSales = allData
-    .filter(d => d.date.startsWith(currentYear))
-    .reduce((sum, d) => sum + d.amount, 0);
+  const currentYearRows = allData.filter(d => d.date.startsWith(currentYear));
+  const prevYearRows = allData.filter(d => d.date.startsWith(prevYear));
 
-  const prevYearSales = allData
-    .filter(d => d.date.startsWith(prevYear))
-    .reduce((sum, d) => sum + d.amount, 0);
+  const salesTrend = pctChange(aggSales(currentYearRows), aggSales(prevYearRows));
+  const dealersTrend = pctChange(aggDealers(currentYearRows), aggDealers(prevYearRows));
+  const outstandingTrend = pctChange(aggOutstanding(currentYearRows), aggOutstanding(prevYearRows));
 
-  // BUG FIX: this used to fall back to 0 whenever prevYearSales was missing,
-  // which renders as "+0.0%" — indistinguishable from a real "no change"
-  // reading. With real Tally data only going back a few months, that made
-  // every early period look like flat/zero growth instead of "no prior
-  // year to compare against yet". null lets KPICard hide the trend line
-  // entirely instead of showing a misleading number.
-  const salesTrend = prevYearSales > 0
-    ? ((currentYearSales - prevYearSales) / prevYearSales) * 100
-    : null;
-
-  const scopedData = selectedYear === 'All' 
-    ? allData 
+  const scopedData = selectedYear === 'All'
+    ? allData
     : allData.filter(d => d.date.startsWith(selectedYear));
 
-  const totalSales = scopedData.reduce((sum, d) => sum + d.amount, 0);
-  const activeDealers = new Set(scopedData.map(d => d.partyName)).size;
-  const totalOutstanding = scopedData.reduce((sum, d) => sum + d.finalOutstanding, 0);
+  const totalSales = aggSales(scopedData);
+  const activeDealers = aggDealers(scopedData);
+  const totalOutstanding = aggOutstanding(scopedData);
 
   // Group scopedData by month key "YYYY-MM" to find the latest month in current scope
   const monthsInScope = [...new Set(scopedData.map(d => d.date.slice(0, 7)).filter(m => m && m.length === 7))].sort();
   let salesTrendMonth = null;
-  
+  let dealersTrendMonth = null;
+  let outstandingTrendMonth = null;
+
   if (monthsInScope.length > 0) {
     const currentMonth = monthsInScope[monthsInScope.length - 1]; // e.g. "2026-06"
-    
+
     // Parse year and month to get the calendar previous month
     const [cYear, cMonth] = currentMonth.split('-').map(Number);
     let pYear = cYear;
@@ -71,18 +76,12 @@ function getYearlyKPIMetrics(allData, selectedYear) {
     }
     const prevMonthStr = `${pYear}-${String(pMonth).padStart(2, '0')}`;
 
-    const currentMonthSales = allData
-      .filter(d => d.date.startsWith(currentMonth))
-      .reduce((sum, d) => sum + d.amount, 0);
+    const currentMonthRows = allData.filter(d => d.date.startsWith(currentMonth));
+    const prevMonthRows = allData.filter(d => d.date.startsWith(prevMonthStr));
 
-    const prevMonthSales = allData
-      .filter(d => d.date.startsWith(prevMonthStr))
-      .reduce((sum, d) => sum + d.amount, 0);
-
-    // Same fix as salesTrend above — null (hidden) instead of a misleading 0%.
-    salesTrendMonth = prevMonthSales > 0
-      ? ((currentMonthSales - prevMonthSales) / prevMonthSales) * 100
-      : null;
+    salesTrendMonth = pctChange(aggSales(currentMonthRows), aggSales(prevMonthRows));
+    dealersTrendMonth = pctChange(aggDealers(currentMonthRows), aggDealers(prevMonthRows));
+    outstandingTrendMonth = pctChange(aggOutstanding(currentMonthRows), aggOutstanding(prevMonthRows));
   }
 
   return {
@@ -91,6 +90,10 @@ function getYearlyKPIMetrics(allData, selectedYear) {
     totalOutstanding,
     salesTrend,
     salesTrendMonth,
+    dealersTrend,
+    dealersTrendMonth,
+    outstandingTrend,
+    outstandingTrendMonth,
   };
 }
 

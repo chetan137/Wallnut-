@@ -88,6 +88,14 @@
   font-weight: 400;
 }
 
+.kpi-card-description {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  opacity: 0.75;
+  line-height: 1.3;
+  margin-top: -2px;
+}
+
 .kpi-card-accent-line {
   position: absolute;
   bottom: 0;

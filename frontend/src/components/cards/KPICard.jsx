@@ -1,7 +1,7 @@
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import './KPICard.css';
 
-export default function KPICard({ icon: Icon, label, value, trend, trendLabel, trends, color = 'green' }) {
+export default function KPICard({ icon: Icon, label, value, description, trend, trendLabel, trends, color = 'green' }) {
   const isPositive = trend >= 0;
 
   return (
@@ -19,7 +19,8 @@ export default function KPICard({ icon: Icon, label, value, trend, trendLabel, t
       </div>
       <div className="kpi-card-value">{value}</div>
       <div className="kpi-card-label">{label}</div>
-      
+      {description && <div className="kpi-card-description">{description}</div>}
+
       {trends ? (
         <div className="kpi-card-trends-list" style={{ 
           display: 'flex', 
