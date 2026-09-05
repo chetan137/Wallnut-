@@ -4,6 +4,7 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 import ChartCard from '../components/common/ChartCard';
 import DataTable from '../components/common/DataTable';
 import KPICard from '../components/cards/KPICard';
+import TabBar from '../components/common/TabBar';
 import { SkeletonKPIRow, SkeletonChartCard, SkeletonTable } from '../components/common/Skeleton';
 import { abbreviateCurrency, formatNumber, formatPercent } from '../utils/formatters';
 import './StateSalesHeadDashboard.css'; // Share layout CSS
@@ -59,47 +60,11 @@ function useAnalyticsData() {
 
 const ABC_COLOR = { A: 'var(--success, #2e7d32)', B: 'var(--warning, #f0ad4e)', C: 'var(--text-muted)' };
 
-const TABS = [
+const ANALYTICS_TABS = [
   { key: 'pareto', label: 'Pareto (80/20)' },
   { key: 'abc', label: 'ABC Analysis' },
   { key: 'slowmoving', label: 'Slow-Moving Stock' },
 ];
-
-// Matches the pill-toggle already used on YearlySalesTrend, so switching
-// analyses reads the same as switching Yearly/Monthly there.
-function TabBar({ active, onChange }) {
-  return (
-    <div style={{
-      display: 'inline-flex',
-      gap: '2px',
-      padding: '3px',
-      background: 'var(--bg-main)',
-      borderRadius: '6px',
-      border: '1px solid var(--card-border)',
-      marginBottom: 'var(--space-4)',
-    }}>
-      {TABS.map((tab) => (
-        <button
-          key={tab.key}
-          onClick={() => onChange(tab.key)}
-          style={{
-            padding: '6px 14px',
-            borderRadius: '4px',
-            fontSize: '12px',
-            fontWeight: '600',
-            border: 'none',
-            cursor: 'pointer',
-            background: active === tab.key ? 'var(--accent-primary)' : 'transparent',
-            color: active === tab.key ? '#fff' : 'var(--text-secondary)',
-            transition: 'all 0.2s ease',
-          }}
-        >
-          {tab.label}
-        </button>
-      ))}
-    </div>
-  );
-}
 
 export default function AnalyticsPage() {
   const { pareto, abc, slowMoving, loading, error } = useAnalyticsData();
@@ -185,7 +150,7 @@ export default function AnalyticsPage() {
         <KPICard icon={PackageX} label="Non-Moving Items (365d+)" value={formatNumber(slowMoving.summary.find((s) => s.bucket.startsWith('Non'))?.itemCount || 0)} color="red" />
       </div>
 
-      <TabBar active={activeTab} onChange={setActiveTab} />
+      <TabBar tabs={ANALYTICS_TABS} active={activeTab} onChange={setActiveTab} />
 
       {activeTab === 'pareto' && (
         <div className="charts-row">

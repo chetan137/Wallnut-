@@ -4,6 +4,7 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 import ChartCard from '../components/common/ChartCard';
 import DataTable from '../components/common/DataTable';
 import KPICard from '../components/cards/KPICard';
+import TabBar from '../components/common/TabBar';
 import { SkeletonKPIRow, SkeletonChartCard, SkeletonTable } from '../components/common/Skeleton';
 import { abbreviateCurrency, formatNumber, formatDate } from '../utils/formatters';
 import './StateSalesHeadDashboard.css'; // Share layout CSS
@@ -65,8 +66,15 @@ function useFinancialsData() {
 
 const AGING_ORDER = ['Not Due', '1-30 days', '31-60 days', '61-90 days', '90+ days'];
 
+const FINANCIALS_TABS = [
+  { key: 'payables', label: 'Payables' },
+  { key: 'receivables', label: 'Receivables' },
+  { key: 'plbs', label: 'P&L / Balance Sheet' },
+];
+
 export default function FinancialsPage() {
   const { payables, receivables, cashFlow, financials, loading, error } = useFinancialsData();
+  const [activeTab, setActiveTab] = useState('payables');
 
   const payablesAgingData = useMemo(() => {
     if (!payables) return [];
@@ -134,58 +142,64 @@ export default function FinancialsPage() {
         ))}
       </div>
 
-      <div className="charts-row">
-        <ChartCard title="Payables Aging" subtitle="Bills payable, grouped by how overdue">
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={payablesAgingData} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
-              <XAxis dataKey="bucket" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={(v) => abbreviateCurrency(v)} />
-              <Tooltip formatter={(v) => abbreviateCurrency(v)} />
-              <Bar dataKey="amount" radius={[4, 4, 0, 0]} maxBarSize={40}>
-                {payablesAgingData.map((entry, i) => (
-                  <Cell
-                    key={i}
-                    fill={entry.bucket === 'Not Due' ? 'var(--accent-primary)' : entry.bucket === '90+ days' ? 'var(--danger)' : 'var(--accent-secondary)'}
-                  />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartCard>
+      <TabBar tabs={FINANCIALS_TABS} active={activeTab} onChange={setActiveTab} />
 
-        <DataTable title="Top Vendors (Payables)" columns={vendorColumns} data={payables.payables} />
-      </div>
+      {activeTab === 'payables' && (
+        <div className="charts-row">
+          <ChartCard title="Payables Aging" subtitle="Bills payable, grouped by how overdue">
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={payablesAgingData} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
+                <XAxis dataKey="bucket" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={(v) => abbreviateCurrency(v)} />
+                <Tooltip formatter={(v) => abbreviateCurrency(v)} />
+                <Bar dataKey="amount" radius={[4, 4, 0, 0]} maxBarSize={40}>
+                  {payablesAgingData.map((entry, i) => (
+                    <Cell
+                      key={i}
+                      fill={entry.bucket === 'Not Due' ? 'var(--accent-primary)' : entry.bucket === '90+ days' ? 'var(--danger)' : 'var(--accent-secondary)'}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
 
-      <div className="charts-row" style={{ marginTop: 'var(--space-4)' }}>
-        <ChartCard title="Debtors Aging" subtitle="Bills receivable, grouped by how overdue">
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={receivablesAgingData} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
-              <XAxis dataKey="bucket" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={(v) => abbreviateCurrency(v)} />
-              <Tooltip formatter={(v) => abbreviateCurrency(v)} />
-              <Bar dataKey="amount" radius={[4, 4, 0, 0]} maxBarSize={40}>
-                {receivablesAgingData.map((entry, i) => (
-                  <Cell
-                    key={i}
-                    fill={entry.bucket === 'Not Due' ? 'var(--accent-primary)' : entry.bucket === '90+ days' ? 'var(--danger)' : 'var(--accent-secondary)'}
-                  />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </ChartCard>
+          <DataTable title="Top Vendors (Payables)" columns={vendorColumns} data={payables.payables} />
+        </div>
+      )}
 
-        <DataTable title="Top Customers (Receivables)" columns={customerColumns} data={receivables.customers} />
-      </div>
+      {activeTab === 'receivables' && (
+        <div className="charts-row">
+          <ChartCard title="Debtors Aging" subtitle="Bills receivable, grouped by how overdue">
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={receivablesAgingData} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
+                <XAxis dataKey="bucket" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={(v) => abbreviateCurrency(v)} />
+                <Tooltip formatter={(v) => abbreviateCurrency(v)} />
+                <Bar dataKey="amount" radius={[4, 4, 0, 0]} maxBarSize={40}>
+                  {receivablesAgingData.map((entry, i) => (
+                    <Cell
+                      key={i}
+                      fill={entry.bucket === 'Not Due' ? 'var(--accent-primary)' : entry.bucket === '90+ days' ? 'var(--danger)' : 'var(--accent-secondary)'}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
 
-      {financials.companies.map((c) => (
+          <DataTable title="Top Customers (Receivables)" columns={customerColumns} data={receivables.customers} />
+        </div>
+      )}
+
+      {activeTab === 'plbs' && financials.companies.map((c) => (
         <ChartCard
           key={c.companyId}
           title={`${c.companyName} — Financial Summary`}
           subtitle={`Period: ${formatDate(c.periodFrom)} to ${formatDate(c.periodTo)}`}
-          style={{ marginTop: 'var(--space-4)' }}
+          style={{ marginBottom: 'var(--space-4)' }}
         >
           <div className="kpi-row stagger-children" style={{ marginBottom: 'var(--space-3)' }}>
             <KPICard icon={TrendingUp} label="Revenue" value={abbreviateCurrency(c.pl.revenue)} color="green" />
