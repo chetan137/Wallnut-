@@ -134,6 +134,17 @@ export function getStockGroupBreakdown(data) {
 /**
  * Flattened category breakdown for the donut chart.
  */
+/**
+ * Groups sales by stock category, sorted by value.
+ *
+ * Caps at 5 named slices + "Other" (the sum of every smaller category) —
+ * real Tally data here has 13-14 distinct categories, and a donut past ~6
+ * segments stops being readable: the tail collapses into slivers too thin
+ * to see or color distinctly. See dataviz reference: "past ~7-8, fold the
+ * tail into Other" rather than generating more colors.
+ */
+const MAX_STOCK_CATEGORY_SLICES = 5;
+
 export function getStockCategoryBreakdown(data) {
   const grouped = {};
 
@@ -145,7 +156,13 @@ export function getStockCategoryBreakdown(data) {
     grouped[catKey].amount += row.amount;
   }
 
-  return Object.values(grouped).sort((a, b) => b.amount - a.amount);
+  const sorted = Object.values(grouped).sort((a, b) => b.amount - a.amount);
+  if (sorted.length <= MAX_STOCK_CATEGORY_SLICES + 1) return sorted;
+
+  const top = sorted.slice(0, MAX_STOCK_CATEGORY_SLICES);
+  const rest = sorted.slice(MAX_STOCK_CATEGORY_SLICES);
+  const otherAmount = rest.reduce((sum, r) => sum + r.amount, 0);
+  return [...top, { name: 'Other', group: 'Other', amount: otherAmount, isOther: true }];
 }
 
 /**
