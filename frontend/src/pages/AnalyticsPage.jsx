@@ -59,8 +59,51 @@ function useAnalyticsData() {
 
 const ABC_COLOR = { A: 'var(--success, #2e7d32)', B: 'var(--warning, #f0ad4e)', C: 'var(--text-muted)' };
 
+const TABS = [
+  { key: 'pareto', label: 'Pareto (80/20)' },
+  { key: 'abc', label: 'ABC Analysis' },
+  { key: 'slowmoving', label: 'Slow-Moving Stock' },
+];
+
+// Matches the pill-toggle already used on YearlySalesTrend, so switching
+// analyses reads the same as switching Yearly/Monthly there.
+function TabBar({ active, onChange }) {
+  return (
+    <div style={{
+      display: 'inline-flex',
+      gap: '2px',
+      padding: '3px',
+      background: 'var(--bg-main)',
+      borderRadius: '6px',
+      border: '1px solid var(--card-border)',
+      marginBottom: 'var(--space-4)',
+    }}>
+      {TABS.map((tab) => (
+        <button
+          key={tab.key}
+          onClick={() => onChange(tab.key)}
+          style={{
+            padding: '6px 14px',
+            borderRadius: '4px',
+            fontSize: '12px',
+            fontWeight: '600',
+            border: 'none',
+            cursor: 'pointer',
+            background: active === tab.key ? 'var(--accent-primary)' : 'transparent',
+            color: active === tab.key ? '#fff' : 'var(--text-secondary)',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function AnalyticsPage() {
   const { pareto, abc, slowMoving, loading, error } = useAnalyticsData();
+  const [activeTab, setActiveTab] = useState('pareto');
 
   const customerColumns = useMemo(() => [
     { header: 'Customer', accessor: 'name' },
@@ -142,50 +185,60 @@ export default function AnalyticsPage() {
         <KPICard icon={PackageX} label="Non-Moving Items (365d+)" value={formatNumber(slowMoving.summary.find((s) => s.bucket.startsWith('Non'))?.itemCount || 0)} color="red" />
       </div>
 
-      <div className="charts-row">
-        <DataTable title="Pareto — Top Customers (80/20)" columns={customerColumns} data={pareto.customers} />
-        <DataTable title="Pareto — Top Products (80/20)" columns={productColumns} data={pareto.products} />
-      </div>
+      <TabBar active={activeTab} onChange={setActiveTab} />
+
+      {activeTab === 'pareto' && (
+        <div className="charts-row">
+          <DataTable title="Pareto — Top Customers (80/20)" columns={customerColumns} data={pareto.customers} />
+          <DataTable title="Pareto — Top Products (80/20)" columns={productColumns} data={pareto.products} />
+        </div>
+      )}
 
       {/* ── ABC Analysis ───────────────────────────────────────────────── */}
-      <ChartCard
-        title="ABC Analysis"
-        subtitle="Items classified by share of sales revenue (A = top 70%, B = next 20%, C = remaining 10%)"
-        style={{ marginTop: 'var(--space-4)' }}
-      >
-        <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', marginTop: 0 }}>
-          Based on sales revenue contribution, not inventory holding value — Tally's stock sync currently only
-          captures group-level rollups (Finished Goods, Raw Material, …), not individual item costs.
-        </p>
-        <div className="kpi-row stagger-children" style={{ marginBottom: 'var(--space-3)' }}>
-          <KPICard icon={Layers} label="Category A" value={`${abc.counts.A} items`} color="green" />
-          <KPICard icon={Layers} label="Category B" value={`${abc.counts.B} items`} color="orange" />
-          <KPICard icon={Layers} label="Category C" value={`${abc.counts.C} items`} color="blue" />
-        </div>
-      </ChartCard>
-      <DataTable title="ABC Item Classification" columns={abcColumns} data={abc.items} />
+      {activeTab === 'abc' && (
+        <>
+          <ChartCard
+            title="ABC Analysis"
+            subtitle="Items classified by share of sales revenue (A = top 70%, B = next 20%, C = remaining 10%)"
+          >
+            <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', marginTop: 0 }}>
+              Based on sales revenue contribution, not inventory holding value — Tally's stock sync currently only
+              captures group-level rollups (Finished Goods, Raw Material, …), not individual item costs.
+            </p>
+            <div className="kpi-row stagger-children" style={{ marginBottom: 'var(--space-3)' }}>
+              <KPICard icon={Layers} label="Category A" value={`${abc.counts.A} items`} color="green" />
+              <KPICard icon={Layers} label="Category B" value={`${abc.counts.B} items`} color="orange" />
+              <KPICard icon={Layers} label="Category C" value={`${abc.counts.C} items`} color="blue" />
+            </div>
+          </ChartCard>
+          <DataTable title="ABC Item Classification" columns={abcColumns} data={abc.items} />
+        </>
+      )}
 
       {/* ── Slow-Moving / Non-Moving Stock ─────────────────────────────── */}
-      <ChartCard
-        title="Slow-Moving &amp; Non-Moving Stock"
-        subtitle="Days since each item's last real inventory movement (sale, purchase, or stock journal)"
-        style={{ marginTop: 'var(--space-4)' }}
-      >
-        <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={slowMoving.summary} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
-            <XAxis dataKey="bucket" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
-            <Tooltip formatter={(v, name) => (name === 'itemCount' ? [v, 'Items'] : [abbreviateCurrency(v), 'Value'])} />
-            <Bar dataKey="itemCount" radius={[4, 4, 0, 0]} maxBarSize={60}>
-              {slowMoving.summary.map((entry, i) => (
-                <Cell key={i} fill={entry.bucket === 'Active' ? 'var(--accent-primary)' : entry.bucket.startsWith('Non') ? 'var(--danger)' : 'var(--warning)'} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </ChartCard>
-      <DataTable title="Item Movement Detail (oldest first)" columns={slowMovingColumns} data={slowMoving.items} />
+      {activeTab === 'slowmoving' && (
+        <>
+          <ChartCard
+            title="Slow-Moving &amp; Non-Moving Stock"
+            subtitle="Days since each item's last real inventory movement (sale, purchase, or stock journal)"
+          >
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={slowMoving.summary} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
+                <XAxis dataKey="bucket" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+                <Tooltip formatter={(v, name) => (name === 'itemCount' ? [v, 'Items'] : [abbreviateCurrency(v), 'Value'])} />
+                <Bar dataKey="itemCount" radius={[4, 4, 0, 0]} maxBarSize={60}>
+                  {slowMoving.summary.map((entry, i) => (
+                    <Cell key={i} fill={entry.bucket === 'Active' ? 'var(--accent-primary)' : entry.bucket.startsWith('Non') ? 'var(--danger)' : 'var(--warning)'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartCard>
+          <DataTable title="Item Movement Detail (oldest first)" columns={slowMovingColumns} data={slowMoving.items} />
+        </>
+      )}
     </div>
   );
 }
