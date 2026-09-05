@@ -1,6 +1,6 @@
-import { IndianRupee, Users, AlertCircle, Target } from 'lucide-react';
+import { IndianRupee, Users, AlertCircle } from 'lucide-react';
 import KPICard from './KPICard';
-import { abbreviateCurrency, formatNumber, formatPercent } from '../../utils/formatters';
+import { abbreviateCurrency, formatNumber } from '../../utils/formatters';
 
 export default function KPIRow({ metrics, isYearly = false, showBothTrends = false }) {
   const trendLabel = isYearly ? 'vs last year' : 'vs last month';
@@ -32,12 +32,6 @@ export default function KPIRow({ metrics, isYearly = false, showBothTrends = fal
         label="Outstanding Amount"
         value={abbreviateCurrency(metrics.totalOutstanding)}
         color="orange"
-      />
-      <KPICard
-        icon={Target}
-        label="Target Achievement"
-        value={formatPercent(metrics.targetAchievement)}
-        color={metrics.targetAchievement >= 100 ? 'green' : 'red'}
       />
     </div>
   );

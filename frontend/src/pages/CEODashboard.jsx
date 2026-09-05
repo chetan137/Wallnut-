@@ -12,7 +12,6 @@ import ChartCard from '../components/common/ChartCard';
 import { useRole } from '../context/RoleContext';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
 import { abbreviateCurrency } from '../utils/formatters';
-import { stateTarget } from '../data/targetData';
 import {
   getDistrictPerformance,
   getStockCategoryBreakdown,
@@ -37,9 +36,15 @@ function getYearlyKPIMetrics(allData, selectedYear) {
     .filter(d => d.date.startsWith(prevYear))
     .reduce((sum, d) => sum + d.amount, 0);
 
-  const salesTrend = currentYearSales && prevYearSales 
-    ? ((currentYearSales - prevYearSales) / prevYearSales) * 100 
-    : 0;
+  // BUG FIX: this used to fall back to 0 whenever prevYearSales was missing,
+  // which renders as "+0.0%" — indistinguishable from a real "no change"
+  // reading. With real Tally data only going back a few months, that made
+  // every early period look like flat/zero growth instead of "no prior
+  // year to compare against yet". null lets KPICard hide the trend line
+  // entirely instead of showing a misleading number.
+  const salesTrend = prevYearSales > 0
+    ? ((currentYearSales - prevYearSales) / prevYearSales) * 100
+    : null;
 
   const scopedData = selectedYear === 'All' 
     ? allData 
@@ -49,13 +54,9 @@ function getYearlyKPIMetrics(allData, selectedYear) {
   const activeDealers = new Set(scopedData.map(d => d.partyName)).size;
   const totalOutstanding = scopedData.reduce((sum, d) => sum + d.finalOutstanding, 0);
 
-  const yearCount = selectedYear === 'All' ? (yearsWithData.length || 1) : 1;
-  const targetForPeriod = (stateTarget.monthly * 12) * yearCount;
-  const targetAchievement = (totalSales / targetForPeriod) * 100;
-
   // Group scopedData by month key "YYYY-MM" to find the latest month in current scope
   const monthsInScope = [...new Set(scopedData.map(d => d.date.slice(0, 7)).filter(m => m && m.length === 7))].sort();
-  let salesTrendMonth = 0;
+  let salesTrendMonth = null;
   
   if (monthsInScope.length > 0) {
     const currentMonth = monthsInScope[monthsInScope.length - 1]; // e.g. "2026-06"
@@ -78,16 +79,16 @@ function getYearlyKPIMetrics(allData, selectedYear) {
       .filter(d => d.date.startsWith(prevMonthStr))
       .reduce((sum, d) => sum + d.amount, 0);
 
-    salesTrendMonth = currentMonthSales && prevMonthSales
+    // Same fix as salesTrend above — null (hidden) instead of a misleading 0%.
+    salesTrendMonth = prevMonthSales > 0
       ? ((currentMonthSales - prevMonthSales) / prevMonthSales) * 100
-      : 0;
+      : null;
   }
 
   return {
     totalSales,
     activeDealers,
     totalOutstanding,
-    targetAchievement: Math.min(targetAchievement, 150),
     salesTrend,
     salesTrendMonth,
   };
