@@ -29,16 +29,11 @@ export const CAN_CREATE_ROLE = {
   [ROLES.SALES_OFFICER]: null,
 };
 
-// Default users with role-based scopes
+// Single login — only Chetan, CEO role (full access, all pages/data).
+// All the old demo accounts (fake MP-region managers/officers) removed
+// per explicit request: only one real login should exist.
 const DEFAULT_USERS = [
   { id: '0', name: 'Chetan Shende', email: 'chetan137', password: 'chetan.137', role: ROLES.CEO, scope: 'All India', state: null, district: null, salesMan: null },
-  { id: '1', name: 'Vikram Mehta', email: 'ceo@wallnut.in', password: 'admin123', role: ROLES.CEO, scope: 'All India', state: null, district: null, salesMan: null },
-  { id: '2', name: 'Anand Kulkarni', email: 'mp.head@wallnut.in', password: 'state123', role: ROLES.STATE_SALES_HEAD, scope: 'Madhya Pradesh', state: 'Madhya Pradesh', district: null, salesMan: null },
-  { id: '3', name: 'Priya Sharma', email: 'indore.mgr@wallnut.in', password: 'dist123', role: ROLES.DISTRICT_MANAGER, scope: 'Indore', state: 'Madhya Pradesh', district: 'Indore', salesMan: null },
-  { id: '4', name: 'Rahul Joshi', email: 'bhopal.mgr@wallnut.in', password: 'dist123', role: ROLES.DISTRICT_MANAGER, scope: 'Bhopal', state: 'Madhya Pradesh', district: 'Bhopal', salesMan: null },
-  { id: '5', name: 'Rajesh Sharma', email: 'rajesh@wallnut.in', password: 'sales123', role: ROLES.SALES_OFFICER, scope: 'Rajesh Sharma', state: 'Madhya Pradesh', district: 'Indore', salesMan: 'Rajesh Sharma' },
-  { id: '6', name: 'Amit Verma', email: 'amit@wallnut.in', password: 'sales123', role: ROLES.SALES_OFFICER, scope: 'Amit Verma', state: 'Madhya Pradesh', district: 'Indore', salesMan: 'Amit Verma' },
-  { id: '7', name: 'Sunil Patel', email: 'sunil@wallnut.in', password: 'sales123', role: ROLES.SALES_OFFICER, scope: 'Sunil Patel', state: 'Madhya Pradesh', district: 'Bhopal', salesMan: 'Sunil Patel' },
 ];
 
 const AuthContext = createContext(null);
