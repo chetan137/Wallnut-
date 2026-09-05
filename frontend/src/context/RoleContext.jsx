@@ -80,6 +80,13 @@ export function RoleProvider({ children }) {
   const [syncing, setSyncing] = useState(false);
   const [lastSync, setLastSync] = useState(null);
 
+  // Summary of the most recent MANUAL sync (records fetched, source, per-year
+  // breakdown) so the header can show a plain confirmation of what actually
+  // came in — not just a spinner that silently stops. Only set for manual
+  // clicks (silent=false), not the automatic sync-on-login.
+  const [syncResult, setSyncResult] = useState(null);
+  const dismissSyncResult = useCallback(() => setSyncResult(null), []);
+
   // Core sync function — fetches from Tally (or falls back to local demo data)
   const syncFromTally = useCallback(async (silent = false) => {
     if (!silent) setSyncing(true);
@@ -89,16 +96,34 @@ export function RoleProvider({ children }) {
       const json = await res.json();
       // Always apply backend data — whether live Tally/Postgres or local fallback
       if (json.ok && Array.isArray(json.data?.salesData)) {
-        setSales(json.data.salesData);
+        const records = json.data.salesData;
+        setSales(records);
         setDataSource(json.source || 'local');
         const syncTime = json.source === 'tally' || json.source === 'db' ? (json.lastSync || new Date().toISOString()) : null;
         if (syncTime) setLastSync(syncTime);
-        localStorage.setItem('wallnut_sales_records', JSON.stringify(json.data.salesData));
+        localStorage.setItem('wallnut_sales_records', JSON.stringify(records));
         localStorage.setItem('wallnut_data_source', json.source || 'local');
         localStorage.setItem('wallnut_last_sync', syncTime || '');
+
+        if (!silent) {
+          const byYear = {};
+          for (const r of records) {
+            const y = (r.date || '').slice(0, 4);
+            if (y) byYear[y] = (byYear[y] || 0) + 1;
+          }
+          setSyncResult({
+            ok: true,
+            source: json.source || 'local',
+            recordCount: records.length,
+            byYear,
+          });
+        }
+      } else if (!silent) {
+        setSyncResult({ ok: false, error: 'Sync completed but returned no data.' });
       }
     } catch {
       // Backend unreachable — keep existing data
+      if (!silent) setSyncResult({ ok: false, error: 'Could not reach the backend.' });
     } finally {
       if (!silent) setSyncing(false);
       setDataLoading(false);
@@ -445,6 +470,8 @@ export function RoleProvider({ children }) {
     syncing,
     lastSync,
     syncFromTally,
+    syncResult,
+    dismissSyncResult,
   }), [
     currentRole,
     selectedState,
@@ -475,6 +502,8 @@ export function RoleProvider({ children }) {
     syncing,
     lastSync,
     syncFromTally,
+    syncResult,
+    dismissSyncResult,
   ]);
 
   return (
