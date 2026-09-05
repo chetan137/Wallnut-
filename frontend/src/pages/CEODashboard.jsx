@@ -245,15 +245,27 @@ export default function CEODashboard({ data }) {
 
           <div className="charts-row">
             <ChartCard title="All-India State Performance" subtitle="Top states by real sales value">
-              <ResponsiveContainer width="100%" height={260}>
-                <BarChart data={statePerformanceData} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
+              <ResponsiveContainer width="100%" height={290}>
+                <BarChart data={statePerformanceData} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
                   {/* interval={0} — Recharts silently drops tick labels it
                       guesses might collide (its default auto-interval);
                       with only 6 real states this always has room, but
                       auto-skip picked "Uttar Pradesh" (the longest name)
-                      to drop, leaving a blank gap under a real bar. */}
-                  <XAxis dataKey="name" interval={0} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+                      to drop, leaving a blank gap under a real bar.
+                      Full state names ("Uttar Pradesh", "Uttarakhand", ...)
+                      overlap at 0deg with 6 bars sharing this width — angled
+                      + bottom-anchored labels give each name its own room. */}
+                  <XAxis
+                    dataKey="name"
+                    interval={0}
+                    angle={-35}
+                    textAnchor="end"
+                    height={55}
+                    tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
                   <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={(v) => abbreviateCurrency(v)} />
                   <Tooltip formatter={(v) => abbreviateCurrency(v)} />
                   {/* Magnitude comparison across nominal categories (states) —
