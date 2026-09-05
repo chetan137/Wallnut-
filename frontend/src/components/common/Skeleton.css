@@ -1,0 +1,32 @@
+.skeleton-block {
+  background: linear-gradient(90deg, var(--card-border) 25%, #EDEAE0 37%, var(--card-border) 63%);
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.4s ease infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0%   { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-block {
+    animation: none;
+    background: var(--card-border);
+  }
+}
+
+.skeleton-kpi-card {
+  cursor: default;
+}
+
+.skeleton-chart-card .chart-card-header {
+  margin-bottom: var(--space-4);
+}
+
+.skeleton-table-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+}

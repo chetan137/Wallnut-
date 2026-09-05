@@ -4,6 +4,7 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 import ChartCard from '../components/common/ChartCard';
 import DataTable from '../components/common/DataTable';
 import KPICard from '../components/cards/KPICard';
+import { SkeletonKPIRow, SkeletonChartCard, SkeletonTable } from '../components/common/Skeleton';
 import { abbreviateCurrency, formatNumber, formatDate } from '../utils/formatters';
 import './StateSalesHeadDashboard.css'; // Share layout CSS
 
@@ -89,7 +90,20 @@ export default function FinancialsPage() {
   ], []);
 
   if (loading) {
-    return <div className="ssh-dashboard" id="financials-page">Loading financial data…</div>;
+    return (
+      <div className="ssh-dashboard" id="financials-page">
+        <h2 style={{ marginBottom: 'var(--space-4)' }}>Financial Overview</h2>
+        <SkeletonKPIRow count={4} />
+        <div className="charts-row" style={{ marginTop: 'var(--space-4)' }}>
+          <SkeletonChartCard />
+          <SkeletonTable />
+        </div>
+        <div className="charts-row" style={{ marginTop: 'var(--space-4)' }}>
+          <SkeletonChartCard />
+          <SkeletonTable />
+        </div>
+      </div>
+    );
   }
 
   if (error) {
