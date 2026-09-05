@@ -10,7 +10,7 @@ import DistrictPerformanceTable from '../components/tables/DistrictPerformanceTa
 import DealerPerformanceTable from '../components/tables/DealerPerformanceTable';
 import ChartCard from '../components/common/ChartCard';
 import { useRole } from '../context/RoleContext';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { abbreviateCurrency } from '../utils/formatters';
 import {
   getDistrictPerformance,
@@ -164,15 +164,27 @@ export default function CEODashboard({ data }) {
   const highOutstanding = useMemo(() => getHighOutstandingDealers(filteredData, 8), [filteredData]);
   const dealerSummary = useMemo(() => getDealerPerformanceSummary(filteredData), [filteredData]);
 
+  // BUG FIX: this used to take the single totalSales figure and fabricate
+  // 4 fixed states from it — "Madhya Pradesh" got 100% of it, "Maharashtra"/
+  // "Gujarat"/"Rajasthan" got arbitrary fractions (0.75/0.55/0.4) of the
+  // SAME number, labeled 'Active'/'Proposed'. None of it was real per-state
+  // data. Verified against live Tally data: Kerala is the real #1 state
+  // (~5.3Cr) and doesn't appear at all in the old fake list; "Madhya
+  // Pradesh" for real is ~7.6L, not the ~18Cr the fake formula produced.
+  // Replaced with a real aggregation of filteredData by state, top 6 by
+  // actual sales — this is a magnitude comparison, so one hue (not a fake
+  // Active/Proposed distinction with no real data behind it).
   const statePerformanceData = useMemo(() => {
-    const mpSales = metrics.totalSales;
-    return [
-      { name: 'Madhya Pradesh', amount: mpSales, status: 'Active' },
-      { name: 'Maharashtra', amount: Math.round(mpSales * 0.75), status: 'Proposed' },
-      { name: 'Gujarat', amount: Math.round(mpSales * 0.55), status: 'Proposed' },
-      { name: 'Rajasthan', amount: Math.round(mpSales * 0.4), status: 'Proposed' },
-    ];
-  }, [metrics.totalSales]);
+    const grouped = {};
+    for (const row of filteredData) {
+      if (!row.state) continue;
+      grouped[row.state] = (grouped[row.state] || 0) + row.amount;
+    }
+    return Object.entries(grouped)
+      .map(([name, amount]) => ({ name, amount }))
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 6);
+  }, [filteredData]);
 
   const availableYears = useMemo(() => {
     const years = new Set(data.map(d => d.date.slice(0, 4)).filter(y => y && y.length === 4));
@@ -235,18 +247,17 @@ export default function CEODashboard({ data }) {
           </div>
 
           <div className="charts-row">
-            <ChartCard title="All-India State Performance" subtitle="Active vs Expansion Markets">
+            <ChartCard title="All-India State Performance" subtitle="Top states by real sales value">
               <ResponsiveContainer width="100%" height={260}>
                 <BarChart data={statePerformanceData} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
                   <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={(v) => abbreviateCurrency(v)} />
                   <Tooltip formatter={(v) => abbreviateCurrency(v)} />
-                  <Bar dataKey="amount" radius={[4, 4, 0, 0]} maxBarSize={30}>
-                    {statePerformanceData.map((entry, index) => (
-                      <Cell key={index} fill={entry.status === 'Active' ? 'var(--accent-primary)' : 'var(--accent-secondary)'} opacity={entry.status === 'Active' ? 1 : 0.6} />
-                    ))}
-                  </Bar>
+                  {/* Magnitude comparison across nominal categories (states) —
+                      one hue for every bar. Bar height already encodes the
+                      value; a value-ramp here would double-encode it. */}
+                  <Bar dataKey="amount" radius={[4, 4, 0, 0]} maxBarSize={30} fill="var(--accent-primary)" />
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>
