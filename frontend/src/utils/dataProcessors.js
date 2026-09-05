@@ -8,43 +8,86 @@ import { districtTargets, salesOfficerTargets, stateTarget } from '../data/targe
 
 /**
  * Get KPI metrics: total sales, active dealers, outstanding, target achievement.
+ *
+ * @param {Array}  data    - Rows for the selected period (year-scoped or all).
+ * @param {Array}  allData - Full role-scoped dataset used for cross-year trend
+ *                           lookups. Defaults to `data` when not supplied
+ *                           (i.e. when no year filter is active).
+ *
+ * Trends use the calendar-correct previous month (not the second-to-last month
+ * present in filtered data, which breaks when a filter skips months).
+ * Returns null for a trend when no prior-period rows exist — avoids misleading
+ * "+0.0%" badges that look like "no change" but actually mean "no data".
  */
-export function getKPIMetrics(data) {
-  const totalSales = data.reduce((sum, d) => sum + d.amount, 0);
-  const activeDealers = new Set(data.map(d => d.partyName)).size;
+export function getKPIMetrics(data, allData = data) {
+  const totalSales       = data.reduce((sum, d) => sum + d.amount, 0);
+  const activeDealers    = new Set(data.map(d => d.partyName)).size;
   const totalOutstanding = data.reduce((sum, d) => sum + d.finalOutstanding, 0);
 
-  // Compute target achievement based on total monthly target vs actual
-  // Use average monthly sales over the data period
-  const months = new Set(data.map(d => getMonthKey(d.date)));
+  // Target achievement
+  const months     = new Set(data.map(d => getMonthKey(d.date)));
   const monthCount = months.size || 1;
-  const avgMonthlySales = totalSales / monthCount;
+  const avgMonthlySales   = totalSales / monthCount;
   const targetAchievement = (avgMonthlySales / stateTarget.monthly) * 100;
 
-  // Get previous month sales for trend
+  // Latest month present in selected-period data  e.g. "2026-06"
   const sortedMonths = [...months].sort();
-  const currentMonth = sortedMonths[sortedMonths.length - 1];
-  const prevMonth = sortedMonths[sortedMonths.length - 2];
+  const currentMonth = sortedMonths[sortedMonths.length - 1] || null;
 
-  const currentMonthSales = data
-    .filter(d => getMonthKey(d.date) === currentMonth)
-    .reduce((sum, d) => sum + d.amount, 0);
+  // Calendar-correct previous month (handles Jan → Dec of prior year)
+  let prevMonthKey = null;
+  if (currentMonth) {
+    const [cYear, cMonth] = currentMonth.split('-').map(Number);
+    const pMonth = cMonth === 1 ? 12 : cMonth - 1;
+    const pYear  = cMonth === 1 ? cYear - 1 : cYear;
+    prevMonthKey = `${pYear}-${String(pMonth).padStart(2, '0')}`;
+  }
 
-  const prevMonthSales = prevMonth
-    ? data.filter(d => getMonthKey(d.date) === prevMonth).reduce((sum, d) => sum + d.amount, 0)
-    : 0;
+  // Same month one year ago  e.g. "2025-06"
+  const prevYearMonthKey = currentMonth
+    ? `${Number(currentMonth.slice(0, 4)) - 1}-${currentMonth.slice(5, 7)}`
+    : null;
 
-  const salesTrend = percentChange(currentMonthSales, prevMonthSales);
+  // Current + prev month rows come from scoped `data`;
+  // prev-year month rows come from `allData` so they are found even when
+  // `data` is year-filtered and contains no rows from the prior year.
+  const rowsFromData   = (key) => key ? data.filter(d    => getMonthKey(d.date) === key) : [];
+  const rowsFromAll    = (key) => key ? allData.filter(d => getMonthKey(d.date) === key) : [];
+
+  const sumAmt = (rows) => rows.reduce((s, d) => s + d.amount, 0);
+  const sumOut = (rows) => rows.reduce((s, d) => s + d.finalOutstanding, 0);
+  const cntDlr = (rows) => new Set(rows.map(d => d.partyName)).size;
+
+  const curRows  = rowsFromData(currentMonth);
+  const prevRows = rowsFromData(prevMonthKey);
+  const pyrRows  = rowsFromAll(prevYearMonthKey);  // ← from allData, not data
+
+  const currentMonthSales = sumAmt(curRows);
+  const prevMonthSales    = sumAmt(prevRows);
+
+  const salesTrendMonth       = prevRows.length > 0 ? percentChange(currentMonthSales, prevMonthSales)     : null;
+  const salesTrend            = pyrRows.length  > 0 ? percentChange(currentMonthSales, sumAmt(pyrRows))    : null;
+  const dealersTrendMonth     = prevRows.length > 0 ? percentChange(cntDlr(curRows),   cntDlr(prevRows))   : null;
+  const dealersTrend          = pyrRows.length  > 0 ? percentChange(cntDlr(curRows),   cntDlr(pyrRows))    : null;
+  const outstandingTrendMonth = prevRows.length > 0 ? percentChange(sumOut(curRows),   sumOut(prevRows))   : null;
+  const outstandingTrend      = pyrRows.length  > 0 ? percentChange(sumOut(curRows),   sumOut(pyrRows))    : null;
 
   return {
     totalSales,
     activeDealers,
     totalOutstanding,
-    targetAchievement: Math.min(targetAchievement, 150), // cap at 150%
-    salesTrend,
+    targetAchievement: Math.min(targetAchievement, 150),
     currentMonthSales,
     prevMonthSales,
     monthCount,
+    // vs last month
+    salesTrendMonth,
+    dealersTrendMonth,
+    outstandingTrendMonth,
+    // vs last year (same calendar month)
+    salesTrend,
+    dealersTrend,
+    outstandingTrend,
   };
 }
 
@@ -415,4 +458,3 @@ export function getDistrictPerformanceForMap(data, stateName) {
     return acc;
   }, {});
 }
-
