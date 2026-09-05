@@ -132,7 +132,7 @@ export default function AnalyticsPage() {
     <div className="ssh-dashboard" id="analytics-page">
       <h2 style={{ marginBottom: 'var(--space-1)' }}>Sales &amp; Inventory Analytics</h2>
       <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-4)', marginTop: 0 }}>
-        Samjhe kaun se customers aur products sabse zyada revenue de rahe hain, aur kaun sa stock band pada hai.
+        See which customers and products drive the most revenue, and which stock has been sitting idle.
       </p>
 
       {/* ── Pareto (80/20) ─────────────────────────────────────────────── */}
@@ -141,28 +141,28 @@ export default function AnalyticsPage() {
           icon={Trophy}
           label="Top Customers (80% Revenue)"
           value={`${pareto.topCustomerCount} / ${pareto.customers.length}`}
-          description={`Sirf ${pareto.topCustomerCount} customers total revenue ka 80% de rahe hain — inhe priority do`}
+          description={`Only ${pareto.topCustomerCount} customers generate 80% of total revenue — prioritise them`}
           color="green"
         />
         <KPICard
           icon={Trophy}
           label="Top Products (80% Revenue)"
           value={`${pareto.topProductCount} / ${pareto.products.length}`}
-          description={`Sirf ${pareto.topProductCount} products 80% revenue generate kar rahe hain — focus yahan karo`}
+          description={`Only ${pareto.topProductCount} products account for 80% of revenue — keep these in stock`}
           color="green"
         />
         <KPICard
           icon={Package}
           label="A-Category (Best Sellers)"
           value={formatNumber(abc.counts.A)}
-          description="Highest sales wale items — hamesha stock mein rakhna zaroori hai"
+          description="Top-selling items — always keep these in stock"
           color="green"
         />
         <KPICard
           icon={PackageX}
           label="Dead Stock (1+ Year)"
           value={formatNumber(slowMoving.summary.find((s) => s.bucket.startsWith('Non'))?.itemCount || 0)}
-          description="365+ din se koi movement nahi — capital phas raha hai, action lo"
+          description="No movement in 365+ days — capital is tied up, take action"
           color="red"
         />
       </div>
@@ -181,16 +181,16 @@ export default function AnalyticsPage() {
         <>
           <ChartCard
             title="ABC Analysis — Item Classification"
-            subtitle="Kaunsa item kitna important hai? A = best sellers (top 70% revenue), B = average (next 20%), C = slow (baaki 10%)"
+            subtitle="How important is each item? A = best sellers (top 70% revenue), B = average movers (next 20%), C = slow movers (bottom 10%)"
           >
             <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', marginTop: 0 }}>
               Based on sales revenue contribution, not inventory holding value — Tally's stock sync currently only
               captures group-level rollups (Finished Goods, Raw Material, …), not individual item costs.
             </p>
             <div className="kpi-row stagger-children" style={{ marginBottom: 'var(--space-3)' }}>
-              <KPICard icon={Layers} label="A — Best Sellers" value={`${abc.counts.A} items`} description="Top 70% revenue contribute karte hain" color="green" />
-              <KPICard icon={Layers} label="B — Average Movers" value={`${abc.counts.B} items`} description="Next 20% revenue contribute karte hain" color="orange" />
-              <KPICard icon={Layers} label="C — Slow Movers" value={`${abc.counts.C} items`} description="Baaki 10% revenue, stocks review karo" color="blue" />
+              <KPICard icon={Layers} label="A — Best Sellers" value={`${abc.counts.A} items`} description="Contribute to top 70% of revenue" color="green" />
+              <KPICard icon={Layers} label="B — Average Movers" value={`${abc.counts.B} items`} description="Contribute to the next 20% of revenue" color="orange" />
+              <KPICard icon={Layers} label="C — Slow Movers" value={`${abc.counts.C} items`} description="Bottom 10% of revenue — review these stocks" color="blue" />
             </div>
           </ChartCard>
           <DataTable title="ABC Item Classification" columns={abcColumns} data={abc.items} />
@@ -202,7 +202,7 @@ export default function AnalyticsPage() {
         <>
           <ChartCard
             title="Slow-Moving &amp; Non-Moving Stock"
-            subtitle="Kaun sa stock kitne din se pada hai? Active = theek hai, Slow = dhyan do, Non-Moving = urgent action chahiye"
+            subtitle="How long has each item been sitting? Active = healthy, Slow = needs attention, Non-Moving = urgent action required"
           >
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={slowMoving.summary} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
