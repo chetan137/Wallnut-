@@ -251,7 +251,12 @@ export default function CEODashboard({ data }) {
               <ResponsiveContainer width="100%" height={260}>
                 <BarChart data={statePerformanceData} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+                  {/* interval={0} — Recharts silently drops tick labels it
+                      guesses might collide (its default auto-interval);
+                      with only 6 real states this always has room, but
+                      auto-skip picked "Uttar Pradesh" (the longest name)
+                      to drop, leaving a blank gap under a real bar. */}
+                  <XAxis dataKey="name" interval={0} tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={(v) => abbreviateCurrency(v)} />
                   <Tooltip formatter={(v) => abbreviateCurrency(v)} />
                   {/* Magnitude comparison across nominal categories (states) —
