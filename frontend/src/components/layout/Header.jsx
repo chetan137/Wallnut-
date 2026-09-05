@@ -104,9 +104,15 @@ export default function Header({ onMenuClick }) {
                 <>
                   <div className="sync-result-title success">
                     <CheckCircle2 size={14} />
-                    <span>{syncResult.recordCount.toLocaleString('en-IN')} records synced</span>
+                    <span>
+                      {syncResult.newRecordCount > 0
+                        ? `${syncResult.newRecordCount.toLocaleString('en-IN')} new record${syncResult.newRecordCount === 1 ? '' : 's'} synced`
+                        : 'No new records — already up to date'}
+                    </span>
                   </div>
-                  <div className="sync-result-line">Source: {SOURCE_LABELS[syncResult.source] || syncResult.source}</div>
+                  <div className="sync-result-line">
+                    {syncResult.recordCount.toLocaleString('en-IN')} total · Source: {SOURCE_LABELS[syncResult.source] || syncResult.source}
+                  </div>
                   {Object.keys(syncResult.byYear).length > 0 && (
                     <div className="sync-result-line">
                       {Object.entries(syncResult.byYear)

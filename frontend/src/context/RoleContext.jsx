@@ -3,7 +3,7 @@
  * Manages role-based view switching, district/officer scoping, and mutable sales/complaints/visits states.
  */
 
-import { createContext, useContext, useState, useMemo, useCallback, useEffect } from 'react';
+import { createContext, useContext, useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { salesData } from '../data/salesData';
 import { complaintsData } from '../data/complaintsData';
 import { visitsData } from '../data/visitsData';
@@ -34,6 +34,17 @@ export function RoleProvider({ children }) {
     const saved = localStorage.getItem('wallnut_sales_records');
     return saved ? JSON.parse(saved) : salesData;
   });
+
+  // Mirrors `sales` so syncFromTally (a stable useCallback with no deps) can
+  // read the pre-sync record set without needing `sales` as a dependency.
+  const salesRef = useRef(sales);
+  useEffect(() => { salesRef.current = sales; }, [sales]);
+
+  // No stable row id comes back from the API (see dbDataService.js), so a
+  // composite of fields that together identify one (voucher, line item) row
+  // stands in for one — good enough to tell "new since last sync" from
+  // "already had this" without needing schema changes on the backend.
+  const recordKey = (r) => `${r.vchNo}|${r.date}|${r.itemName}|${r.amount}|${r.quantity}`;
 
   // Reference lists (states/districts/officers/dealers) are derived from the
   // live `sales` array rather than the static mock — once /api/tally/sync
@@ -106,6 +117,9 @@ export function RoleProvider({ children }) {
         localStorage.setItem('wallnut_last_sync', syncTime || '');
 
         if (!silent) {
+          const previousKeys = new Set(salesRef.current.map(recordKey));
+          const newRecordCount = records.reduce((n, r) => n + (previousKeys.has(recordKey(r)) ? 0 : 1), 0);
+
           const byYear = {};
           for (const r of records) {
             const y = (r.date || '').slice(0, 4);
@@ -115,6 +129,7 @@ export function RoleProvider({ children }) {
             ok: true,
             source: json.source || 'local',
             recordCount: records.length,
+            newRecordCount,
             byYear,
           });
         }
