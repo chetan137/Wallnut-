@@ -42,12 +42,24 @@ function getYearlyKPIMetrics(allData, selectedYear) {
   const currentYear = selectedYear === 'All' ? latestYear : selectedYear;
   const prevYear = String(Number(currentYear) - 1);
 
+  // BUG FIX: this Tally setup has a real ~13-month sync gap (Apr 2025-Mar
+  // 2026 was never synced for either company), so "2026" and "2025" are not
+  // adjacent, comparable years — verified against real data: 2026 only has
+  // Apr-Sep, 2025 only has Jan-Mar, ZERO overlapping calendar months. Any
+  // %-change between two calendar-year buckets like that compares different
+  // parts of the business calendar, not real growth (a Jan-Sep-2026 vs
+  // full-2025 comparison produced a "+41.8%" that was really just "6 months
+  // of one period vs 2 unrelated months of another"). Restrict the
+  // comparison to calendar months that actually appear in BOTH years —
+  // if there's no overlap at all, there's no fair basis for a trend, so
+  // leave it null (hidden) rather than show a number from mismatched data.
   const currentYearRows = allData.filter(d => d.date.startsWith(currentYear));
-  const prevYearRows = allData.filter(d => d.date.startsWith(prevYear));
+  const currentMonthsOfYear = new Set(currentYearRows.map(d => d.date.slice(5, 7)));
+  const prevYearRows = allData.filter(d => d.date.startsWith(prevYear) && currentMonthsOfYear.has(d.date.slice(5, 7)));
 
-  const salesTrend = pctChange(aggSales(currentYearRows), aggSales(prevYearRows));
-  const dealersTrend = pctChange(aggDealers(currentYearRows), aggDealers(prevYearRows));
-  const outstandingTrend = pctChange(aggOutstanding(currentYearRows), aggOutstanding(prevYearRows));
+  const salesTrend = prevYearRows.length > 0 ? pctChange(aggSales(currentYearRows), aggSales(prevYearRows)) : null;
+  const dealersTrend = prevYearRows.length > 0 ? pctChange(aggDealers(currentYearRows), aggDealers(prevYearRows)) : null;
+  const outstandingTrend = prevYearRows.length > 0 ? pctChange(aggOutstanding(currentYearRows), aggOutstanding(prevYearRows)) : null;
 
   const scopedData = selectedYear === 'All'
     ? allData
@@ -76,12 +88,26 @@ function getYearlyKPIMetrics(allData, selectedYear) {
     }
     const prevMonthStr = `${pYear}-${String(pMonth).padStart(2, '0')}`;
 
-    const currentMonthRows = allData.filter(d => d.date.startsWith(currentMonth));
-    const prevMonthRows = allData.filter(d => d.date.startsWith(prevMonthStr));
+    // Same idea as the yearly fix above, one level down: the current month
+    // is usually still in progress, so cap the previous month at the same
+    // day-of-month instead of its full total. But verified against real
+    // data this isn't enough on its own — day-to-day sales here are bursty
+    // (invoices land unevenly through a month, e.g. Aug 1-5 was ~4% of
+    // Aug's eventual total), so a day-cutoff comparison this early in a
+    // month swings wildly in either direction and isn't a real trend yet.
+    // Require at least MIN_DAYS_FOR_MONTH_TREND elapsed before trusting it.
+    const MIN_DAYS_FOR_MONTH_TREND = 10;
+    const currentMonthDates = allData.filter(d => d.date.startsWith(currentMonth)).map(d => d.date);
+    const mtdCutoffDay = currentMonthDates.reduce((a, b) => (a > b ? a : b)).slice(8, 10);
 
-    salesTrendMonth = pctChange(aggSales(currentMonthRows), aggSales(prevMonthRows));
-    dealersTrendMonth = pctChange(aggDealers(currentMonthRows), aggDealers(prevMonthRows));
-    outstandingTrendMonth = pctChange(aggOutstanding(currentMonthRows), aggOutstanding(prevMonthRows));
+    if (Number(mtdCutoffDay) >= MIN_DAYS_FOR_MONTH_TREND) {
+      const currentMonthRows = allData.filter(d => d.date.startsWith(currentMonth) && d.date.slice(8, 10) <= mtdCutoffDay);
+      const prevMonthRows = allData.filter(d => d.date.startsWith(prevMonthStr) && d.date.slice(8, 10) <= mtdCutoffDay);
+
+      salesTrendMonth = pctChange(aggSales(currentMonthRows), aggSales(prevMonthRows));
+      dealersTrendMonth = pctChange(aggDealers(currentMonthRows), aggDealers(prevMonthRows));
+      outstandingTrendMonth = pctChange(aggOutstanding(currentMonthRows), aggOutstanding(prevMonthRows));
+    }
   }
 
   return {

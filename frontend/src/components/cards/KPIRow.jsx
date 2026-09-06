@@ -19,7 +19,7 @@ export default function KPIRow({ metrics, isYearly = false, showBothTrends = fal
       <KPICard
         icon={IndianRupee}
         label="Total Sales"
-        description="Total invoiced sales value in the selected period"
+        description="Gross sell amount — total invoiced value in the selected period"
         value={abbreviateCurrency(metrics.totalSales)}
         trend={showBothTrends ? null : metrics.salesTrend}
         trendLabel={showBothTrends ? null : trendLabel}
