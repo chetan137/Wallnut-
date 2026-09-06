@@ -18,7 +18,14 @@ const API_KEY = import.meta.env.VITE_API_KEY || '';
  * independently of RoleContext's sales sync and shows a clear message
  * rather than fake numbers when the backend isn't on DATA_SOURCE=db.
  */
-function useFinancialsData() {
+/**
+ * @param {string} companyId '' means "all companies" (the historical
+ * default) — Payables/Receivables are party-name totals summed across
+ * every synced company when no companyId is given, e.g. one dealer's real
+ * outstanding can span both an old and a current company. Passing a
+ * specific companyId scopes every fetch to just that one.
+ */
+function useFinancialsData(companyId) {
   const [payables, setPayables] = useState(null);
   const [receivables, setReceivables] = useState(null);
   const [cashFlow, setCashFlow] = useState(null);
@@ -28,15 +35,17 @@ function useFinancialsData() {
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
 
     (async () => {
       try {
         const headers = { 'X-API-Key': API_KEY };
+        const qs = companyId ? `?companyId=${encodeURIComponent(companyId)}` : '';
         const [payablesRes, receivablesRes, cashFlowRes, financialsRes] = await Promise.all([
-          fetch('/api/tally/payables', { headers }).then((r) => r.json()),
-          fetch('/api/tally/receivables-aging', { headers }).then((r) => r.json()),
-          fetch('/api/tally/cashflow', { headers }).then((r) => r.json()),
-          fetch('/api/tally/financials', { headers }).then((r) => r.json()),
+          fetch(`/api/tally/payables${qs}`, { headers }).then((r) => r.json()),
+          fetch(`/api/tally/receivables-aging${qs}`, { headers }).then((r) => r.json()),
+          fetch(`/api/tally/cashflow${qs}`, { headers }).then((r) => r.json()),
+          fetch(`/api/tally/financials${qs}`, { headers }).then((r) => r.json()),
         ]);
         if (cancelled) return;
 
@@ -59,9 +68,25 @@ function useFinancialsData() {
     })();
 
     return () => { cancelled = true; };
-  }, []);
+  }, [companyId]);
 
   return { payables, receivables, cashFlow, financials, loading, error };
+}
+
+/** '' = All Companies (combined) — matches the default backend behavior. */
+function useCompanyList() {
+  const [companies, setCompanies] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/tally/companies', { headers: { 'X-API-Key': API_KEY } })
+      .then((r) => r.json())
+      .then((json) => { if (!cancelled && json.ok) setCompanies(json.data); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+
+  return companies;
 }
 
 const AGING_ORDER = ['Not Due', '1-30 days', '31-60 days', '61-90 days', '90+ days'];
@@ -72,8 +97,56 @@ const FINANCIALS_TABS = [
   { key: 'plbs', label: 'P&L / Balance Sheet' },
 ];
 
+/**
+ * Payables/Receivables totals combine every synced company by default (one
+ * dealer's outstanding can span an old and a current company) — this lets
+ * whoever's looking at the page narrow to a single company to match what
+ * they see when they open that one company in Tally directly.
+ */
+function CompanyFilterBar({ companies, selectedCompanyId, onChange }) {
+  return (
+    <div className="dashboard-control-bar" style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 'var(--space-4)',
+      padding: '10px 16px',
+      background: 'var(--card-bg)',
+      border: '1px solid var(--card-border)',
+      borderRadius: 'var(--border-radius-lg)',
+    }}>
+      <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+        COMPANY
+      </span>
+      <select
+        value={selectedCompanyId}
+        onChange={(e) => onChange(e.target.value)}
+        style={{
+          padding: '6px 14px',
+          borderRadius: '6px',
+          background: 'var(--bg-main)',
+          color: 'var(--text-main)',
+          border: '1px solid var(--card-border)',
+          fontFamily: 'inherit',
+          fontSize: '12px',
+          fontWeight: '600',
+          cursor: 'pointer',
+          outline: 'none',
+        }}
+      >
+        <option value="">All Companies (combined)</option>
+        {companies.map((c) => (
+          <option key={c.id} value={c.id}>{c.name}</option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 export default function FinancialsPage() {
-  const { payables, receivables, cashFlow, financials, loading, error } = useFinancialsData();
+  const companies = useCompanyList();
+  const [selectedCompanyId, setSelectedCompanyId] = useState('');
+  const { payables, receivables, cashFlow, financials, loading, error } = useFinancialsData(selectedCompanyId);
   const [activeTab, setActiveTab] = useState('payables');
 
   const payablesAgingData = useMemo(() => {
@@ -101,6 +174,7 @@ export default function FinancialsPage() {
     return (
       <div className="ssh-dashboard" id="financials-page">
         <h2 style={{ marginBottom: 'var(--space-4)' }}>Financial Overview</h2>
+        <CompanyFilterBar companies={companies} selectedCompanyId={selectedCompanyId} onChange={setSelectedCompanyId} />
         <SkeletonKPIRow count={4} />
         <div className="charts-row" style={{ marginTop: 'var(--space-4)' }}>
           <SkeletonChartCard />
@@ -117,6 +191,8 @@ export default function FinancialsPage() {
   if (error) {
     return (
       <div className="ssh-dashboard" id="financials-page">
+        <h2 style={{ marginBottom: 'var(--space-4)' }}>Financial Overview</h2>
+        <CompanyFilterBar companies={companies} selectedCompanyId={selectedCompanyId} onChange={setSelectedCompanyId} />
         <ChartCard title="Financial Overview unavailable">
           <p style={{ color: 'var(--text-muted)' }}>{error}</p>
         </ChartCard>
@@ -127,6 +203,7 @@ export default function FinancialsPage() {
   return (
     <div className="ssh-dashboard" id="financials-page">
       <h2 style={{ marginBottom: 'var(--space-4)' }}>Financial Overview</h2>
+      <CompanyFilterBar companies={companies} selectedCompanyId={selectedCompanyId} onChange={setSelectedCompanyId} />
 
       <div className="kpi-row stagger-children">
         <KPICard icon={Wallet} label="Total Payable" value={abbreviateCurrency(payables.totalPayable)} color="orange" />
