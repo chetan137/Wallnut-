@@ -8,11 +8,33 @@ import KPICard from '../components/cards/KPICard';
 import CompanyFilterBar, { useCompanyList } from '../components/common/CompanyFilterBar';
 import { SkeletonKPIRow, SkeletonTable } from '../components/common/Skeleton';
 import { abbreviateCurrency, formatNumber, formatDate } from '../utils/formatters';
+import wallnutLogo from '../assets/logo.png';
 import './StateSalesHeadDashboard.css'; // Share layout CSS
 import './EwayBillsPage.css';
 
 // Sent as X-API-Key — must match VITE_API_KEY used elsewhere.
 const API_KEY = import.meta.env.VITE_API_KEY || '';
+
+// Real dimensions of assets/logo.png (260x92) — used to size it in the PDF
+// without distorting the aspect ratio.
+const LOGO_ASPECT_RATIO = 260 / 92;
+
+/** Loads an image URL into a PNG data URL jsPDF's addImage() can embed. */
+function loadImageAsDataUrl(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      canvas.getContext('2d').drawImage(img, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = reject;
+    img.src = src;
+  });
+}
 
 /** Small colored pill for table cells — success (green) / warning (amber) / muted (plain "—"). */
 function StatusBadge({ variant, icon: Icon, children }) {
@@ -109,55 +131,125 @@ export default function EwayBillsPage() {
     return companies.find((c) => String(c.id) === String(selectedCompanyId))?.name || 'Selected Company';
   }, [companies, selectedCompanyId]);
 
+  const [pdfGenerating, setPdfGenerating] = useState(false);
+
   // Builds the PDF from whatever is CURRENTLY on screen — filteredBills is
   // the same real, live data the table renders (already scoped by the
-  // company/year filters above), never a separate/demo dataset.
-  const handleDownloadPdf = useCallback(() => {
-    const doc = new jsPDF({ orientation: 'landscape' });
+  // company/year filters above), never a separate/demo dataset. Standard
+  // business-document layout: branded letterhead (real Wallnut logo, real
+  // registered company name), a rule under the header, then the summary
+  // and register, with a page-numbered footer on every page.
+  const handleDownloadPdf = useCallback(async () => {
+    setPdfGenerating(true);
+    try {
+      const logoDataUrl = await loadImageAsDataUrl(wallnutLogo).catch(() => null);
+      const doc = new jsPDF({ orientation: 'landscape' });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const marginX = 14;
 
-    doc.setFontSize(14);
-    doc.text('e-Way Bills & e-Invoice Register', 14, 15);
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(`Company: ${selectedCompanyName}  |  Year: ${selectedYear}  |  Generated: ${formatDateTime(new Date().toISOString())}`, 14, 21);
+      // ── Letterhead ──────────────────────────────────────────────────────
+      const logoWidth = 30;
+      const logoHeight = logoWidth / LOGO_ASPECT_RATIO;
+      if (logoDataUrl) {
+        doc.addImage(logoDataUrl, 'PNG', marginX, 10, logoWidth, logoHeight);
+      }
 
-    doc.setFontSize(10);
-    doc.setTextColor(0);
-    const summaryLines = [
-      `e-Way Bills Generated: ${formatNumber(metrics.withEwayBill)}`,
-      `e-Invoices Generated: ${formatNumber(metrics.withEInvoice)}`,
-      `Total Invoice Value: ${abbreviateCurrency(metrics.totalInvoiceAmount)}`,
-      `Part B Updated: ${formatNumber(metrics.withPartB)}`,
-      `Part B Pending: ${formatNumber(metrics.withoutPartB)}`,
-    ];
-    doc.text(summaryLines.join('   |   '), 14, 28);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      doc.setTextColor(30);
+      doc.text('Wallnut Building Solutions India Pvt Ltd', marginX + (logoDataUrl ? logoWidth + 6 : 0), 16);
 
-    autoTable(doc, {
-      startY: 34,
-      styles: { fontSize: 7 },
-      headStyles: { fillColor: [61, 168, 85] },
-      head: [[
-        'Date', 'Vch No', 'Party', 'GSTIN', 'Invoice Amount',
-        'e-Invoice', 'e-Way Bill No', 'Valid Upto', 'Transporter', 'Vehicle No', 'Part B',
-      ]],
-      body: filteredBills.map((b) => [
-        formatDate(b.date),
-        b.vchNo,
-        b.partyName,
-        b.partyGstin,
-        abbreviateCurrency(b.invoiceAmount),
-        b.irn ? 'Generated' : '—',
-        b.ewayBillNo || '—',
-        b.validUpto ? formatDateTime(b.validUpto) : '—',
-        b.transporterName || '—',
-        b.vehicleNumber || '—',
-        b.ewayBillNo ? (b.hasPartB ? 'Yes' : 'Pending') : '—',
-      ]),
-    });
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(120);
+      doc.text('create bonds, forever', marginX + (logoDataUrl ? logoWidth + 6 : 0), 21);
 
-    const yearSuffix = selectedYear === 'All' ? 'all-years' : selectedYear;
-    const companySuffix = selectedCompanyId ? `company-${selectedCompanyId}` : 'all-companies';
-    doc.save(`eway-bills-${companySuffix}-${yearSuffix}.pdf`);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.setTextColor(30);
+      doc.text('e-Way Bill / e-Invoice Register', pageWidth - marginX, 16, { align: 'right' });
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(100);
+      doc.text(
+        `Company: ${selectedCompanyName}   |   Year: ${selectedYear}   |   Generated: ${formatDateTime(new Date().toISOString())}`,
+        pageWidth - marginX, 22, { align: 'right' }
+      );
+
+      doc.setDrawColor(61, 168, 85);
+      doc.setLineWidth(0.6);
+      doc.line(marginX, 27, pageWidth - marginX, 27);
+
+      // ── Summary ─────────────────────────────────────────────────────────
+      doc.setFontSize(9);
+      doc.setTextColor(0);
+      const summaryLines = [
+        `e-Way Bills Generated: ${formatNumber(metrics.withEwayBill)}`,
+        `e-Invoices Generated: ${formatNumber(metrics.withEInvoice)}`,
+        `Total Invoice Value: ${abbreviateCurrency(metrics.totalInvoiceAmount)}`,
+        `Part B Updated: ${formatNumber(metrics.withPartB)}`,
+        `Part B Pending: ${formatNumber(metrics.withoutPartB)}`,
+      ];
+      doc.text(summaryLines.join('    |    '), marginX, 34);
+
+      // ── Register table + page-numbered footer ──────────────────────────
+      autoTable(doc, {
+        startY: 40,
+        margin: { left: marginX, right: marginX, bottom: 16 },
+        styles: { fontSize: 7 },
+        headStyles: { fillColor: [61, 168, 85], textColor: 255 },
+        alternateRowStyles: { fillColor: [246, 248, 245] },
+        head: [[
+          'Date', 'Vch No', 'Party', 'GSTIN', 'Invoice Amount',
+          'e-Invoice', 'e-Way Bill No', 'Valid Upto', 'Transporter', 'Vehicle No', 'Part B',
+        ]],
+        body: filteredBills.map((b) => [
+          formatDate(b.date),
+          b.vchNo,
+          b.partyName,
+          b.partyGstin,
+          abbreviateCurrency(b.invoiceAmount),
+          b.irn ? 'Generated' : '—',
+          b.ewayBillNo || '—',
+          b.validUpto ? formatDateTime(b.validUpto) : '—',
+          b.transporterName || '—',
+          b.vehicleNumber || '—',
+          b.ewayBillNo ? (b.hasPartB ? 'Yes' : 'Pending') : '—',
+        ]),
+        didDrawPage: () => {
+          const pageHeight = doc.internal.pageSize.getHeight();
+          doc.setDrawColor(220);
+          doc.setLineWidth(0.2);
+          doc.line(marginX, pageHeight - 12, pageWidth - marginX, pageHeight - 12);
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8);
+          doc.setTextColor(140);
+          doc.text('Wallnut Building Solutions India Pvt Ltd — Confidential', marginX, pageHeight - 7);
+          // "of Y" needs a second pass below — the final page count isn't
+          // known yet while earlier pages are still being drawn.
+        },
+      });
+
+      // Second pass: now that every page exists, go back and stamp the real
+      // "Page X of Y" on each one (can't be done in didDrawPage above — the
+      // total page count isn't final until the whole table has been laid out).
+      const totalPages = doc.internal.getNumberOfPages();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(140);
+        doc.text(`Page ${i} of ${totalPages}`, pageWidth - marginX, pageHeight - 7, { align: 'right' });
+      }
+
+      const yearSuffix = selectedYear === 'All' ? 'all-years' : selectedYear;
+      const companySuffix = selectedCompanyId ? `company-${selectedCompanyId}` : 'all-companies';
+      doc.save(`eway-bills-${companySuffix}-${yearSuffix}.pdf`);
+    } finally {
+      setPdfGenerating(false);
+    }
   }, [filteredBills, metrics, selectedCompanyName, selectedCompanyId, selectedYear]);
 
   const columns = useMemo(() => [
@@ -225,13 +317,13 @@ export default function EwayBillsPage() {
             </select>
           </div>
           <button
-            className="header-sync-btn"
+            className={`header-sync-btn ${pdfGenerating ? 'spinning' : ''}`}
             onClick={handleDownloadPdf}
-            disabled={filteredBills.length === 0}
+            disabled={filteredBills.length === 0 || pdfGenerating}
             title={filteredBills.length === 0 ? 'No rows to export' : 'Download this register as a PDF'}
           >
             <Download size={14} />
-            <span>Download PDF</span>
+            <span>{pdfGenerating ? 'Generating…' : 'Download PDF'}</span>
           </button>
         </div>
       </div>
