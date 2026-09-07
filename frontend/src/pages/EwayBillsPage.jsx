@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { FileCheck, Truck, CheckCircle2, AlertCircle } from 'lucide-react';
+import { FileCheck, FileSignature, Truck, CheckCircle2, AlertCircle } from 'lucide-react';
 import ChartCard from '../components/common/ChartCard';
 import DataTable from '../components/common/DataTable';
 import KPICard from '../components/cards/KPICard';
@@ -65,11 +65,15 @@ export default function EwayBillsPage() {
   }, [data, selectedYear]);
 
   const metrics = useMemo(() => {
-    const totalCount = filteredBills.length;
     const totalInvoiceAmount = filteredBills.reduce((s, b) => s + Number(b.invoiceAmount || 0), 0);
+    const withEwayBill = filteredBills.filter((b) => b.ewayBillNo).length;
+    const withEInvoice = filteredBills.filter((b) => b.irn).length;
     const withPartB = filteredBills.filter((b) => b.hasPartB).length;
-    const withoutPartB = totalCount - withPartB;
-    return { totalCount, totalInvoiceAmount, withPartB, withoutPartB };
+    // "Pending" only makes sense for vouchers that actually have an e-way
+    // bill — a voucher with only an e-invoice (no e-way bill at all) was
+    // never going to have Part B/transport details in the first place.
+    const withoutPartB = withEwayBill - withPartB;
+    return { totalInvoiceAmount, withEwayBill, withEInvoice, withPartB, withoutPartB };
   }, [filteredBills]);
 
   const columns = useMemo(() => [
@@ -78,19 +82,20 @@ export default function EwayBillsPage() {
     { header: 'Party', accessor: 'partyName' },
     { header: 'GSTIN', accessor: 'partyGstin' },
     { header: 'Invoice Amount', accessor: 'invoiceAmount', numeric: true, render: (v) => abbreviateCurrency(v) },
-    { header: 'e-Way Bill No', accessor: 'ewayBillNo' },
+    { header: 'e-Invoice', accessor: 'irn', render: (v) => (v ? '✅ Generated' : '—') },
+    { header: 'e-Way Bill No', accessor: 'ewayBillNo', render: (v) => v || '—' },
     { header: 'Valid Upto', accessor: 'validUpto', render: (v) => (v ? formatDate(v, 'full') : '—') },
-    { header: 'Transporter', accessor: 'transporterName' },
-    { header: 'Vehicle No', accessor: 'vehicleNumber' },
-    { header: 'Part B', accessor: 'hasPartB', render: (v) => (v ? '✅ Yes' : '⏳ Pending') },
+    { header: 'Transporter', accessor: 'transporterName', render: (v) => v || '—' },
+    { header: 'Vehicle No', accessor: 'vehicleNumber', render: (v) => v || '—' },
+    { header: 'Part B', accessor: 'hasPartB', render: (v, row) => (row.ewayBillNo ? (v ? '✅ Yes' : '⏳ Pending') : '—') },
   ], []);
 
   if (loading) {
     return (
       <div className="ssh-dashboard" id="eway-bills-page">
-        <h2 style={{ marginBottom: 'var(--space-4)' }}>e-Way Bills</h2>
+        <h2 style={{ marginBottom: 'var(--space-4)' }}>e-Way Bills &amp; e-Invoice</h2>
         <CompanyFilterBar companies={companies} selectedCompanyId={selectedCompanyId} onChange={setSelectedCompanyId} />
-        <SkeletonKPIRow count={4} />
+        <SkeletonKPIRow count={5} />
         <SkeletonTable />
       </div>
     );
@@ -99,7 +104,7 @@ export default function EwayBillsPage() {
   if (error) {
     return (
       <div className="ssh-dashboard" id="eway-bills-page">
-        <h2 style={{ marginBottom: 'var(--space-4)' }}>e-Way Bills</h2>
+        <h2 style={{ marginBottom: 'var(--space-4)' }}>e-Way Bills &amp; e-Invoice</h2>
         <CompanyFilterBar companies={companies} selectedCompanyId={selectedCompanyId} onChange={setSelectedCompanyId} />
         <ChartCard title="e-Way Bills unavailable">
           <p style={{ color: 'var(--text-muted)' }}>{error}</p>
@@ -120,7 +125,7 @@ export default function EwayBillsPage() {
         border: '1px solid var(--card-border)',
         borderRadius: 'var(--border-radius-lg)',
       }}>
-        <h2 style={{ margin: 0 }}>e-Way Bills</h2>
+        <h2 style={{ margin: 0 }}>e-Way Bills &amp; e-Invoice</h2>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '500' }}>Select Year:</span>
           <select
@@ -151,36 +156,43 @@ export default function EwayBillsPage() {
 
       <div className="kpi-row stagger-children">
         <KPICard
-          icon={FileCheck}
+          icon={Truck}
           label="e-Way Bills Generated"
           description="Vouchers with a real e-way bill on record for the selected period"
-          value={formatNumber(metrics.totalCount)}
+          value={formatNumber(metrics.withEwayBill)}
           color="green"
         />
         <KPICard
-          icon={Truck}
+          icon={FileSignature}
+          label="e-Invoices Generated"
+          description="Vouchers with a real e-invoice (IRN) on record — includes local sales with no e-way bill"
+          value={formatNumber(metrics.withEInvoice)}
+          color="blue"
+        />
+        <KPICard
+          icon={FileCheck}
           label="Total Invoice Value"
-          description="Sum of invoice amounts for these e-way bills"
+          description="Sum of invoice amounts across these vouchers"
           value={abbreviateCurrency(metrics.totalInvoiceAmount)}
           color="blue"
         />
         <KPICard
           icon={CheckCircle2}
           label="Part B Updated"
-          description="Transport details (vehicle/Part B) already added"
+          description="e-Way bills with transport details (vehicle/Part B) already added"
           value={formatNumber(metrics.withPartB)}
           color="green"
         />
         <KPICard
           icon={AlertCircle}
           label="Part B Pending"
-          description="Transport details not yet added — vehicle assignment still needed"
+          description="e-Way bills still missing transport details — vehicle assignment needed"
           value={formatNumber(metrics.withoutPartB)}
           color="orange"
         />
       </div>
 
-      <DataTable title="e-Way Bill Register" columns={columns} data={filteredBills} id="eway-bills-table" />
+      <DataTable title="e-Way Bill / e-Invoice Register" columns={columns} data={filteredBills} id="eway-bills-table" />
     </div>
   );
 }
