@@ -36,6 +36,91 @@ function loadImageAsDataUrl(src) {
   });
 }
 
+/**
+ * Shared branded letterhead for every PDF this page generates — real logo,
+ * real registered company name, a document-specific title/meta line on the
+ * right, and a rule underneath. Returns the layout constants callers need
+ * (margin, page width, and the Y just below the rule) to lay out content.
+ */
+function drawLetterhead(doc, logoDataUrl, title, meta) {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const marginX = 14;
+  const logoWidth = 30;
+  const logoHeight = logoWidth / LOGO_ASPECT_RATIO;
+  const textX = marginX + (logoDataUrl ? logoWidth + 6 : 0);
+
+  if (logoDataUrl) {
+    doc.addImage(logoDataUrl, 'PNG', marginX, 10, logoWidth, logoHeight);
+  }
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(30);
+  doc.text('Wallnut Building Solutions India Pvt Ltd', textX, 16);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(120);
+  doc.text('create bonds, forever', textX, 21);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(14);
+  doc.setTextColor(30);
+  doc.text(title, pageWidth - marginX, 16, { align: 'right' });
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(100);
+  doc.text(meta, pageWidth - marginX, 22, { align: 'right' });
+
+  doc.setDrawColor(61, 168, 85);
+  doc.setLineWidth(0.6);
+  doc.line(marginX, 27, pageWidth - marginX, 27);
+
+  return { marginX, pageWidth, contentStartY: 34 };
+}
+
+/** Page-numbered footer, stamped on every page once the document is complete. */
+function stampFooter(doc, marginX, pageWidth) {
+  const totalPages = doc.internal.getNumberOfPages();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setDrawColor(220);
+    doc.setLineWidth(0.2);
+    doc.line(marginX, pageHeight - 12, pageWidth - marginX, pageHeight - 12);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(140);
+    doc.text('Wallnut Building Solutions India Pvt Ltd — Confidential', marginX, pageHeight - 7);
+    doc.text(`Page ${i} of ${totalPages}`, pageWidth - marginX, pageHeight - 7, { align: 'right' });
+  }
+}
+
+/** A titled key-value section (e.g. "Invoice Details") — used on the single-bill PDF. */
+function drawSection(doc, marginX, pageWidth, startY, title, rows) {
+  doc.setFillColor(61, 168, 85);
+  doc.rect(marginX, startY, pageWidth - marginX * 2, 7, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(255);
+  doc.text(title, marginX + 3, startY + 5);
+
+  autoTable(doc, {
+    startY: startY + 7,
+    margin: { left: marginX, right: marginX },
+    theme: 'plain',
+    styles: { fontSize: 9, cellPadding: { top: 2, bottom: 2, left: 3, right: 3 } },
+    columnStyles: {
+      0: { fontStyle: 'bold', textColor: [90, 90, 90], cellWidth: 45 },
+      1: { textColor: [20, 20, 20] },
+    },
+    body: rows,
+  });
+
+  return doc.lastAutoTable.finalY + 6;
+}
+
 /** Small colored pill for table cells — success (green) / warning (amber) / muted (plain "—"). */
 function StatusBadge({ variant, icon: Icon, children }) {
   if (variant === 'muted') return <span className="status-badge muted">{children}</span>;
@@ -101,6 +186,11 @@ export default function EwayBillsPage() {
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
   const { data, loading, error } = useEwayBillsData(selectedCompanyId);
   const [selectedYear, setSelectedYear] = useState('All');
+  // Custom date range — narrows further on top of the year filter (both
+  // apply together when set), for "give me exactly this window" downloads
+  // rather than only whole-year chunks.
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
 
   const availableYears = useMemo(() => {
     if (!data) return [];
@@ -110,9 +200,12 @@ export default function EwayBillsPage() {
 
   const filteredBills = useMemo(() => {
     if (!data) return [];
-    if (selectedYear === 'All') return data.bills;
-    return data.bills.filter((b) => String(b.date).startsWith(selectedYear));
-  }, [data, selectedYear]);
+    let rows = data.bills;
+    if (selectedYear !== 'All') rows = rows.filter((b) => String(b.date).startsWith(selectedYear));
+    if (fromDate) rows = rows.filter((b) => String(b.date).slice(0, 10) >= fromDate);
+    if (toDate) rows = rows.filter((b) => String(b.date).slice(0, 10) <= toDate);
+    return rows;
+  }, [data, selectedYear, fromDate, toDate]);
 
   const metrics = useMemo(() => {
     const totalInvoiceAmount = filteredBills.reduce((s, b) => s + Number(b.invoiceAmount || 0), 0);
@@ -131,57 +224,34 @@ export default function EwayBillsPage() {
     return companies.find((c) => String(c.id) === String(selectedCompanyId))?.name || 'Selected Company';
   }, [companies, selectedCompanyId]);
 
+  // One readable description of whatever period filter is active, for both
+  // the PDF's meta line and its filename.
+  const periodLabel = useMemo(() => {
+    if (fromDate || toDate) return `${fromDate || '…'} to ${toDate || '…'}`;
+    return selectedYear === 'All' ? 'All Years' : selectedYear;
+  }, [selectedYear, fromDate, toDate]);
+  const periodSuffix = useMemo(() => {
+    if (fromDate || toDate) return `${fromDate || 'start'}_to_${toDate || 'end'}`;
+    return selectedYear === 'All' ? 'all-years' : selectedYear;
+  }, [selectedYear, fromDate, toDate]);
+
   const [pdfGenerating, setPdfGenerating] = useState(false);
+  const [singleBillGeneratingId, setSingleBillGeneratingId] = useState(null);
 
   // Builds the PDF from whatever is CURRENTLY on screen — filteredBills is
   // the same real, live data the table renders (already scoped by the
-  // company/year filters above), never a separate/demo dataset. Standard
-  // business-document layout: branded letterhead (real Wallnut logo, real
-  // registered company name), a rule under the header, then the summary
-  // and register, with a page-numbered footer on every page.
+  // company/year filters above), never a separate/demo dataset.
   const handleDownloadPdf = useCallback(async () => {
     setPdfGenerating(true);
     try {
       const logoDataUrl = await loadImageAsDataUrl(wallnutLogo).catch(() => null);
       const doc = new jsPDF({ orientation: 'landscape' });
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const marginX = 14;
-
-      // ── Letterhead ──────────────────────────────────────────────────────
-      const logoWidth = 30;
-      const logoHeight = logoWidth / LOGO_ASPECT_RATIO;
-      if (logoDataUrl) {
-        doc.addImage(logoDataUrl, 'PNG', marginX, 10, logoWidth, logoHeight);
-      }
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(11);
-      doc.setTextColor(30);
-      doc.text('Wallnut Building Solutions India Pvt Ltd', marginX + (logoDataUrl ? logoWidth + 6 : 0), 16);
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.setTextColor(120);
-      doc.text('create bonds, forever', marginX + (logoDataUrl ? logoWidth + 6 : 0), 21);
-
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(14);
-      doc.setTextColor(30);
-      doc.text('e-Way Bill / e-Invoice Register', pageWidth - marginX, 16, { align: 'right' });
-
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      doc.setTextColor(100);
-      doc.text(
-        `Company: ${selectedCompanyName}   |   Year: ${selectedYear}   |   Generated: ${formatDateTime(new Date().toISOString())}`,
-        pageWidth - marginX, 22, { align: 'right' }
+      const { marginX, pageWidth, contentStartY } = drawLetterhead(
+        doc, logoDataUrl, 'e-Way Bill / e-Invoice Register',
+        `Company: ${selectedCompanyName}   |   Period: ${periodLabel}   |   Generated: ${formatDateTime(new Date().toISOString())}`
       );
 
-      doc.setDrawColor(61, 168, 85);
-      doc.setLineWidth(0.6);
-      doc.line(marginX, 27, pageWidth - marginX, 27);
-
-      // ── Summary ─────────────────────────────────────────────────────────
+      doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.setTextColor(0);
       const summaryLines = [
@@ -191,11 +261,10 @@ export default function EwayBillsPage() {
         `Part B Updated: ${formatNumber(metrics.withPartB)}`,
         `Part B Pending: ${formatNumber(metrics.withoutPartB)}`,
       ];
-      doc.text(summaryLines.join('    |    '), marginX, 34);
+      doc.text(summaryLines.join('    |    '), marginX, contentStartY);
 
-      // ── Register table + page-numbered footer ──────────────────────────
       autoTable(doc, {
-        startY: 40,
+        startY: contentStartY + 6,
         margin: { left: marginX, right: marginX, bottom: 16 },
         styles: { fontSize: 7 },
         headStyles: { fillColor: [61, 168, 85], textColor: 255 },
@@ -217,40 +286,67 @@ export default function EwayBillsPage() {
           b.vehicleNumber || '—',
           b.ewayBillNo ? (b.hasPartB ? 'Yes' : 'Pending') : '—',
         ]),
-        didDrawPage: () => {
-          const pageHeight = doc.internal.pageSize.getHeight();
-          doc.setDrawColor(220);
-          doc.setLineWidth(0.2);
-          doc.line(marginX, pageHeight - 12, pageWidth - marginX, pageHeight - 12);
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(8);
-          doc.setTextColor(140);
-          doc.text('Wallnut Building Solutions India Pvt Ltd — Confidential', marginX, pageHeight - 7);
-          // "of Y" needs a second pass below — the final page count isn't
-          // known yet while earlier pages are still being drawn.
-        },
       });
 
-      // Second pass: now that every page exists, go back and stamp the real
-      // "Page X of Y" on each one (can't be done in didDrawPage above — the
-      // total page count isn't final until the whole table has been laid out).
-      const totalPages = doc.internal.getNumberOfPages();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      for (let i = 1; i <= totalPages; i++) {
-        doc.setPage(i);
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8);
-        doc.setTextColor(140);
-        doc.text(`Page ${i} of ${totalPages}`, pageWidth - marginX, pageHeight - 7, { align: 'right' });
-      }
+      stampFooter(doc, marginX, pageWidth);
 
-      const yearSuffix = selectedYear === 'All' ? 'all-years' : selectedYear;
       const companySuffix = selectedCompanyId ? `company-${selectedCompanyId}` : 'all-companies';
-      doc.save(`eway-bills-${companySuffix}-${yearSuffix}.pdf`);
+      doc.save(`eway-bills-${companySuffix}-${periodSuffix}.pdf`);
     } finally {
       setPdfGenerating(false);
     }
-  }, [filteredBills, metrics, selectedCompanyName, selectedCompanyId, selectedYear]);
+  }, [filteredBills, metrics, selectedCompanyName, selectedCompanyId, periodLabel, periodSuffix]);
+
+  // One bill, one document — the real per-voucher data (never a mock), laid
+  // out like an actual compliance record instead of a spreadsheet row:
+  // Invoice Details always, then e-Invoice / e-Way Bill / Transport sections
+  // only for whichever of those two this specific voucher actually has.
+  const handleDownloadSingleBillPdf = useCallback(async (bill) => {
+    setSingleBillGeneratingId(bill.vchNo);
+    try {
+      const logoDataUrl = await loadImageAsDataUrl(wallnutLogo).catch(() => null);
+      const doc = new jsPDF({ orientation: 'portrait' });
+      const { marginX, pageWidth, contentStartY } = drawLetterhead(
+        doc, logoDataUrl, 'e-Way Bill / e-Invoice Copy', `Voucher: ${bill.vchNo}`
+      );
+
+      let y = drawSection(doc, marginX, pageWidth, contentStartY, 'Invoice Details', [
+        ['Voucher No', bill.vchNo],
+        ['Voucher Type', bill.vchType || '—'],
+        ['Date', formatDate(bill.date)],
+        ['Party Name', bill.partyName || '—'],
+        ['Party GSTIN', bill.partyGstin || '—'],
+        ['Invoice Amount', abbreviateCurrency(bill.invoiceAmount)],
+      ]);
+
+      if (bill.irn) {
+        y = drawSection(doc, marginX, pageWidth, y, 'e-Invoice Details', [
+          ['IRN', bill.irn],
+          ['Status', 'Generated'],
+        ]);
+      }
+
+      if (bill.ewayBillNo) {
+        y = drawSection(doc, marginX, pageWidth, y, 'e-Way Bill Details', [
+          ['e-Way Bill No', bill.ewayBillNo],
+          ['Document Type', bill.documentType || '—'],
+          ['Valid Upto', bill.validUpto ? formatDateTime(bill.validUpto) : '—'],
+        ]);
+
+        drawSection(doc, marginX, pageWidth, y, 'Transport Details', [
+          ['Transporter', bill.transporterName || '—'],
+          ['Vehicle No', bill.vehicleNumber || '—'],
+          ['Distance (km)', bill.distanceKm != null ? String(bill.distanceKm) : '—'],
+          ['Part B', bill.hasPartB ? 'Yes' : 'Pending'],
+        ]);
+      }
+
+      stampFooter(doc, marginX, pageWidth);
+      doc.save(`bill-${bill.vchNo.replace(/[^a-z0-9]+/gi, '-')}.pdf`);
+    } finally {
+      setSingleBillGeneratingId(null);
+    }
+  }, []);
 
   const columns = useMemo(() => [
     { header: 'Date', accessor: 'date', render: (v) => formatDate(v) },
@@ -277,7 +373,20 @@ export default function EwayBillsPage() {
           : <StatusBadge variant="warning" icon={Clock}>Pending</StatusBadge>;
       },
     },
-  ], []);
+    {
+      header: 'PDF', accessor: '_pdf',
+      render: (_, row) => (
+        <button
+          className="eway-bills-row-download"
+          onClick={() => handleDownloadSingleBillPdf(row)}
+          disabled={singleBillGeneratingId === row.vchNo}
+          title="Download this bill as its own PDF"
+        >
+          <Download size={12} />
+        </button>
+      ),
+    },
+  ], [handleDownloadSingleBillPdf, singleBillGeneratingId]);
 
   if (loading) {
     return (
@@ -315,6 +424,29 @@ export default function EwayBillsPage() {
                 <option key={year} value={year}>{year}</option>
               ))}
             </select>
+          </div>
+          <div className="eway-bills-year-select">
+            <label htmlFor="eway-bills-from">Date Range:</label>
+            <input
+              id="eway-bills-from" type="date" value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              max={toDate || undefined}
+            />
+            <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>to</span>
+            <input
+              id="eway-bills-to" type="date" value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              min={fromDate || undefined}
+            />
+            {(fromDate || toDate) && (
+              <button
+                className="eway-bills-row-download"
+                onClick={() => { setFromDate(''); setToDate(''); }}
+                title="Clear date range"
+              >
+                ✕
+              </button>
+            )}
           </div>
           <button
             className={`header-sync-btn ${pdfGenerating ? 'spinning' : ''}`}

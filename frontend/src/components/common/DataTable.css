@@ -3,6 +3,13 @@
   border: 1px solid var(--card-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  /* Flex children default to min-width:auto, so a wide table (many
+     columns) can force this wrapper wider than its column-flex parent
+     (e.g. .ssh-dashboard) instead of shrinking to fit — which pushes the
+     WHOLE PAGE into horizontal scroll rather than just this table. min-
+     width:0 lets it shrink properly so the inner overflow-x:auto div
+     (below) is what scrolls, not the page. */
+  min-width: 0;
 }
 
 .data-table-header {

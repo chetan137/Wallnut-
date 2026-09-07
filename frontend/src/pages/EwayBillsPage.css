@@ -51,7 +51,8 @@
   font-weight: 500;
 }
 
-.eway-bills-year-select select {
+.eway-bills-year-select select,
+.eway-bills-year-select input[type="date"] {
   padding: 6px 14px;
   border-radius: 6px;
   background: var(--bg-main);
@@ -68,4 +69,40 @@
 .eway-bills-hint-text {
   cursor: help;
   border-bottom: 1px dashed var(--card-border);
+}
+
+/* Small icon-only button — per-row PDF download, clear-date-range */
+.eway-bills-row-download {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 6px;
+  border: 1px solid var(--card-border);
+  background: var(--bg-main);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.eway-bills-row-download:hover:not(:disabled) {
+  background: var(--accent-primary-light);
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+.eway-bills-row-download:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Defensive safety net — the actual fix for the register table (12
+   columns) pushing the whole page into horizontal scroll is min-width:0
+   on .data-table-wrapper in DataTable.css (a flex-child sizing gotcha,
+   not specific to this page). This just guards against any future
+   overflow on this page doing the same thing. */
+#eway-bills-page {
+  overflow-x: hidden;
 }
