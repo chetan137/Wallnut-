@@ -4,7 +4,7 @@
  */
 
 import { getMonthKey, formatMonthKey, percentChange } from './formatters';
-import { districtTargets, salesOfficerTargets, stateTarget } from '../data/targetData';
+import { districtTargets, stateTarget } from '../data/targetData';
 
 /**
  * Get KPI metrics: total sales, active dealers, outstanding, target achievement.
@@ -226,35 +226,38 @@ export function getTopProducts(data, limit = 10) {
 
 /**
  * Top sales officers by amount.
+ *
+ * BUG FIX: this used to group EVERY row under grouped[row.salesMan] with no
+ * check for a blank value — real Tally data only recently started carrying
+ * a real salesMan (via the Cost Centre allocation, not narration; see
+ * tallybackend/tally/parsers.js), so before that fix 100% of rows had an
+ * empty salesMan and every real dealer/amount got silently folded into one
+ * "(Unassigned)" bucket masquerading as an officer. Now excluded entirely —
+ * this ranking is specifically about named officers, not unattributed
+ * revenue. Also dropped the target-achievement % this used to show:
+ * salesOfficerTargets (data/targetData.js) is hardcoded mock data for
+ * fictional officers that never matches a real Tally name, so every real
+ * officer always showed a fabricated "Target: 0.0%" — same class of fake
+ * data as the Target Achievement KPI removed elsewhere on this dashboard.
  */
 export function getTopSalesOfficers(data, limit = 10) {
   const grouped = {};
 
   for (const row of data) {
+    if (!row.salesMan) continue;
     if (!grouped[row.salesMan]) {
-      grouped[row.salesMan] = { amount: 0, dealers: new Set(), district: row.areaCity };
+      grouped[row.salesMan] = { amount: 0, dealers: new Set() };
     }
     grouped[row.salesMan].amount += row.amount;
     grouped[row.salesMan].dealers.add(row.partyName);
   }
 
-  const months = new Set(data.map(d => getMonthKey(d.date)));
-  const monthCount = months.size || 1;
-
   return Object.entries(grouped)
-    .map(([name, info]) => {
-      const monthlyTarget = salesOfficerTargets[name] || 0;
-      const avgMonthlySales = info.amount / monthCount;
-      const targetPct = monthlyTarget ? (avgMonthlySales / monthlyTarget) * 100 : 0;
-
-      return {
-        name,
-        amount: info.amount,
-        dealers: info.dealers.size,
-        district: info.district,
-        targetPct: Math.round(targetPct * 10) / 10,
-      };
-    })
+    .map(([name, info]) => ({
+      name,
+      amount: info.amount,
+      dealers: info.dealers.size,
+    }))
     .sort((a, b) => b.amount - a.amount)
     .slice(0, limit);
 }

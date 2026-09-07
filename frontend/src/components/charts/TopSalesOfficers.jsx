@@ -1,23 +1,23 @@
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import ChartCard from '../common/ChartCard';
-import { abbreviateCurrency, formatPercent, truncateLabel } from '../../utils/formatters';
+import { abbreviateCurrency, truncateLabel } from '../../utils/formatters';
 
 function CustomTooltip({ active, payload }) {
   if (!active || !payload?.length) return null;
   const data = payload[0].payload;
   return (
     <div className="custom-tooltip">
-      <div className="custom-tooltip-label">{data.name || '(Unassigned)'}</div>
+      <div className="custom-tooltip-label">{data.name}</div>
       <div className="custom-tooltip-value">{abbreviateCurrency(data.amount)}</div>
       <div style={{ color: 'var(--text-on-dark)', fontSize: 'var(--text-xs)', marginTop: 4 }}>
-        {data.dealers} dealers · Target: {formatPercent(data.targetPct)}
+        {data.dealers} dealers
       </div>
     </div>
   );
 }
 
 export default function TopSalesOfficers({ data }) {
-  const chartData = data.map((d) => ({ ...d, shortName: truncateLabel(d.name || '(Unassigned)', 20) }));
+  const chartData = data.map((d) => ({ ...d, shortName: truncateLabel(d.name, 20) }));
 
   return (
     <ChartCard title="Top Sales Officers" subtitle="Ranking by sales amount">
@@ -48,18 +48,15 @@ export default function TopSalesOfficers({ data }) {
             width={120}
           />
           <Tooltip content={<CustomTooltip />} />
+          {/* Magnitude comparison across named officers — one hue for every
+              bar (no real target data exists to color-code against; see
+              getTopSalesOfficers doc for why the old fake target % was removed). */}
           <Bar
             dataKey="amount"
             radius={[0, 4, 4, 0]}
             maxBarSize={24}
-          >
-            {chartData.map((entry, index) => (
-              <Cell
-                key={index}
-                fill={entry.targetPct >= 100 ? 'var(--accent-primary)' : entry.targetPct >= 80 ? 'var(--warning)' : 'var(--accent-secondary)'}
-              />
-            ))}
-          </Bar>
+            fill="var(--accent-primary)"
+          />
         </BarChart>
       </ResponsiveContainer>
     </ChartCard>
