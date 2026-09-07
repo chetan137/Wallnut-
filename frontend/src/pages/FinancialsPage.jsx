@@ -5,6 +5,7 @@ import ChartCard from '../components/common/ChartCard';
 import DataTable from '../components/common/DataTable';
 import KPICard from '../components/cards/KPICard';
 import TabBar from '../components/common/TabBar';
+import CompanyFilterBar, { useCompanyList } from '../components/common/CompanyFilterBar';
 import { SkeletonKPIRow, SkeletonChartCard, SkeletonTable } from '../components/common/Skeleton';
 import { abbreviateCurrency, formatNumber, formatDate } from '../utils/formatters';
 import './StateSalesHeadDashboard.css'; // Share layout CSS
@@ -73,22 +74,6 @@ function useFinancialsData(companyId) {
   return { payables, receivables, cashFlow, financials, loading, error };
 }
 
-/** '' = All Companies (combined) — matches the default backend behavior. */
-function useCompanyList() {
-  const [companies, setCompanies] = useState([]);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch('/api/tally/companies', { headers: { 'X-API-Key': API_KEY } })
-      .then((r) => r.json())
-      .then((json) => { if (!cancelled && json.ok) setCompanies(json.data); })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, []);
-
-  return companies;
-}
-
 const AGING_ORDER = ['Not Due', '1-30 days', '31-60 days', '61-90 days', '90+ days'];
 
 const FINANCIALS_TABS = [
@@ -96,52 +81,6 @@ const FINANCIALS_TABS = [
   { key: 'receivables', label: 'Receivables' },
   { key: 'plbs', label: 'P&L / Balance Sheet' },
 ];
-
-/**
- * Payables/Receivables totals combine every synced company by default (one
- * dealer's outstanding can span an old and a current company) — this lets
- * whoever's looking at the page narrow to a single company to match what
- * they see when they open that one company in Tally directly.
- */
-function CompanyFilterBar({ companies, selectedCompanyId, onChange }) {
-  return (
-    <div className="dashboard-control-bar" style={{
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: 'var(--space-4)',
-      padding: '10px 16px',
-      background: 'var(--card-bg)',
-      border: '1px solid var(--card-border)',
-      borderRadius: 'var(--border-radius-lg)',
-    }}>
-      <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)' }}>
-        COMPANY
-      </span>
-      <select
-        value={selectedCompanyId}
-        onChange={(e) => onChange(e.target.value)}
-        style={{
-          padding: '6px 14px',
-          borderRadius: '6px',
-          background: 'var(--bg-main)',
-          color: 'var(--text-main)',
-          border: '1px solid var(--card-border)',
-          fontFamily: 'inherit',
-          fontSize: '12px',
-          fontWeight: '600',
-          cursor: 'pointer',
-          outline: 'none',
-        }}
-      >
-        <option value="">All Companies (combined)</option>
-        {companies.map((c) => (
-          <option key={c.id} value={c.id}>{c.name}</option>
-        ))}
-      </select>
-    </div>
-  );
-}
 
 export default function FinancialsPage() {
   const companies = useCompanyList();

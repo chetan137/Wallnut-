@@ -9,6 +9,7 @@ import AboutPage from './pages/AboutPage';
 import CEODashboard from './pages/CEODashboard';
 import FinancialsPage from './pages/FinancialsPage';
 import AnalyticsPage from './pages/AnalyticsPage';
+import EwayBillsPage from './pages/EwayBillsPage';
 import StateSalesHeadDashboard from './pages/StateSalesHeadDashboard';
 import DistrictManagerDashboard from './pages/DistrictManagerDashboard';
 import SalesOfficerDashboard from './pages/SalesOfficerDashboard';
@@ -123,6 +124,17 @@ function MainApp() {
           <ProtectedRoute>
             <DashboardLayout>
               <AnalyticsPage />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/eway-bills"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <EwayBillsPage />
             </DashboardLayout>
           </ProtectedRoute>
         }

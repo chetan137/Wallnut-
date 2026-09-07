@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Network, LogOut, Info, X, Landmark, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, Users, Network, LogOut, Info, X, Landmark, BarChart3, Truck } from 'lucide-react';
 import { useRole, ROLES } from '../../context/RoleContext';
 import { useAuth } from '../../context/AuthContext';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -91,6 +91,18 @@ export default function Sidebar({ isOpen, onClose }) {
           >
             <BarChart3 className="sidebar-item-icon" size={16} />
             <span>Analytics</span>
+          </Link>
+        )}
+
+        {currentRole === ROLES.CEO && (
+          <Link
+            to="/eway-bills"
+            className={`sidebar-item-link ${currentPath === '/eway-bills' ? 'active' : ''}`}
+            id="nav-eway-bills"
+            onClick={onClose}
+          >
+            <Truck className="sidebar-item-icon" size={16} />
+            <span>e-Way Bills</span>
           </Link>
         )}
 
