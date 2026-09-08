@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Trophy, Package, PackageX, Layers } from 'lucide-react';
+import { Trophy, Package, PackageX, Layers, Receipt } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
 import ChartCard from '../components/common/ChartCard';
 import DataTable from '../components/common/DataTable';
@@ -22,6 +22,7 @@ function useAnalyticsData() {
   const [pareto, setPareto] = useState(null);
   const [abc, setAbc] = useState(null);
   const [slowMoving, setSlowMoving] = useState(null);
+  const [hsn, setHsn] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -31,20 +32,22 @@ function useAnalyticsData() {
     (async () => {
       try {
         const headers = { 'X-API-Key': API_KEY };
-        const [paretoRes, abcRes, slowRes] = await Promise.all([
+        const [paretoRes, abcRes, slowRes, hsnRes] = await Promise.all([
           fetch('/api/tally/pareto', { headers }).then((r) => r.json()),
           fetch('/api/tally/abc-analysis', { headers }).then((r) => r.json()),
           fetch('/api/tally/slow-moving-stock', { headers }).then((r) => r.json()),
+          fetch('/api/tally/hsn-summary', { headers }).then((r) => r.json()),
         ]);
         if (cancelled) return;
 
-        if (!paretoRes.ok || !abcRes.ok || !slowRes.ok) {
-          setError(paretoRes.message || abcRes.message || slowRes.message || 'Analytics require a live Postgres connection.');
+        if (!paretoRes.ok || !abcRes.ok || !slowRes.ok || !hsnRes.ok) {
+          setError(paretoRes.message || abcRes.message || slowRes.message || hsnRes.message || 'Analytics require a live Postgres connection.');
           return;
         }
         setPareto(paretoRes.data);
         setAbc(abcRes.data);
         setSlowMoving(slowRes.data);
+        setHsn(hsnRes.data);
       } catch {
         if (!cancelled) setError('Could not reach the backend API.');
       } finally {
@@ -55,7 +58,7 @@ function useAnalyticsData() {
     return () => { cancelled = true; };
   }, []);
 
-  return { pareto, abc, slowMoving, loading, error };
+  return { pareto, abc, slowMoving, hsn, loading, error };
 }
 
 const ABC_COLOR = { A: 'var(--success, #2e7d32)', B: 'var(--warning, #f0ad4e)', C: 'var(--text-muted)' };
@@ -64,10 +67,11 @@ const ANALYTICS_TABS = [
   { key: 'pareto', label: 'Pareto (80/20)' },
   { key: 'abc', label: 'ABC Analysis' },
   { key: 'slowmoving', label: 'Slow-Moving Stock' },
+  { key: 'hsn', label: 'HSN Summary' },
 ];
 
 export default function AnalyticsPage() {
-  const { pareto, abc, slowMoving, loading, error } = useAnalyticsData();
+  const { pareto, abc, slowMoving, hsn, loading, error } = useAnalyticsData();
   const [activeTab, setActiveTab] = useState('pareto');
 
   const customerColumns = useMemo(() => [
@@ -100,6 +104,13 @@ export default function AnalyticsPage() {
     { header: 'Days Since', accessor: 'daysSinceLastMovement', numeric: true },
     { header: 'Value Moved (all-time)', accessor: 'totalValueMoved', numeric: true, render: (v) => abbreviateCurrency(v) },
     { header: 'Status', accessor: 'bucket' },
+  ], []);
+
+  const hsnColumns = useMemo(() => [
+    { header: 'HSN Code', accessor: 'hsnCode' },
+    { header: 'Distinct Items', accessor: 'itemCount', numeric: true, render: (v) => formatNumber(v) },
+    { header: 'Total Qty Sold', accessor: 'totalQuantity', numeric: true, render: (v) => formatNumber(Math.round(v)) },
+    { header: 'Taxable Value', accessor: 'taxableValue', numeric: true, render: (v) => abbreviateCurrency(v) },
   ], []);
 
   if (loading) {
@@ -219,6 +230,46 @@ export default function AnalyticsPage() {
             </ResponsiveContainer>
           </ChartCard>
           <DataTable title="Item Movement Detail (oldest first)" columns={slowMovingColumns} data={slowMoving.items} />
+        </>
+      )}
+
+      {/* ── HSN Summary ─────────────────────────────────────────────────── */}
+      {activeTab === 'hsn' && (
+        <>
+          <ChartCard
+            title="HSN Summary"
+            subtitle="Sales grouped by HSN code — the same grouping needed for GSTR-1's HSN Summary of Outward Supplies when filing GST returns"
+          >
+            <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', marginTop: 0 }}>
+              Taxable (pre-tax) value only, not tax collected — CGST/SGST/IGST are recorded per invoice in
+              Tally, not per item, so splitting them across HSN codes would be an estimate rather than a
+              real figure. Rows under "Not Set" are items whose Tally master has no HSN code assigned yet.
+            </p>
+            <div className="kpi-row stagger-children">
+              <KPICard
+                icon={Receipt}
+                label="HSN Codes in Use"
+                value={formatNumber(hsn.hsnCodeCount)}
+                description="Distinct HSN codes found across real sales — use this list when filing GSTR-1"
+                color="green"
+              />
+              <KPICard
+                icon={Package}
+                label="Total Taxable Value"
+                value={abbreviateCurrency(hsn.totalTaxableValue)}
+                description="Sum of taxable value across every HSN code, for the synced period"
+                color="blue"
+              />
+              <KPICard
+                icon={PackageX}
+                label="Missing HSN Code"
+                value={abbreviateCurrency(hsn.notSetValue)}
+                description="Taxable value sold under items with no HSN code set in Tally — fix these masters before filing"
+                color="red"
+              />
+            </div>
+          </ChartCard>
+          <DataTable title="Sales by HSN Code" columns={hsnColumns} data={hsn.rows} />
         </>
       )}
     </div>
