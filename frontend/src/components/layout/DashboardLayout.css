@@ -10,12 +10,23 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  /* Flex items default to min-width:auto, so wide content anywhere inside
+     (the persistent FilterBar's fields, a page's own control bar, a wide
+     table) can grow this past the viewport instead of the CONTAINER
+     staying fixed-width and letting flex-wrap/overflow rules do their job.
+     That's what was cutting the Dealer search field and page controls off
+     the right edge with no way to reach them — FilterBar's flex-wrap:wrap
+     was already correct, it just never had a constrained width to wrap
+     against. min-width:0 fixes that at the source for every page. */
+  min-width: 0;
 }
 
 .dashboard-content {
   flex: 1;
   padding: var(--space-6);
   overflow-y: auto;
+  overflow-x: hidden;
+  min-width: 0;
 }
 
 .dashboard-footer {
