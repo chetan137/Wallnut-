@@ -7,7 +7,7 @@ import KPICard from '../components/cards/KPICard';
 import TabBar from '../components/common/TabBar';
 import CompanyFilterBar, { useCompanyList } from '../components/common/CompanyFilterBar';
 import { SkeletonKPIRow, SkeletonChartCard, SkeletonTable } from '../components/common/Skeleton';
-import { abbreviateCurrency, formatNumber, formatDate } from '../utils/formatters';
+import { abbreviateCurrency, formatCurrency, formatNumber, formatDate } from '../utils/formatters';
 import './StateSalesHeadDashboard.css'; // Share layout CSS
 
 // Sent as X-API-Key — must match VITE_API_KEY used by RoleContext.
@@ -218,16 +218,16 @@ export default function FinancialsPage() {
           style={{ marginBottom: 'var(--space-4)' }}
         >
           <div className="kpi-row stagger-children" style={{ marginBottom: 'var(--space-3)' }}>
-            <KPICard icon={TrendingUp} label="Revenue" value={abbreviateCurrency(c.pl.revenue)} color="green" />
-            <KPICard icon={TrendingDown} label="Cost of Sales" value={abbreviateCurrency(Math.abs(c.pl.costOfSales))} color="red" />
-            <KPICard icon={FileText} label="Gross Profit" value={abbreviateCurrency(c.pl.grossProfit)} color={c.pl.grossProfit >= 0 ? 'green' : 'red'} />
-            <KPICard icon={AlertTriangle} label="Net Profit" value={abbreviateCurrency(c.pl.netProfit)} color={c.pl.netProfit >= 0 ? 'green' : 'red'} />
+            <KPICard icon={TrendingUp} label="Revenue" value={abbreviateCurrency(c.pl.revenue)} description={formatCurrency(c.pl.revenue)} color="green" />
+            <KPICard icon={TrendingDown} label="Cost of Sales" value={abbreviateCurrency(Math.abs(c.pl.costOfSales))} description={formatCurrency(Math.abs(c.pl.costOfSales))} color="red" />
+            <KPICard icon={FileText} label="Gross Profit" value={abbreviateCurrency(c.pl.grossProfit)} description={formatCurrency(c.pl.grossProfit)} color={c.pl.grossProfit >= 0 ? 'green' : 'red'} />
+            <KPICard icon={AlertTriangle} label="Net Profit" value={abbreviateCurrency(c.pl.netProfit)} description={formatCurrency(c.pl.netProfit)} color={c.pl.netProfit >= 0 ? 'green' : 'red'} />
           </div>
           <div className="kpi-row stagger-children">
-            <KPICard icon={Landmark} label="Current Assets" value={abbreviateCurrency(c.balanceSheet.currentAssets)} color="blue" />
-            <KPICard icon={Landmark} label="Current Liabilities" value={abbreviateCurrency(c.balanceSheet.currentLiabilities)} color="orange" />
-            <KPICard icon={Landmark} label="Fixed Assets" value={abbreviateCurrency(c.balanceSheet.fixedAssets)} color="blue" />
-            <KPICard icon={Wallet} label="Loans + Capital" value={abbreviateCurrency(c.balanceSheet.loans + c.balanceSheet.capitalAccount)} color="orange" />
+            <KPICard icon={Landmark} label="Current Assets" value={abbreviateCurrency(c.balanceSheet.currentAssets)} description={formatCurrency(c.balanceSheet.currentAssets)} color="blue" />
+            <KPICard icon={Landmark} label="Current Liabilities" value={abbreviateCurrency(c.balanceSheet.currentLiabilities)} description={formatCurrency(c.balanceSheet.currentLiabilities)} color="orange" />
+            <KPICard icon={Landmark} label="Fixed Assets" value={abbreviateCurrency(c.balanceSheet.fixedAssets)} description={formatCurrency(c.balanceSheet.fixedAssets)} color="blue" />
+            <KPICard icon={Wallet} label="Loans + Capital" value={abbreviateCurrency(c.balanceSheet.loans + c.balanceSheet.capitalAccount)} description={formatCurrency(c.balanceSheet.loans + c.balanceSheet.capitalAccount)} color="orange" />
           </div>
         </ChartCard>
       ))}
