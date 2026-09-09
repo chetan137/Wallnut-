@@ -31,6 +31,7 @@ function useFinancialsData(companyId) {
   const [receivables, setReceivables] = useState(null);
   const [cashFlow, setCashFlow] = useState(null);
   const [financials, setFinancials] = useState(null);
+  const [creditTerms, setCreditTerms] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -42,17 +43,18 @@ function useFinancialsData(companyId) {
       try {
         const headers = { 'X-API-Key': API_KEY };
         const qs = companyId ? `?companyId=${encodeURIComponent(companyId)}` : '';
-        const [payablesRes, receivablesRes, cashFlowRes, financialsRes] = await Promise.all([
+        const [payablesRes, receivablesRes, cashFlowRes, financialsRes, creditTermsRes] = await Promise.all([
           fetch(`/api/tally/payables${qs}`, { headers }).then((r) => r.json()),
           fetch(`/api/tally/receivables-aging${qs}`, { headers }).then((r) => r.json()),
           fetch(`/api/tally/cashflow${qs}`, { headers }).then((r) => r.json()),
           fetch(`/api/tally/financials${qs}`, { headers }).then((r) => r.json()),
+          fetch(`/api/tally/credit-terms${qs}`, { headers }).then((r) => r.json()),
         ]);
         if (cancelled) return;
 
-        if (!payablesRes.ok || !receivablesRes.ok || !cashFlowRes.ok || !financialsRes.ok) {
+        if (!payablesRes.ok || !receivablesRes.ok || !cashFlowRes.ok || !financialsRes.ok || !creditTermsRes.ok) {
           setError(
-            payablesRes.message || receivablesRes.message || cashFlowRes.message || financialsRes.message ||
+            payablesRes.message || receivablesRes.message || cashFlowRes.message || financialsRes.message || creditTermsRes.message ||
             'Financial data requires a live Postgres connection.'
           );
           return;
@@ -61,6 +63,7 @@ function useFinancialsData(companyId) {
         setReceivables(receivablesRes.data);
         setCashFlow(cashFlowRes.data);
         setFinancials(financialsRes.data);
+        setCreditTerms(creditTermsRes.data);
       } catch {
         if (!cancelled) setError('Could not reach the backend API.');
       } finally {
@@ -71,7 +74,7 @@ function useFinancialsData(companyId) {
     return () => { cancelled = true; };
   }, [companyId]);
 
-  return { payables, receivables, cashFlow, financials, loading, error };
+  return { payables, receivables, cashFlow, financials, creditTerms, loading, error };
 }
 
 const AGING_ORDER = ['Not Due', '1-30 days', '31-60 days', '61-90 days', '90+ days'];
@@ -79,13 +82,14 @@ const AGING_ORDER = ['Not Due', '1-30 days', '31-60 days', '61-90 days', '90+ da
 const FINANCIALS_TABS = [
   { key: 'payables', label: 'Payables' },
   { key: 'receivables', label: 'Receivables' },
+  { key: 'creditTerms', label: 'Credit Terms' },
   { key: 'plbs', label: 'P&L / Balance Sheet' },
 ];
 
 export default function FinancialsPage() {
   const companies = useCompanyList();
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
-  const { payables, receivables, cashFlow, financials, loading, error } = useFinancialsData(selectedCompanyId);
+  const { payables, receivables, cashFlow, financials, creditTerms, loading, error } = useFinancialsData(selectedCompanyId);
   const [activeTab, setActiveTab] = useState('payables');
 
   const payablesAgingData = useMemo(() => {
@@ -107,6 +111,15 @@ export default function FinancialsPage() {
     { header: 'Customer', accessor: 'partyName' },
     { header: 'Bills', accessor: 'billCount', numeric: true },
     { header: 'Amount Receivable', accessor: 'amountReceivable', numeric: true, render: (v) => abbreviateCurrency(v) },
+  ], []);
+
+  const creditTermsColumns = useMemo(() => [
+    { header: 'Customer', accessor: 'partyName' },
+    { header: 'Bills', accessor: 'billCount', numeric: true },
+    { header: 'Avg. Credit Terms', accessor: 'avgCreditDays', numeric: true, render: (v) => `${v} days` },
+    { header: 'Overdue Bills', accessor: 'overdueBillCount', numeric: true },
+    { header: 'Overdue Amount', accessor: 'overdueAmount', numeric: true, render: (v) => abbreviateCurrency(v) },
+    { header: 'Compliance', accessor: 'complianceRate', numeric: true, render: (v) => `${v}%` },
   ], []);
 
   if (loading) {
@@ -208,6 +221,24 @@ export default function FinancialsPage() {
 
           <DataTable title="Top Customers (Receivables)" columns={customerColumns} data={receivables.customers} />
         </div>
+      )}
+
+      {activeTab === 'creditTerms' && (
+        <>
+          <ChartCard title="Credit Terms Compliance" subtitle="Agreed credit period per bill (from Tally) vs. how many days each customer is actually overdue">
+            <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', marginTop: 0 }}>
+              Use this to see WHO is exceeding what THEY were actually given — a customer 45 days overdue on
+              15-day terms is a very different problem from one 45 days overdue on 60-day terms, even though
+              Debtors Aging shows both the same way. Only covers bills whose voucher had a credit period set in Tally.
+            </p>
+            <div className="kpi-row stagger-children">
+              <KPICard icon={AlertTriangle} label="Overdue Bills" value={formatNumber(creditTerms.overdueBillCount)} description={`out of ${formatNumber(creditTerms.totalBills)} bills with credit terms`} color="red" />
+              <KPICard icon={Wallet} label="Overdue Amount" value={abbreviateCurrency(creditTerms.overdueAmount)} description={formatCurrency(creditTerms.overdueAmount)} color="orange" />
+              <KPICard icon={Landmark} label="Overall Compliance" value={`${creditTerms.complianceRate}%`} description="share of bills still within their agreed credit period" color={creditTerms.complianceRate >= 80 ? 'green' : 'red'} />
+            </div>
+          </ChartCard>
+          <DataTable title="Customer-wise Credit Terms Compliance" columns={creditTermsColumns} data={creditTerms.parties} />
+        </>
       )}
 
       {activeTab === 'plbs' && financials.companies.map((c) => (
