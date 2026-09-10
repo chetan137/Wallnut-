@@ -8,118 +8,12 @@ import KPICard from '../components/cards/KPICard';
 import CompanyFilterBar, { useCompanyList } from '../components/common/CompanyFilterBar';
 import { SkeletonKPIRow, SkeletonTable } from '../components/common/Skeleton';
 import { abbreviateCurrency, formatNumber, formatDate } from '../utils/formatters';
-import wallnutLogo from '../assets/logo.png';
+import { loadLogoAsDataUrl, drawLetterhead, stampFooter, drawSection } from '../utils/pdfLetterhead';
 import './StateSalesHeadDashboard.css'; // Share layout CSS
 import './EwayBillsPage.css';
 
 // Sent as X-API-Key — must match VITE_API_KEY used elsewhere.
 const API_KEY = import.meta.env.VITE_API_KEY || '';
-
-// Real dimensions of assets/logo.png (260x92) — used to size it in the PDF
-// without distorting the aspect ratio.
-const LOGO_ASPECT_RATIO = 260 / 92;
-
-/** Loads an image URL into a PNG data URL jsPDF's addImage() can embed. */
-function loadImageAsDataUrl(src) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      canvas.getContext('2d').drawImage(img, 0, 0);
-      resolve(canvas.toDataURL('image/png'));
-    };
-    img.onerror = reject;
-    img.src = src;
-  });
-}
-
-/**
- * Shared branded letterhead for every PDF this page generates — real logo,
- * real registered company name, a document-specific title/meta line on the
- * right, and a rule underneath. Returns the layout constants callers need
- * (margin, page width, and the Y just below the rule) to lay out content.
- */
-function drawLetterhead(doc, logoDataUrl, title, meta) {
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const marginX = 14;
-  const logoWidth = 30;
-  const logoHeight = logoWidth / LOGO_ASPECT_RATIO;
-  const textX = marginX + (logoDataUrl ? logoWidth + 6 : 0);
-
-  if (logoDataUrl) {
-    doc.addImage(logoDataUrl, 'PNG', marginX, 10, logoWidth, logoHeight);
-  }
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
-  doc.setTextColor(30);
-  doc.text('Wallnut Building Solutions India Pvt Ltd', textX, 16);
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(120);
-  doc.text('create bonds, forever', textX, 21);
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.setTextColor(30);
-  doc.text(title, pageWidth - marginX, 16, { align: 'right' });
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(100);
-  doc.text(meta, pageWidth - marginX, 22, { align: 'right' });
-
-  doc.setDrawColor(61, 168, 85);
-  doc.setLineWidth(0.6);
-  doc.line(marginX, 27, pageWidth - marginX, 27);
-
-  return { marginX, pageWidth, contentStartY: 34 };
-}
-
-/** Page-numbered footer, stamped on every page once the document is complete. */
-function stampFooter(doc, marginX, pageWidth) {
-  const totalPages = doc.internal.getNumberOfPages();
-  const pageHeight = doc.internal.pageSize.getHeight();
-  for (let i = 1; i <= totalPages; i++) {
-    doc.setPage(i);
-    doc.setDrawColor(220);
-    doc.setLineWidth(0.2);
-    doc.line(marginX, pageHeight - 12, pageWidth - marginX, pageHeight - 12);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.setTextColor(140);
-    doc.text('Wallnut Building Solutions India Pvt Ltd — Confidential', marginX, pageHeight - 7);
-    doc.text(`Page ${i} of ${totalPages}`, pageWidth - marginX, pageHeight - 7, { align: 'right' });
-  }
-}
-
-/** A titled key-value section (e.g. "Invoice Details") — used on the single-bill PDF. */
-function drawSection(doc, marginX, pageWidth, startY, title, rows) {
-  doc.setFillColor(61, 168, 85);
-  doc.rect(marginX, startY, pageWidth - marginX * 2, 7, 'F');
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(255);
-  doc.text(title, marginX + 3, startY + 5);
-
-  autoTable(doc, {
-    startY: startY + 7,
-    margin: { left: marginX, right: marginX },
-    theme: 'plain',
-    styles: { fontSize: 9, cellPadding: { top: 2, bottom: 2, left: 3, right: 3 } },
-    columnStyles: {
-      0: { fontStyle: 'bold', textColor: [90, 90, 90], cellWidth: 45 },
-      1: { textColor: [20, 20, 20] },
-    },
-    body: rows,
-  });
-
-  return doc.lastAutoTable.finalY + 6;
-}
 
 /** Small colored pill for table cells — success (green) / warning (amber) / muted (plain "—"). */
 function StatusBadge({ variant, icon: Icon, children }) {
@@ -254,7 +148,7 @@ export default function EwayBillsPage() {
   const handleDownloadPdf = useCallback(async () => {
     setPdfGenerating(true);
     try {
-      const logoDataUrl = await loadImageAsDataUrl(wallnutLogo).catch(() => null);
+      const logoDataUrl = await loadLogoAsDataUrl().catch(() => null);
       const doc = new jsPDF({ orientation: 'landscape' });
       const { marginX, pageWidth, contentStartY } = drawLetterhead(
         doc, logoDataUrl, 'e-Way Bill / e-Invoice Register',
@@ -314,7 +208,7 @@ export default function EwayBillsPage() {
   const handleDownloadSingleBillPdf = useCallback(async (bill) => {
     setSingleBillGeneratingId(bill.vchNo);
     try {
-      const logoDataUrl = await loadImageAsDataUrl(wallnutLogo).catch(() => null);
+      const logoDataUrl = await loadLogoAsDataUrl().catch(() => null);
       const doc = new jsPDF({ orientation: 'portrait' });
       const { marginX, pageWidth, contentStartY } = drawLetterhead(
         doc, logoDataUrl, 'e-Way Bill / e-Invoice Copy', `Voucher: ${bill.vchNo}`

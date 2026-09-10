@@ -1,6 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Wallet, Landmark, TrendingUp, TrendingDown, FileText, AlertTriangle } from 'lucide-react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Wallet, Landmark, TrendingUp, TrendingDown, FileText, AlertTriangle, Download } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import ChartCard from '../components/common/ChartCard';
 import DataTable from '../components/common/DataTable';
 import KPICard from '../components/cards/KPICard';
@@ -8,6 +10,7 @@ import TabBar from '../components/common/TabBar';
 import CompanyFilterBar, { useCompanyList } from '../components/common/CompanyFilterBar';
 import { SkeletonKPIRow, SkeletonChartCard, SkeletonTable } from '../components/common/Skeleton';
 import { abbreviateCurrency, formatCurrency, formatNumber, formatDate } from '../utils/formatters';
+import { loadLogoAsDataUrl, drawLetterhead, stampFooter, drawSection } from '../utils/pdfLetterhead';
 import './StateSalesHeadDashboard.css'; // Share layout CSS
 
 // Sent as X-API-Key — must match VITE_API_KEY used by RoleContext.
@@ -32,7 +35,6 @@ function useFinancialsData(companyId) {
   const [cashFlow, setCashFlow] = useState(null);
   const [financials, setFinancials] = useState(null);
   const [creditTerms, setCreditTerms] = useState(null);
-  const [gstTds, setGstTds] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -44,19 +46,18 @@ function useFinancialsData(companyId) {
       try {
         const headers = { 'X-API-Key': API_KEY };
         const qs = companyId ? `?companyId=${encodeURIComponent(companyId)}` : '';
-        const [payablesRes, receivablesRes, cashFlowRes, financialsRes, creditTermsRes, gstTdsRes] = await Promise.all([
+        const [payablesRes, receivablesRes, cashFlowRes, financialsRes, creditTermsRes] = await Promise.all([
           fetch(`/api/tally/payables${qs}`, { headers }).then((r) => r.json()),
           fetch(`/api/tally/receivables-aging${qs}`, { headers }).then((r) => r.json()),
           fetch(`/api/tally/cashflow${qs}`, { headers }).then((r) => r.json()),
           fetch(`/api/tally/financials${qs}`, { headers }).then((r) => r.json()),
           fetch(`/api/tally/credit-terms${qs}`, { headers }).then((r) => r.json()),
-          fetch(`/api/tally/gst-tds-summary${qs}`, { headers }).then((r) => r.json()),
         ]);
         if (cancelled) return;
 
-        if (!payablesRes.ok || !receivablesRes.ok || !cashFlowRes.ok || !financialsRes.ok || !creditTermsRes.ok || !gstTdsRes.ok) {
+        if (!payablesRes.ok || !receivablesRes.ok || !cashFlowRes.ok || !financialsRes.ok || !creditTermsRes.ok) {
           setError(
-            payablesRes.message || receivablesRes.message || cashFlowRes.message || financialsRes.message || creditTermsRes.message || gstTdsRes.message ||
+            payablesRes.message || receivablesRes.message || cashFlowRes.message || financialsRes.message || creditTermsRes.message ||
             'Financial data requires a live Postgres connection.'
           );
           return;
@@ -66,7 +67,6 @@ function useFinancialsData(companyId) {
         setCashFlow(cashFlowRes.data);
         setFinancials(financialsRes.data);
         setCreditTerms(creditTermsRes.data);
-        setGstTds(gstTdsRes.data);
       } catch {
         if (!cancelled) setError('Could not reach the backend API.');
       } finally {
@@ -77,7 +77,47 @@ function useFinancialsData(companyId) {
     return () => { cancelled = true; };
   }, [companyId]);
 
-  return { payables, receivables, cashFlow, financials, creditTerms, gstTds, loading, error };
+  return { payables, receivables, cashFlow, financials, creditTerms, loading, error };
+}
+
+/**
+ * GST & TDS Summary has its OWN date-range filter (GST/TDS return periods
+ * are always a specific month/quarter, unlike the rest of this page) so it
+ * fetches independently — refetching all 5 other endpoints just because
+ * this tab's date range changed would be wasted work.
+ */
+function useGstTdsSummary(companyId, from, to) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+
+    const params = new URLSearchParams();
+    if (companyId) params.set('companyId', companyId);
+    if (from) params.set('from', from);
+    if (to) params.set('to', to);
+    const qs = params.toString() ? `?${params}` : '';
+
+    fetch(`/api/tally/gst-tds-summary${qs}`, { headers: { 'X-API-Key': API_KEY } })
+      .then((r) => r.json())
+      .then((json) => {
+        if (cancelled) return;
+        if (!json.ok) {
+          setError(json.message || 'GST & TDS summary requires a live Postgres connection.');
+          return;
+        }
+        setData(json.data);
+      })
+      .catch(() => { if (!cancelled) setError('Could not reach the backend API.'); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+
+    return () => { cancelled = true; };
+  }, [companyId, from, to]);
+
+  return { data, loading, error };
 }
 
 const AGING_ORDER = ['Not Due', '1-30 days', '31-60 days', '61-90 days', '90+ days'];
@@ -93,8 +133,67 @@ const FINANCIALS_TABS = [
 export default function FinancialsPage() {
   const companies = useCompanyList();
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
-  const { payables, receivables, cashFlow, financials, creditTerms, gstTds, loading, error } = useFinancialsData(selectedCompanyId);
+  const { payables, receivables, cashFlow, financials, creditTerms, loading, error } = useFinancialsData(selectedCompanyId);
   const [activeTab, setActiveTab] = useState('payables');
+
+  // GST & TDS return periods are always a specific month/quarter — its own
+  // date range, independent of the rest of this page.
+  const [gstFromDate, setGstFromDate] = useState('');
+  const [gstToDate, setGstToDate] = useState('');
+  const { data: gstTds, loading: gstTdsLoading, error: gstTdsError } = useGstTdsSummary(selectedCompanyId, gstFromDate, gstToDate);
+
+  const selectedCompanyName = useMemo(() => {
+    if (!selectedCompanyId) return 'All Companies (combined)';
+    return companies.find((c) => String(c.id) === String(selectedCompanyId))?.name || 'Selected Company';
+  }, [companies, selectedCompanyId]);
+
+  const [gstPdfGenerating, setGstPdfGenerating] = useState(false);
+  const handleDownloadGstTdsPdf = useCallback(async () => {
+    if (!gstTds) return;
+    setGstPdfGenerating(true);
+    try {
+      const logoDataUrl = await loadLogoAsDataUrl().catch(() => null);
+      const doc = new jsPDF({ orientation: 'portrait' });
+      const periodLabel = (gstFromDate || gstToDate) ? `${gstFromDate || '…'} to ${gstToDate || '…'}` : 'All synced data';
+      const { marginX, pageWidth, contentStartY } = drawLetterhead(
+        doc, logoDataUrl, 'GST & TDS Liability Summary',
+        `Company: ${selectedCompanyName}   |   Period: ${periodLabel}`
+      );
+
+      let y = drawSection(doc, marginX, pageWidth, contentStartY, 'Summary', [
+        ['Output GST (collected)', abbreviateCurrency(gstTds.totalOutputGst)],
+        ['Input GST (ITC)', abbreviateCurrency(gstTds.totalInputGst)],
+        ['Net GST Payable', abbreviateCurrency(gstTds.netGstPayable)],
+        ['Total TDS/TCS Activity', abbreviateCurrency(gstTds.totalTds)],
+      ]);
+
+      autoTable(doc, {
+        startY: y,
+        margin: { left: marginX, right: marginX },
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [61, 168, 85], textColor: 255 },
+        head: [['Type', 'Tax', 'Rate', 'Entries', 'Amount']],
+        body: gstTds.gstRows.map((r) => [r.direction, r.taxType, r.rate || '—', r.entryCount, abbreviateCurrency(r.amount)]),
+      });
+      y = doc.lastAutoTable.finalY + 8;
+
+      autoTable(doc, {
+        startY: y,
+        margin: { left: marginX, right: marginX },
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [61, 168, 85], textColor: 255 },
+        head: [['TDS / TCS Ledger', 'Entries', 'Amount']],
+        body: gstTds.tdsRows.map((r) => [r.ledgerName, r.entryCount, abbreviateCurrency(r.amount)]),
+      });
+
+      stampFooter(doc, marginX, pageWidth);
+      const companySuffix = selectedCompanyId ? `company-${selectedCompanyId}` : 'all-companies';
+      const periodSuffix = (gstFromDate || gstToDate) ? `${gstFromDate || 'start'}_to_${gstToDate || 'end'}` : 'all';
+      doc.save(`gst-tds-summary-${companySuffix}-${periodSuffix}.pdf`);
+    } finally {
+      setGstPdfGenerating(false);
+    }
+  }, [gstTds, selectedCompanyName, selectedCompanyId, gstFromDate, gstToDate]);
 
   const payablesAgingData = useMemo(() => {
     if (!payables) return [];
@@ -261,7 +360,21 @@ export default function FinancialsPage() {
 
       {activeTab === 'gstTds' && (
         <>
-          <ChartCard title="GST & TDS Liability Summary" subtitle="Built from the GST/TDS ledgers Tally already records on every voucher — for GSTR-3B and TDS return filing">
+          <ChartCard
+            title="GST & TDS Liability Summary"
+            subtitle="Built from the GST/TDS ledgers Tally already records on every voucher — for GSTR-3B and TDS return filing"
+            action={
+              <button
+                className={`header-sync-btn ${gstPdfGenerating ? 'spinning' : ''}`}
+                onClick={handleDownloadGstTdsPdf}
+                disabled={!gstTds || gstPdfGenerating}
+                title="Download this summary as a PDF"
+              >
+                <Download size={14} />
+                <span>{gstPdfGenerating ? 'Generating…' : 'Download PDF'}</span>
+              </button>
+            }
+          >
             <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', marginTop: 0 }}>
               Output GST is tax collected on sales (what you owe the government); Input GST is tax paid on
               purchases (ITC you can claim back); Net Payable is Output minus Input — the number that actually
@@ -269,19 +382,56 @@ export default function FinancialsPage() {
               whether each is payable or receivable depends on how that ledger was set up, best confirmed with
               your accountant.
             </p>
-            <div className="kpi-row stagger-children">
-              <KPICard icon={TrendingUp} label="Output GST" value={abbreviateCurrency(gstTds.totalOutputGst)} description="Tax collected on sales" color="green" />
-              <KPICard icon={TrendingDown} label="Input GST (ITC)" value={abbreviateCurrency(gstTds.totalInputGst)} description="Tax paid on purchases — claimable" color="blue" />
-              <KPICard icon={FileText} label="Net GST Payable" value={abbreviateCurrency(gstTds.netGstPayable)} description="Output minus Input — due when filing" color={gstTds.netGstPayable >= 0 ? 'orange' : 'green'} />
-              <KPICard icon={Wallet} label="Total TDS Activity" value={abbreviateCurrency(gstTds.totalTds)} description="Sum across all TDS/TCS ledgers" color="orange" />
+
+            <div className="eway-bills-year-select" style={{ marginBottom: 'var(--space-3)' }}>
+              <label htmlFor="gst-tds-from">Filing Period:</label>
+              <input id="gst-tds-from" type="date" value={gstFromDate} onChange={(e) => setGstFromDate(e.target.value)} max={gstToDate || undefined} />
+              <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>to</span>
+              <input id="gst-tds-to" type="date" value={gstToDate} onChange={(e) => setGstToDate(e.target.value)} min={gstFromDate || undefined} />
+              {(gstFromDate || gstToDate) && (
+                <button className="eway-bills-row-download" onClick={() => { setGstFromDate(''); setGstToDate(''); }} title="Clear date range">
+                  ✕
+                </button>
+              )}
             </div>
+
+            {gstTdsLoading && <SkeletonKPIRow count={4} />}
+            {gstTdsError && <p style={{ color: 'var(--danger)' }}>{gstTdsError}</p>}
+            {gstTds && (
+              <div className="kpi-row stagger-children">
+                <KPICard icon={TrendingUp} label="Output GST" value={abbreviateCurrency(gstTds.totalOutputGst)} description="Tax collected on sales" color="green" />
+                <KPICard icon={TrendingDown} label="Input GST (ITC)" value={abbreviateCurrency(gstTds.totalInputGst)} description="Tax paid on purchases — claimable" color="blue" />
+                <KPICard icon={FileText} label="Net GST Payable" value={abbreviateCurrency(gstTds.netGstPayable)} description="Output minus Input — due when filing" color={gstTds.netGstPayable >= 0 ? 'orange' : 'green'} />
+                <KPICard icon={Wallet} label="Total TDS Activity" value={abbreviateCurrency(gstTds.totalTds)} description="Sum across all TDS/TCS ledgers" color="orange" />
+              </div>
+            )}
           </ChartCard>
-          <div className="charts-row">
-            <DataTable title="GST Breakdown (by type &amp; rate)" columns={gstColumns} data={gstTds.gstRows} />
-            <DataTable title="TDS / TCS Ledgers" columns={tdsColumns} data={gstTds.tdsRows} />
-          </div>
-          {gstTds.otherRows.length > 0 && (
-            <DataTable title="Other Tax-Related Ledgers" columns={tdsColumns} data={gstTds.otherRows} />
+
+          {gstTds && (
+            <>
+              <div className="charts-row">
+                <DataTable
+                  title="GST Breakdown (by type & rate)"
+                  subtitle="Output = tax collected on sales. Input = tax paid on purchases (claimable as ITC)."
+                  columns={gstColumns}
+                  data={gstTds.gstRows}
+                />
+                <DataTable
+                  title="TDS / TCS Ledgers"
+                  subtitle="One row per Tally ledger — confirm with your accountant whether each is payable (you deducted it) or receivable (deducted from you)."
+                  columns={tdsColumns}
+                  data={gstTds.tdsRows}
+                />
+              </div>
+              {gstTds.otherRows.length > 0 && (
+                <DataTable
+                  title="Other Tax-Related Ledgers"
+                  subtitle={'Ledgers with "GST"/"tax" in the name that don\'t fit the Output/Input/TDS pattern above (e.g. the net "GST Payable" ledger) — shown for completeness.'}
+                  columns={tdsColumns}
+                  data={gstTds.otherRows}
+                />
+              )}
+            </>
           )}
         </>
       )}

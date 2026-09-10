@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import './DataTable.css';
 
-export default function DataTable({ title, columns, data, searchable = true, id = '' }) {
+export default function DataTable({ title, subtitle, columns, data, searchable = true, id = '' }) {
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState('desc');
   const [search, setSearch] = useState('');
@@ -42,7 +42,10 @@ export default function DataTable({ title, columns, data, searchable = true, id 
   return (
     <div className="data-table-wrapper" id={id}>
       <div className="data-table-header">
-        <h3 className="data-table-title">{title}</h3>
+        <div>
+          <h3 className="data-table-title">{title}</h3>
+          {subtitle && <p className="data-table-subtitle">{subtitle}</p>}
+        </div>
         {searchable && (
           <input
             type="text"

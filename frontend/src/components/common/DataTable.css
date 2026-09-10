@@ -27,6 +27,12 @@
   color: var(--text-primary);
 }
 
+.data-table-subtitle {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
 .data-table-search {
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--card-border);
