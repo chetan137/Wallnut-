@@ -358,16 +358,28 @@ export function getDealerPerformanceSummary(data) {
     if (!grouped[row.partyName]) {
       grouped[row.partyName] = {
         dealer: row.partyName,
-        salesMan: row.salesMan,
-        district: row.areaCity,
+        salesMan: '',
+        district: '',
         totalSales: 0,
         outstanding: 0,
         transactions: 0,
       };
     }
-    grouped[row.partyName].totalSales += row.amount;
-    grouped[row.partyName].outstanding += row.finalOutstanding;
-    grouped[row.partyName].transactions += 1;
+    const entry = grouped[row.partyName];
+    // BUG FIX: used to lock in whichever value the dealer's FIRST row
+    // happened to carry. salesMan/areaCity aren't guaranteed on every
+    // inventory line (Cost Centre is only set on some real vouchers — see
+    // tallybackend/tally/parsers.js), so a dealer with hundreds of real
+    // transactions but only a handful carrying a Cost Centre often had its
+    // very first row be one of the blank ones — showing an empty Sales
+    // Officer/District even though the real value existed on that SAME
+    // dealer's other rows. Now takes the first REAL (non-empty) value found
+    // across all of the dealer's rows, checked independently per field.
+    if (!entry.salesMan && row.salesMan) entry.salesMan = row.salesMan;
+    if (!entry.district && row.areaCity) entry.district = row.areaCity;
+    entry.totalSales += row.amount;
+    entry.outstanding += row.finalOutstanding;
+    entry.transactions += 1;
   }
 
   return Object.values(grouped).sort((a, b) => b.totalSales - a.totalSales);
