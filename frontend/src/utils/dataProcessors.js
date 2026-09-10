@@ -215,6 +215,12 @@ export function getTopProducts(data, limit = 10) {
   const grouped = {};
 
   for (const row of data) {
+    // BUG FIX: a voucher with no synced inventory line still contributes one
+    // row via fetchSalesRecords' LEFT JOIN fallback (see its doc comment),
+    // with itemName = null — grouping without a check turned that into a
+    // literal "null" bar here. Excluded — this ranking is about named
+    // products only, same principle as getTopSalesOfficers below.
+    if (!row.itemName) continue;
     grouped[row.itemName] = (grouped[row.itemName] || 0) + row.amount;
   }
 
@@ -222,6 +228,18 @@ export function getTopProducts(data, limit = 10) {
     .map(([product, amount]) => ({ product, amount }))
     .sort((a, b) => b.amount - a.amount)
     .slice(0, limit);
+}
+
+// Tally's Cost Centre master isn't always named consistently for the same
+// real person — e.g. "Mr. Kamlesh Dave" on older vouchers vs "Kamlesh Dave"
+// on newer ones (see tallybackend/tally/parsers.js looksLikeSalesPerson doc
+// for the same real-world inconsistency). Strip the honorific so both group
+// under one canonical name instead of splitting one person's sales across
+// two bars.
+const HONORIFIC_RE = /^(mr|mrs|ms|miss|shri|smt|dr)\.?\s+/i;
+
+function canonicalOfficerName(rawName) {
+  return rawName.trim().replace(HONORIFIC_RE, '').replace(/\s+/g, ' ').trim();
 }
 
 /**
@@ -245,16 +263,19 @@ export function getTopSalesOfficers(data, limit = 10) {
 
   for (const row of data) {
     if (!row.salesMan) continue;
-    if (!grouped[row.salesMan]) {
-      grouped[row.salesMan] = { amount: 0, dealers: new Set() };
+    const displayName = canonicalOfficerName(row.salesMan);
+    if (!displayName) continue;
+    const key = displayName.toLowerCase();
+    if (!grouped[key]) {
+      grouped[key] = { name: displayName, amount: 0, dealers: new Set() };
     }
-    grouped[row.salesMan].amount += row.amount;
-    grouped[row.salesMan].dealers.add(row.partyName);
+    grouped[key].amount += row.amount;
+    grouped[key].dealers.add(row.partyName);
   }
 
-  return Object.entries(grouped)
-    .map(([name, info]) => ({
-      name,
+  return Object.values(grouped)
+    .map((info) => ({
+      name: info.name,
       amount: info.amount,
       dealers: info.dealers.size,
     }))

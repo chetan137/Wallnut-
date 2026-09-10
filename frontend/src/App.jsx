@@ -100,7 +100,7 @@ function MainApp() {
         path="/users"
         element={
           <ProtectedRoute>
-            <DashboardLayout>
+            <DashboardLayout hideFilterBar>
               <ManageUsers />
             </DashboardLayout>
           </ProtectedRoute>
@@ -111,7 +111,7 @@ function MainApp() {
         path="/financials"
         element={
           <ProtectedRoute>
-            <DashboardLayout>
+            <DashboardLayout hideFilterBar>
               <FinancialsPage />
             </DashboardLayout>
           </ProtectedRoute>
@@ -122,7 +122,7 @@ function MainApp() {
         path="/analytics"
         element={
           <ProtectedRoute>
-            <DashboardLayout>
+            <DashboardLayout hideFilterBar>
               <AnalyticsPage />
             </DashboardLayout>
           </ProtectedRoute>
@@ -133,7 +133,7 @@ function MainApp() {
         path="/eway-bills"
         element={
           <ProtectedRoute>
-            <DashboardLayout>
+            <DashboardLayout hideFilterBar>
               <EwayBillsPage />
             </DashboardLayout>
           </ProtectedRoute>
@@ -144,7 +144,7 @@ function MainApp() {
         path="/workflow"
         element={
           <ProtectedRoute>
-            <DashboardLayout>
+            <DashboardLayout hideFilterBar>
               <SystemWorkflow />
             </DashboardLayout>
           </ProtectedRoute>
@@ -155,7 +155,7 @@ function MainApp() {
         path="/about"
         element={
           <ProtectedRoute>
-            <DashboardLayout>
+            <DashboardLayout hideFilterBar>
               <AboutPage />
             </DashboardLayout>
           </ProtectedRoute>

@@ -31,7 +31,7 @@ export default function TopProducts({ data }) {
   }));
 
   return (
-    <ChartCard title="Top Products" subtitle="By sales amount">
+    <ChartCard title="Top Products" subtitle="Which items sold for the most revenue — use this to see your best sellers and plan stock/production around them.">
       <ResponsiveContainer width="100%" height={320}>
         <BarChart
           data={chartData}

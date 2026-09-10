@@ -65,6 +65,11 @@
   outline: none;
 }
 
+.eway-bills-year-select select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Cell text that carries a title="" tooltip (full IRN/GSTIN on hover) */
 .eway-bills-hint-text {
   cursor: help;

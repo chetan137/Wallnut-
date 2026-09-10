@@ -198,6 +198,16 @@ export default function EwayBillsPage() {
     return [...years].sort((a, b) => b.localeCompare(a));
   }, [data]);
 
+  // A custom date range replaces the year filter rather than combining with
+  // it — having both active silently ANDed together (e.g. year "2025" +
+  // dates in 2026) used to produce a confusing empty table with no visible
+  // reason why. Select Year is disabled, and reset to "All", whenever a
+  // custom date is entered.
+  const hasCustomDateRange = Boolean(fromDate || toDate);
+  useEffect(() => {
+    if (hasCustomDateRange && selectedYear !== 'All') setSelectedYear('All');
+  }, [hasCustomDateRange, selectedYear]);
+
   const filteredBills = useMemo(() => {
     if (!data) return [];
     let rows = data.bills;
@@ -418,7 +428,13 @@ export default function EwayBillsPage() {
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
           <div className="eway-bills-year-select">
             <label htmlFor="eway-bills-year">Select Year:</label>
-            <select id="eway-bills-year" value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)}>
+            <select
+              id="eway-bills-year"
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              disabled={hasCustomDateRange}
+              title={hasCustomDateRange ? 'Clear the date range below to filter by year instead' : undefined}
+            >
               <option value="All">All Years</option>
               {availableYears.map((year) => (
                 <option key={year} value={year}>{year}</option>

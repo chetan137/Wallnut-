@@ -20,7 +20,10 @@ export default function TopSalesOfficers({ data }) {
   const chartData = data.map((d) => ({ ...d, shortName: truncateLabel(d.name, 20) }));
 
   return (
-    <ChartCard title="Top Sales Officers" subtitle="Ranking by sales amount">
+    <ChartCard
+      title="Top Sales Officers"
+      subtitle="Which salesperson's real sales added up to the most revenue, and how many different dealers they sold to — use this to see who is driving sales, and whose deals are spread across few vs. many dealers."
+    >
       <ResponsiveContainer width="100%" height={320}>
         <BarChart
           data={chartData}
