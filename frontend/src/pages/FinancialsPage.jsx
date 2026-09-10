@@ -32,6 +32,7 @@ function useFinancialsData(companyId) {
   const [cashFlow, setCashFlow] = useState(null);
   const [financials, setFinancials] = useState(null);
   const [creditTerms, setCreditTerms] = useState(null);
+  const [gstTds, setGstTds] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -43,18 +44,19 @@ function useFinancialsData(companyId) {
       try {
         const headers = { 'X-API-Key': API_KEY };
         const qs = companyId ? `?companyId=${encodeURIComponent(companyId)}` : '';
-        const [payablesRes, receivablesRes, cashFlowRes, financialsRes, creditTermsRes] = await Promise.all([
+        const [payablesRes, receivablesRes, cashFlowRes, financialsRes, creditTermsRes, gstTdsRes] = await Promise.all([
           fetch(`/api/tally/payables${qs}`, { headers }).then((r) => r.json()),
           fetch(`/api/tally/receivables-aging${qs}`, { headers }).then((r) => r.json()),
           fetch(`/api/tally/cashflow${qs}`, { headers }).then((r) => r.json()),
           fetch(`/api/tally/financials${qs}`, { headers }).then((r) => r.json()),
           fetch(`/api/tally/credit-terms${qs}`, { headers }).then((r) => r.json()),
+          fetch(`/api/tally/gst-tds-summary${qs}`, { headers }).then((r) => r.json()),
         ]);
         if (cancelled) return;
 
-        if (!payablesRes.ok || !receivablesRes.ok || !cashFlowRes.ok || !financialsRes.ok || !creditTermsRes.ok) {
+        if (!payablesRes.ok || !receivablesRes.ok || !cashFlowRes.ok || !financialsRes.ok || !creditTermsRes.ok || !gstTdsRes.ok) {
           setError(
-            payablesRes.message || receivablesRes.message || cashFlowRes.message || financialsRes.message || creditTermsRes.message ||
+            payablesRes.message || receivablesRes.message || cashFlowRes.message || financialsRes.message || creditTermsRes.message || gstTdsRes.message ||
             'Financial data requires a live Postgres connection.'
           );
           return;
@@ -64,6 +66,7 @@ function useFinancialsData(companyId) {
         setCashFlow(cashFlowRes.data);
         setFinancials(financialsRes.data);
         setCreditTerms(creditTermsRes.data);
+        setGstTds(gstTdsRes.data);
       } catch {
         if (!cancelled) setError('Could not reach the backend API.');
       } finally {
@@ -74,7 +77,7 @@ function useFinancialsData(companyId) {
     return () => { cancelled = true; };
   }, [companyId]);
 
-  return { payables, receivables, cashFlow, financials, creditTerms, loading, error };
+  return { payables, receivables, cashFlow, financials, creditTerms, gstTds, loading, error };
 }
 
 const AGING_ORDER = ['Not Due', '1-30 days', '31-60 days', '61-90 days', '90+ days'];
@@ -83,13 +86,14 @@ const FINANCIALS_TABS = [
   { key: 'payables', label: 'Payables' },
   { key: 'receivables', label: 'Receivables' },
   { key: 'creditTerms', label: 'Credit Terms' },
+  { key: 'gstTds', label: 'GST & TDS' },
   { key: 'plbs', label: 'P&L / Balance Sheet' },
 ];
 
 export default function FinancialsPage() {
   const companies = useCompanyList();
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
-  const { payables, receivables, cashFlow, financials, creditTerms, loading, error } = useFinancialsData(selectedCompanyId);
+  const { payables, receivables, cashFlow, financials, creditTerms, gstTds, loading, error } = useFinancialsData(selectedCompanyId);
   const [activeTab, setActiveTab] = useState('payables');
 
   const payablesAgingData = useMemo(() => {
@@ -120,6 +124,20 @@ export default function FinancialsPage() {
     { header: 'Overdue Bills', accessor: 'overdueBillCount', numeric: true },
     { header: 'Overdue Amount', accessor: 'overdueAmount', numeric: true, render: (v) => abbreviateCurrency(v) },
     { header: 'Compliance', accessor: 'complianceRate', numeric: true, render: (v) => `${v}%` },
+  ], []);
+
+  const gstColumns = useMemo(() => [
+    { header: 'Type', accessor: 'direction' },
+    { header: 'Tax', accessor: 'taxType' },
+    { header: 'Rate', accessor: 'rate', render: (v) => v || '—' },
+    { header: 'Entries', accessor: 'entryCount', numeric: true },
+    { header: 'Amount', accessor: 'amount', numeric: true, render: (v) => abbreviateCurrency(v) },
+  ], []);
+
+  const tdsColumns = useMemo(() => [
+    { header: 'Ledger (as set up in Tally)', accessor: 'ledgerName' },
+    { header: 'Entries', accessor: 'entryCount', numeric: true },
+    { header: 'Amount', accessor: 'amount', numeric: true, render: (v) => abbreviateCurrency(v) },
   ], []);
 
   if (loading) {
@@ -238,6 +256,33 @@ export default function FinancialsPage() {
             </div>
           </ChartCard>
           <DataTable title="Customer-wise Credit Terms Compliance" columns={creditTermsColumns} data={creditTerms.parties} />
+        </>
+      )}
+
+      {activeTab === 'gstTds' && (
+        <>
+          <ChartCard title="GST & TDS Liability Summary" subtitle="Built from the GST/TDS ledgers Tally already records on every voucher — for GSTR-3B and TDS return filing">
+            <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', marginTop: 0 }}>
+              Output GST is tax collected on sales (what you owe the government); Input GST is tax paid on
+              purchases (ITC you can claim back); Net Payable is Output minus Input — the number that actually
+              needs to be paid when filing. TDS rows are shown exactly as named in Tally (e.g. "TDS on Rent") —
+              whether each is payable or receivable depends on how that ledger was set up, best confirmed with
+              your accountant.
+            </p>
+            <div className="kpi-row stagger-children">
+              <KPICard icon={TrendingUp} label="Output GST" value={abbreviateCurrency(gstTds.totalOutputGst)} description="Tax collected on sales" color="green" />
+              <KPICard icon={TrendingDown} label="Input GST (ITC)" value={abbreviateCurrency(gstTds.totalInputGst)} description="Tax paid on purchases — claimable" color="blue" />
+              <KPICard icon={FileText} label="Net GST Payable" value={abbreviateCurrency(gstTds.netGstPayable)} description="Output minus Input — due when filing" color={gstTds.netGstPayable >= 0 ? 'orange' : 'green'} />
+              <KPICard icon={Wallet} label="Total TDS Activity" value={abbreviateCurrency(gstTds.totalTds)} description="Sum across all TDS/TCS ledgers" color="orange" />
+            </div>
+          </ChartCard>
+          <div className="charts-row">
+            <DataTable title="GST Breakdown (by type &amp; rate)" columns={gstColumns} data={gstTds.gstRows} />
+            <DataTable title="TDS / TCS Ledgers" columns={tdsColumns} data={gstTds.tdsRows} />
+          </div>
+          {gstTds.otherRows.length > 0 && (
+            <DataTable title="Other Tax-Related Ledgers" columns={tdsColumns} data={gstTds.otherRows} />
+          )}
         </>
       )}
 
