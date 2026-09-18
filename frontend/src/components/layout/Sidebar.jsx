@@ -138,7 +138,10 @@ export default function Sidebar({ isOpen, onClose }) {
             <select
               className="sidebar-role-select"
               value={currentRole}
-              onChange={(e) => setRole(e.target.value)}
+              onChange={(e) => {
+                setRole(e.target.value);
+                if (onClose) onClose();
+              }}
               id="role-selector"
             >
               {allRoles.map(role => (
@@ -157,7 +160,10 @@ export default function Sidebar({ isOpen, onClose }) {
             <select
               className="sidebar-role-select"
               value={selectedState}
-              onChange={(e) => setSelectedState(e.target.value)}
+              onChange={(e) => {
+                setSelectedState(e.target.value);
+                if (onClose) onClose();
+              }}
               id="state-selector"
             >
               {allStates.map(s => (
@@ -174,7 +180,10 @@ export default function Sidebar({ isOpen, onClose }) {
             <select
               className="sidebar-role-select"
               value={selectedDistrict}
-              onChange={(e) => setSelectedDistrict(e.target.value)}
+              onChange={(e) => {
+                setSelectedDistrict(e.target.value);
+                if (onClose) onClose();
+              }}
               id="district-selector"
             >
               {allDistricts.map(d => (
@@ -191,7 +200,10 @@ export default function Sidebar({ isOpen, onClose }) {
             <select
               className="sidebar-role-select"
               value={selectedSalesMan}
-              onChange={(e) => setSelectedSalesMan(e.target.value)}
+              onChange={(e) => {
+                setSelectedSalesMan(e.target.value);
+                if (onClose) onClose();
+              }}
               id="officer-selector"
             >
               {allSalesOfficers.map(o => (

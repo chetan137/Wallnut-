@@ -24,10 +24,59 @@ const RoleContext = createContext(null);
 
 export function RoleProvider({ children }) {
   const { isAuthenticated } = useAuth();
-  const [currentRole, setCurrentRole] = useState(ROLES.STATE_SALES_HEAD);
-  const [selectedState, setSelectedState] = useState('Madhya Pradesh');
-  const [selectedDistrict, setSelectedDistrict] = useState('Indore');
-  const [selectedSalesMan, setSelectedSalesMan] = useState('Rajesh Sharma');
+  const [currentRole, setCurrentRole] = useState(() => {
+    try {
+      return localStorage.getItem('wallnut_view_role') || ROLES.STATE_SALES_HEAD;
+    } catch {
+      return ROLES.STATE_SALES_HEAD;
+    }
+  });
+  const [selectedState, setSelectedState] = useState(() => {
+    try {
+      return localStorage.getItem('wallnut_selected_state') || 'Maharashtra';
+    } catch {
+      return 'Maharashtra';
+    }
+  });
+  const [selectedDistrict, setSelectedDistrict] = useState(() => {
+    try {
+      return localStorage.getItem('wallnut_selected_district') || 'Kolhapur';
+    } catch {
+      return 'Kolhapur';
+    }
+  });
+  const [selectedSalesMan, setSelectedSalesMan] = useState(() => {
+    try {
+      return localStorage.getItem('wallnut_selected_salesman') || 'Mr. Vaibhav Pawar';
+    } catch {
+      return 'Mr. Vaibhav Pawar';
+    }
+  });
+
+  // Automatically synchronize scope state changes to localStorage
+  useEffect(() => {
+    try {
+      if (currentRole) localStorage.setItem('wallnut_view_role', currentRole);
+    } catch (e) { /* ignore */ }
+  }, [currentRole]);
+
+  useEffect(() => {
+    try {
+      if (selectedState) localStorage.setItem('wallnut_selected_state', selectedState);
+    } catch (e) { /* ignore */ }
+  }, [selectedState]);
+
+  useEffect(() => {
+    try {
+      if (selectedDistrict) localStorage.setItem('wallnut_selected_district', selectedDistrict);
+    } catch (e) { /* ignore */ }
+  }, [selectedDistrict]);
+
+  useEffect(() => {
+    try {
+      if (selectedSalesMan) localStorage.setItem('wallnut_selected_salesman', selectedSalesMan);
+    } catch (e) { /* ignore */ }
+  }, [selectedSalesMan]);
 
   // Mutable states persisted in localStorage
   const [sales, setSales] = useState(() => {

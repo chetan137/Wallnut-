@@ -68,7 +68,9 @@ export default function LoginPage() {
         <div className="login-hero-overlay" />
         <div className="login-hero-content">
           <div className="login-hero-badge">Eco-Industrial Professional</div>
-          <div className="login-hero-brand">WALLNUT</div>
+          <div className="login-hero-brand">
+            WALLNUT <span className="login-hero-brand-accent">ANALYTICS</span>
+          </div>
           <div className="login-hero-tagline">
             Building Modern India through science-backed construction chemicals
           </div>

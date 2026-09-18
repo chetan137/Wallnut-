@@ -96,7 +96,14 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(() => {
     setCurrentUser(null);
-    localStorage.removeItem('wallnut_current_user');
+    try {
+      localStorage.removeItem('wallnut_current_user');
+      localStorage.removeItem('wallnut_last_synced_user_id');
+      localStorage.removeItem('wallnut_selected_district');
+      localStorage.removeItem('wallnut_selected_state');
+      localStorage.removeItem('wallnut_selected_salesman');
+      localStorage.removeItem('wallnut_view_role');
+    } catch (e) { /* ignore */ }
   }, []);
 
   const addUser = useCallback((newUser) => {

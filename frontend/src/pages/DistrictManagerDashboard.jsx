@@ -35,8 +35,21 @@ export default function DistrictManagerDashboard({ data }) {
     addVisitEntry
   } = useRole();
 
-  const [selectedYear, setSelectedYear] = useState('All');
+  const [selectedYear, setSelectedYear] = useState(() => {
+    try {
+      return localStorage.getItem('wallnut_dm_year') || 'All';
+    } catch {
+      return 'All';
+    }
+  });
   const [isCallModalOpen, setIsCallModalOpen] = useState(false);
+
+  const handleYearChange = (year) => {
+    setSelectedYear(year);
+    try {
+      localStorage.setItem('wallnut_dm_year', year);
+    } catch (e) { /* ignore */ }
+  };
 
   // Available years: always include 2026, 2025, 2024 + any additional years from data
   const availableYears = useMemo(() => {
@@ -93,7 +106,7 @@ export default function DistrictManagerDashboard({ data }) {
           <span className="control-bar-label">Select Year:</span>
           <select
             value={selectedYear}
-            onChange={(e) => setSelectedYear(e.target.value)}
+            onChange={(e) => handleYearChange(e.target.value)}
             className="control-bar-select"
           >
             <option value="All">All Years</option>

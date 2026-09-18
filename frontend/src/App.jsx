@@ -37,27 +37,67 @@ function DashboardContainer() {
     setSelectedSalesMan,
     filteredSales,
   } = useRole();
-  const [syncedUserId, setSyncedUserId] = useState(null);
+  const [syncedUserId, setSyncedUserId] = useState(() => {
+    try {
+      return localStorage.getItem('wallnut_last_synced_user_id') || null;
+    } catch {
+      return null;
+    }
+  });
 
   // Sync user credentials to view scope on login / user switch
   useEffect(() => {
     if (currentUser && currentUser.id !== syncedUserId) {
       setSyncedUserId(currentUser.id);
+      try {
+        localStorage.setItem('wallnut_last_synced_user_id', currentUser.id);
+      } catch (e) { /* ignore */ }
       
-      // Update role view to match user's actual role
-      setRole(currentUser.role);
+      // Update role view: for CEO, preserve saved view role if present; otherwise default to CEO
+      const savedRole = localStorage.getItem('wallnut_view_role');
+      if (currentUser.role === ROLES.CEO) {
+        if (!savedRole) setRole(ROLES.CEO);
+      } else {
+        setRole(currentUser.role);
+      }
       
-      // Update state/district/salesman scope filters to match user's credentials
-      if (currentUser.role === ROLES.STATE_SALES_HEAD && currentUser.state) {
-        setSelectedState(currentUser.state);
-      } else if (currentUser.role === ROLES.DISTRICT_MANAGER && currentUser.district) {
-        if (currentUser.state) setSelectedState(currentUser.state);
-        setSelectedDistrict(currentUser.district);
-      } else if (currentUser.role === ROLES.SALES_OFFICER && currentUser.salesMan) {
-        if (currentUser.state) setSelectedState(currentUser.state);
-        setSelectedSalesMan(currentUser.salesMan);
-        if (currentUser.district) {
+      // Update state/district/salesman scope filters: preserve any existing user selection in localStorage
+      const savedState = localStorage.getItem('wallnut_selected_state');
+      const savedDistrict = localStorage.getItem('wallnut_selected_district');
+      const savedSalesMan = localStorage.getItem('wallnut_selected_salesman');
+
+      if (currentUser.role === ROLES.STATE_SALES_HEAD) {
+        if (savedState) {
+          setSelectedState(savedState);
+        } else if (currentUser.state) {
+          setSelectedState(currentUser.state);
+        }
+      } else if (currentUser.role === ROLES.DISTRICT_MANAGER) {
+        if (savedDistrict) {
+          setSelectedDistrict(savedDistrict);
+        } else if (currentUser.district) {
           setSelectedDistrict(currentUser.district);
+        }
+        if (savedState) {
+          setSelectedState(savedState);
+        } else if (currentUser.state) {
+          setSelectedState(currentUser.state);
+        }
+      } else if (currentUser.role === ROLES.SALES_OFFICER) {
+        if (savedSalesMan) {
+          setSelectedSalesMan(savedSalesMan);
+        } else if (currentUser.salesMan) {
+          setSelectedSalesMan(currentUser.salesMan);
+        }
+        if (savedDistrict) {
+          setSelectedDistrict(savedDistrict);
+        } else if (currentUser.district) {
+          setSelectedDistrict(currentUser.district);
+        }
+        if (savedState) {
+          setSelectedState(savedState);
+        } else if (currentUser.state) {
+          setSelectedState(currentUser.state);
         }
       }
     }
