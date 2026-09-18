@@ -1,14 +1,21 @@
 /**
- * Wallnut — Mock Visits Data
+ * Wallnut — Mock Daily Sales Calls & Visits Data
  */
 
 export const visitsData = [
-  { id: '1', dealer: 'M/s Shree Cement House', salesMan: 'Rajesh Sharma', date: '2026-06-19', purpose: 'Product Demonstration & Feedback', status: 'Pending' },
-  { id: '2', dealer: 'Indore Building Center', salesMan: 'Rajesh Sharma', date: '2026-06-21', purpose: 'Outstanding Payment Collection', status: 'Pending' },
-  { id: '3', dealer: 'Kumar Hardware & Paints', salesMan: 'Rajesh Sharma', date: '2026-06-23', purpose: 'New Order Pitching', status: 'Pending' },
-  { id: '4', dealer: 'Rajlaxmi Traders', salesMan: 'Rajesh Sharma', date: '2026-06-17', purpose: 'Routine Courtesy Visit', status: 'Completed' },
-  { id: '5', dealer: 'Bhopal Cement Depot', salesMan: 'Sunil Patel', date: '2026-06-20', purpose: 'Waterproofing Training Session', status: 'Pending' },
-  { id: '6', dealer: 'Capital Construction Co.', salesMan: 'Sunil Patel', date: '2026-06-22', purpose: 'Annual Contract Renewal', status: 'Pending' },
+  {
+    id: 'sample-1',
+    dealer: 'Asha Eaknath Steel',
+    salesMan: 'Mr. Vaibhav Pawar',
+    callerRole: 'sales_officer',
+    district: 'Kolhapur',
+    state: 'Maharashtra',
+    date: '2026-09-18',
+    callType: 'Store Visit',
+    purpose: 'Payment Follow-up / Collection',
+    notes: 'Meeting with owner regarding payment clearance. Cheque promised by next Monday.',
+    status: 'Completed',
+  },
 ];
 
 export default visitsData;

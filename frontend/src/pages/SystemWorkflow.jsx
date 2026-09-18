@@ -1,9 +1,11 @@
 import { useRole, ROLES } from '../context/RoleContext';
+import { useAuth } from '../context/AuthContext';
 import { Shield, Map, Award, UserCheck, ArrowDown } from 'lucide-react';
 import './SystemWorkflow.css';
 
 export default function SystemWorkflow() {
   const { currentRole, setRole } = useRole();
+  const { currentUser } = useAuth();
 
   const nodes = [
     {
@@ -82,6 +84,10 @@ export default function SystemWorkflow() {
   ];
 
   const handleNodeClick = (roleId) => {
+    if (currentUser?.role !== ROLES.CEO) {
+      alert('Role switching is restricted to CEO / Admin accounts. Each user has access to their specific role dashboard.');
+      return;
+    }
     setRole(roleId);
     // Alert user that the view role has changed
     const roleLabels = {

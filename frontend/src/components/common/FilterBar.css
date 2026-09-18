@@ -500,3 +500,18 @@
     z-index: 110;
   }
 }
+
+@media (max-width: 360px) {
+  .filter-bar-wrapper {
+    padding: 6px 8px;
+  }
+  .filter-mobile-summary {
+    font-size: 0.76rem;
+    gap: 4px;
+  }
+  .filter-expand-btn {
+    padding: 4px 8px;
+    font-size: 0.72rem;
+  }
+}
+

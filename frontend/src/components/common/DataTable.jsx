@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import './DataTable.css';
 
-export default function DataTable({ title, subtitle, columns, data, searchable = true, id = '' }) {
+export default function DataTable({ title, subtitle, columns, data, searchable = true, id = '', toolbar = null }) {
   const [sortKey, setSortKey] = useState(null);
   const [sortDir, setSortDir] = useState('desc');
   const [search, setSearch] = useState('');
@@ -42,9 +42,10 @@ export default function DataTable({ title, subtitle, columns, data, searchable =
   return (
     <div className="data-table-wrapper" id={id}>
       <div className="data-table-header">
-        <div>
+        <div className="data-table-title-group">
           <h3 className="data-table-title">{title}</h3>
           {subtitle && <p className="data-table-subtitle">{subtitle}</p>}
+          <span className="data-table-scroll-hint">← Swipe to view more →</span>
         </div>
         {searchable && (
           <input
@@ -56,7 +57,12 @@ export default function DataTable({ title, subtitle, columns, data, searchable =
           />
         )}
       </div>
-      <div style={{ overflowX: 'auto' }}>
+      {toolbar && (
+        <div className="data-table-toolbar-wrapper">
+          {toolbar}
+        </div>
+      )}
+      <div className="data-table-scroll-container">
         <table className="data-table">
           <thead>
             <tr>

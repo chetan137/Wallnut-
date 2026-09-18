@@ -8,11 +8,17 @@
 export default function TabBar({ tabs, active, onChange }) {
   return (
     <div style={{
-      display: 'inline-flex',
-      gap: '2px',
-      padding: '3px',
+      display: 'flex',
+      overflowX: 'auto',
+      maxWidth: '100%',
+      whiteSpace: 'nowrap',
+      WebkitOverflowScrolling: 'touch',
+      scrollbarWidth: 'none',
+      msOverflowStyle: 'none',
+      gap: '4px',
+      padding: '4px',
       background: 'var(--bg-main)',
-      borderRadius: '6px',
+      borderRadius: '8px',
       border: '1px solid var(--card-border)',
       marginBottom: 'var(--space-4)',
     }}>
@@ -21,8 +27,9 @@ export default function TabBar({ tabs, active, onChange }) {
           key={tab.key}
           onClick={() => onChange(tab.key)}
           style={{
+            flexShrink: 0,
             padding: '6px 14px',
-            borderRadius: '4px',
+            borderRadius: '6px',
             fontSize: '12px',
             fontWeight: '600',
             border: 'none',

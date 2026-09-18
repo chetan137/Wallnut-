@@ -131,21 +131,24 @@ export default function Sidebar({ isOpen, onClose }) {
       <div className="sidebar-role-section">
         <span className="sidebar-section-label">Scope Control</span>
         
-        <div className="sidebar-control-group">
-          <label className="sidebar-control-label" htmlFor="role-selector">View As Role</label>
-          <select
-            className="sidebar-role-select"
-            value={currentRole}
-            onChange={(e) => setRole(e.target.value)}
-            id="role-selector"
-          >
-            {allRoles.map(role => (
-              <option key={role.key} value={role.key}>
-                {role.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* Role Switcher — Restricted only to CEO / Admin accounts */}
+        {currentUser?.role === ROLES.CEO && (
+          <div className="sidebar-control-group">
+            <label className="sidebar-control-label" htmlFor="role-selector">View As Role</label>
+            <select
+              className="sidebar-role-select"
+              value={currentRole}
+              onChange={(e) => setRole(e.target.value)}
+              id="role-selector"
+            >
+              {allRoles.map(role => (
+                <option key={role.key} value={role.key}>
+                  {role.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* State Selector (Visible only for State Sales Head role) */}
         {currentRole === ROLES.STATE_SALES_HEAD && (

@@ -18,8 +18,8 @@ export default function KPIRow({ metrics, isYearly = false, showBothTrends = fal
     <div className="kpi-row stagger-children" id="kpi-row">
       <KPICard
         icon={IndianRupee}
-        label="Total Sales"
-        description="Gross sell amount — total invoiced value in the selected period"
+        label="Net Sales (Excl. GST)"
+        description="Net taxable sales amount without GST in the selected period"
         value={abbreviateCurrency(metrics.totalSales)}
         trend={showBothTrends ? null : metrics.salesTrend}
         trendLabel={showBothTrends ? null : trendLabel}

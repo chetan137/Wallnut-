@@ -29,7 +29,14 @@ function PublicRoute({ children }) {
 // Synced Dashboard Router
 function DashboardContainer() {
   const { currentUser } = useAuth();
-  const { currentRole, setRole, setSelectedDistrict, setSelectedSalesMan, filteredSales } = useRole();
+  const {
+    currentRole,
+    setRole,
+    setSelectedState,
+    setSelectedDistrict,
+    setSelectedSalesMan,
+    filteredSales,
+  } = useRole();
   const [syncedUserId, setSyncedUserId] = useState(null);
 
   // Sync user credentials to view scope on login / user switch
@@ -40,17 +47,28 @@ function DashboardContainer() {
       // Update role view to match user's actual role
       setRole(currentUser.role);
       
-      // Update district/salesman scope filters to match user's credentials
-      if (currentUser.role === ROLES.DISTRICT_MANAGER && currentUser.district) {
+      // Update state/district/salesman scope filters to match user's credentials
+      if (currentUser.role === ROLES.STATE_SALES_HEAD && currentUser.state) {
+        setSelectedState(currentUser.state);
+      } else if (currentUser.role === ROLES.DISTRICT_MANAGER && currentUser.district) {
+        if (currentUser.state) setSelectedState(currentUser.state);
         setSelectedDistrict(currentUser.district);
       } else if (currentUser.role === ROLES.SALES_OFFICER && currentUser.salesMan) {
+        if (currentUser.state) setSelectedState(currentUser.state);
         setSelectedSalesMan(currentUser.salesMan);
         if (currentUser.district) {
           setSelectedDistrict(currentUser.district);
         }
       }
     }
-  }, [currentUser, syncedUserId, setRole, setSelectedDistrict, setSelectedSalesMan]);
+  }, [currentUser, syncedUserId, setRole, setSelectedState, setSelectedDistrict, setSelectedSalesMan]);
+
+  // Restrict non-CEO accounts strictly to their own assigned dashboard role
+  useEffect(() => {
+    if (currentUser && currentUser.role !== ROLES.CEO && currentRole !== currentUser.role) {
+      setRole(currentUser.role);
+    }
+  }, [currentUser, currentRole, setRole]);
 
   // Render correct dashboard component based on selected view role
   switch (currentRole) {

@@ -9,7 +9,11 @@ import TopSalesOfficers from '../components/charts/TopSalesOfficers';
 import AlertsPanel from '../components/panels/AlertsPanel';
 import DistrictPerformanceTable from '../components/tables/DistrictPerformanceTable';
 import DealerPerformanceTable from '../components/tables/DealerPerformanceTable';
+import DailySalesTable from '../components/tables/DailySalesTable';
+import SalesCallsReportTable from '../components/tables/SalesCallsReportTable';
+import LogSalesCallModal from '../components/common/LogSalesCallModal';
 import { useRole } from '../context/RoleContext';
+import { PhoneCall } from 'lucide-react';
 import {
   getKPIMetrics,
   getMonthlySalesTrend,
@@ -20,16 +24,23 @@ import {
   getFallingSalesAlerts,
   getHighOutstandingDealers,
   getDealerPerformanceSummary,
+  getDailySalesSummary,
 } from '../utils/dataProcessors';
 import './StateSalesHeadDashboard.css';
+import './SalesOfficerDashboard.css';
 
 export default function StateSalesHeadDashboard({ data }) {
-  const { filteredComplaints } = useRole();
+  const { filteredComplaints, filteredVisits, selectedState } = useRole();
   const [selectedYear, setSelectedYear] = useState('All');
+  const [isCallModalOpen, setIsCallModalOpen] = useState(false);
 
-  // Available years derived from data
+  // Available years: always include 2026, 2025, 2024 + any additional years from data
   const availableYears = useMemo(() => {
-    const years = new Set(data.map(d => d.date?.slice(0, 4)).filter(y => y && y.length === 4));
+    const years = new Set(['2026', '2025', '2024']);
+    data.forEach(d => {
+      const y = d.date?.slice(0, 4);
+      if (y && y.length === 4) years.add(y);
+    });
     return [...years].sort((a, b) => b.localeCompare(a));
   }, [data]);
 
@@ -49,40 +60,24 @@ export default function StateSalesHeadDashboard({ data }) {
   const fallingAlerts = useMemo(() => getFallingSalesAlerts(scopedData), [scopedData]);
   const highOutstanding = useMemo(() => getHighOutstandingDealers(scopedData, 8), [scopedData]);
   const dealerSummary = useMemo(() => getDealerPerformanceSummary(scopedData), [scopedData]);
+  const dailySales   = useMemo(() => getDailySalesSummary(scopedData), [scopedData]);
 
   return (
     <div className="ssh-dashboard" id="ssh-dashboard">
-      {/* Year Scope Selector */}
-      <div className="dashboard-control-bar" style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 'var(--space-4)',
-        padding: '10px 16px',
-        background: 'var(--card-bg)',
-        border: '1px solid var(--card-border)',
-        borderRadius: 'var(--border-radius-lg)',
-      }}>
-        <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)' }}>
-          STATE VIEW SCOPE SELECTOR
-        </span>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '500' }}>Select Year:</span>
+      {/* Quick Actions + Scope Bar */}
+      <div className="dashboard-actions-header">
+        <div className="quick-actions-bar">
+          <span className="quick-actions-title">Quick Actions:</span>
+          <button className="action-btn visit" onClick={() => setIsCallModalOpen(true)}>
+            <PhoneCall size={15} /> Log Daily Sales Call
+          </button>
+        </div>
+        <div className="dashboard-control-bar">
+          <span className="control-bar-label">Select Year:</span>
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(e.target.value)}
-            style={{
-              padding: '6px 14px',
-              borderRadius: '6px',
-              background: 'var(--bg-main)',
-              color: 'var(--text-main)',
-              border: '1px solid var(--card-border)',
-              fontFamily: 'inherit',
-              fontSize: '12px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              outline: 'none',
-            }}
+            className="control-bar-select"
           >
             <option value="All">All Years</option>
             {availableYears.map(year => (
@@ -104,10 +99,10 @@ export default function StateSalesHeadDashboard({ data }) {
             <MonthlySalesTrend data={monthlyTrend} />
           </div>
 
-          {/* District + Stock Breakdown */}
+          {/* District Performance */}
           <div className="charts-row">
             <DistrictPerformance data={districtPerf} />
-            <StockGroupBreakdown data={stockBreakdown} />
+            {/* StockGroupBreakdown hidden as per requirements */}
           </div>
 
           {/* Top Products + Top Officers */}
@@ -127,9 +122,17 @@ export default function StateSalesHeadDashboard({ data }) {
 
       {/* Bottom Tables */}
       <div className="tables-section">
+        <SalesCallsReportTable visits={filteredVisits} title="State Daily Sales Calls & Visits (Google Sheet Replacement)" />
+        <DailySalesTable data={dailySales} title="State Daily Sales Register (Excl. GST)" />
         <DistrictPerformanceTable data={districtPerf} />
         <DealerPerformanceTable data={dealerSummary} />
       </div>
+
+      <LogSalesCallModal
+        isOpen={isCallModalOpen}
+        onClose={() => setIsCallModalOpen(false)}
+        defaultState={selectedState}
+      />
     </div>
   );
 }

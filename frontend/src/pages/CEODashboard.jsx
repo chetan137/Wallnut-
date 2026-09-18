@@ -8,6 +8,8 @@ import TopSalesOfficers from '../components/charts/TopSalesOfficers';
 import AlertsPanel from '../components/panels/AlertsPanel';
 import DistrictPerformanceTable from '../components/tables/DistrictPerformanceTable';
 import DealerPerformanceTable from '../components/tables/DealerPerformanceTable';
+import DailySalesTable from '../components/tables/DailySalesTable';
+import SalesCallsReportTable from '../components/tables/SalesCallsReportTable';
 import ChartCard from '../components/common/ChartCard';
 import { useRole } from '../context/RoleContext';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
@@ -19,6 +21,7 @@ import {
   getTopSalesOfficers,
   getHighOutstandingDealers,
   getDealerPerformanceSummary,
+  getDailySalesSummary,
 } from '../utils/dataProcessors';
 import './StateSalesHeadDashboard.css'; // Share layout CSS
 
@@ -172,7 +175,7 @@ function getYearlyFallingSalesAlerts(allData, selectedYear) {
 }
 
 export default function CEODashboard({ data }) {
-  const { filteredComplaints } = useRole();
+  const { filteredComplaints, filteredVisits } = useRole();
   // Defaults to "All" rather than a hardcoded year — real synced Tally data
   // won't necessarily fall in whatever year this was last hardcoded to
   // (e.g. real vouchers dated 2025 while this defaulted to 2026), which
@@ -192,6 +195,7 @@ export default function CEODashboard({ data }) {
   const fallingAlerts = useMemo(() => getYearlyFallingSalesAlerts(data, selectedYear), [data, selectedYear]);
   const highOutstanding = useMemo(() => getHighOutstandingDealers(filteredData, 8), [filteredData]);
   const dealerSummary = useMemo(() => getDealerPerformanceSummary(filteredData), [filteredData]);
+  const dailySales = useMemo(() => getDailySalesSummary(filteredData), [filteredData]);
 
   // BUG FIX: this used to take the single totalSales figure and fabricate
   // 4 fixed states from it — "Madhya Pradesh" got 100% of it, "Maharashtra"/
@@ -215,45 +219,30 @@ export default function CEODashboard({ data }) {
       .slice(0, 6);
   }, [filteredData]);
 
+  // Available years: always include 2026, 2025, 2024 + any additional years from data
   const availableYears = useMemo(() => {
-    const years = new Set(data.map(d => d.date.slice(0, 4)).filter(y => y && y.length === 4));
+    const years = new Set(['2026', '2025', '2024']);
+    data.forEach(d => {
+      const y = d.date?.slice(0, 4);
+      if (y && y.length === 4) years.add(y);
+    });
     return [...years].sort((a, b) => b.localeCompare(a));
   }, [data]);
 
   return (
     <div className="ssh-dashboard" id="ceo-dashboard">
-      <div className="dashboard-control-bar" style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 'var(--space-4)',
-        padding: '10px 16px',
-        background: 'var(--card-bg)',
-        border: '1px solid var(--card-border)',
-        borderRadius: 'var(--border-radius-lg)',
-      }}>
+      <div className="dashboard-control-bar ceo-control-bar">
         <div className="control-bar-left">
-          <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+          <span className="control-bar-title">
             CEO VIEW SCOPE SELECTOR
           </span>
         </div>
-        <div className="control-bar-right" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '500' }}>Select Year:</span>
+        <div className="control-bar-right">
+          <span className="control-bar-label">Select Year:</span>
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(e.target.value)}
-            style={{
-              padding: '6px 14px',
-              borderRadius: '6px',
-              background: 'var(--bg-main)',
-              color: 'var(--text-main)',
-              border: '1px solid var(--card-border)',
-              fontFamily: 'inherit',
-              fontSize: '12px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              outline: 'none',
-            }}
+            className="control-bar-select"
           >
             <option value="All">All Years</option>
             {availableYears.map(year => (
@@ -304,7 +293,7 @@ export default function CEODashboard({ data }) {
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>
-            <StockGroupBreakdown data={stockBreakdown} />
+            {/* StockGroupBreakdown hidden as per requirements */}
           </div>
 
           <div className="charts-bottom-row">
@@ -321,6 +310,8 @@ export default function CEODashboard({ data }) {
       </div>
 
       <div className="tables-section">
+        <SalesCallsReportTable visits={filteredVisits} title="All-India Daily Sales Calls & Visits (Google Sheet Replacement)" />
+        <DailySalesTable data={dailySales} title="All-India Daily Sales Register (Excl. GST)" />
         <DistrictPerformanceTable data={districtPerf} />
         <DealerPerformanceTable data={dealerSummary} />
       </div>

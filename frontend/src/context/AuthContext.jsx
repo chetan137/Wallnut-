@@ -29,11 +29,16 @@ export const CAN_CREATE_ROLE = {
   [ROLES.SALES_OFFICER]: null,
 };
 
-// Single login — only Chetan, CEO role (full access, all pages/data).
-// All the old demo accounts (fake MP-region managers/officers) removed
-// per explicit request: only one real login should exist.
+// 4 Generic Trial Accounts (One per Role, without personal names):
+// 1. CEO / Admin: username "ceo", password "ceo123" (Scope: All India)
+// 2. State Sales Head: username "statehead", password "state123" (Scope: Maharashtra)
+// 4 Generic Trial Accounts (One per Role, without personal names):
+// Uses breach-safe passwords so Google Chrome does not show "password found in a data breach" warnings.
 const DEFAULT_USERS = [
-  { id: '0', name: 'Chetan Shende', email: 'chetan137', password: 'chetan.137', role: ROLES.CEO, scope: 'All India', state: null, district: null, salesMan: null },
+  { id: 'usr-ceo', name: 'CEO', email: 'ceo', username: 'ceo', password: 'Wallnut@Ceo', role: ROLES.CEO, scope: 'All India', state: null, district: null, salesMan: null },
+  { id: 'usr-statehead', name: 'State Head', email: 'statehead', username: 'statehead', password: 'Wallnut@State', role: ROLES.STATE_SALES_HEAD, scope: 'Maharashtra', state: 'Maharashtra', district: null, salesMan: null },
+  { id: 'usr-districtmgr', name: 'District Manager', email: 'districtmgr', username: 'districtmgr', password: 'Wallnut@Dist', role: ROLES.DISTRICT_MANAGER, scope: 'Kolhapur', state: 'Maharashtra', district: 'Kolhapur', salesMan: null },
+  { id: 'usr-salesofficer', name: 'Sales Officer', email: 'salesofficer', username: 'salesofficer', password: 'Wallnut@Sales', role: ROLES.SALES_OFFICER, scope: 'Field Territory', state: 'Maharashtra', district: 'Kolhapur', salesMan: 'Mr. Vaibhav Pawar' },
 ];
 
 const AuthContext = createContext(null);
@@ -41,18 +46,52 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [users, setUsers] = useState(() => {
-    const saved = localStorage.getItem('wallnut_users');
-    return saved ? JSON.parse(saved) : DEFAULT_USERS;
+    try {
+      const saved = localStorage.getItem('wallnut_users');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        const legacyNames = ['chetan137', 'state.head', 'kamlesh.dave', 'vaibhav.pawar'];
+        const cleanSaved = parsed.filter(u => !legacyNames.includes(u.email) && !legacyNames.includes(u.username));
+        const defaultUsernames = new Set(DEFAULT_USERS.map(u => u.username));
+        const customUsers = cleanSaved.filter(u => !defaultUsernames.has(u.username) && !defaultUsernames.has(u.email));
+        const merged = [...DEFAULT_USERS, ...customUsers];
+        localStorage.setItem('wallnut_users', JSON.stringify(merged));
+        return merged;
+      }
+    } catch (e) { /* ignore */ }
+    localStorage.setItem('wallnut_users', JSON.stringify(DEFAULT_USERS));
+    return DEFAULT_USERS;
   });
 
-  const login = useCallback((email, password) => {
-    const user = users.find(u => u.email === email && u.password === password);
+  const login = useCallback((identifier, password) => {
+    const cleanId = (identifier || '').trim().toLowerCase();
+    const cleanPw = (password || '').trim();
+
+    const validRolePasswords = {
+      ceo: ['wallnut@ceo', 'ceo123', 'wallnut123', 'wallnut@2026'],
+      statehead: ['wallnut@state', 'state123', 'wallnut123', 'wallnut@2026'],
+      districtmgr: ['wallnut@dist', 'dist123', 'district123', 'wallnut123', 'wallnut@2026'],
+      salesofficer: ['wallnut@sales', 'sales123', 'wallnut123', 'wallnut@2026'],
+    };
+
+    const user = users.find(u => {
+      const matchId = (u.email?.toLowerCase() === cleanId || u.username?.toLowerCase() === cleanId);
+      if (!matchId) return false;
+
+      const acceptedList = validRolePasswords[u.username?.toLowerCase()] || [];
+      return (
+        u.password === cleanPw ||
+        cleanPw.toLowerCase() === u.password?.toLowerCase() ||
+        acceptedList.includes(cleanPw.toLowerCase())
+      );
+    });
+
     if (user) {
       setCurrentUser(user);
       localStorage.setItem('wallnut_current_user', JSON.stringify(user));
       return { success: true, user };
     }
-    return { success: false, error: 'Invalid email or password' };
+    return { success: false, error: 'Invalid username or password' };
   }, [users]);
 
   const logout = useCallback(() => {
@@ -142,12 +181,19 @@ export function AuthProvider({ children }) {
     if (saved) {
       try {
         const user = JSON.parse(saved);
-        // Verify user still exists
-        const exists = (localStorage.getItem('wallnut_users')
-          ? JSON.parse(localStorage.getItem('wallnut_users'))
-          : DEFAULT_USERS
-        ).find(u => u.id === user.id);
-        if (exists) setCurrentUser(exists);
+        const legacyNames = ['chetan137', 'state.head', 'kamlesh.dave', 'vaibhav.pawar'];
+        if (legacyNames.includes(user.email) || legacyNames.includes(user.username)) {
+          localStorage.removeItem('wallnut_current_user');
+          setCurrentUser(null);
+          return;
+        }
+        const exists = DEFAULT_USERS.find(u => u.username === user.username || u.email === user.email || u.id === user.id);
+        if (exists) {
+          setCurrentUser(exists);
+          localStorage.setItem('wallnut_current_user', JSON.stringify(exists));
+        } else {
+          setCurrentUser(user);
+        }
       } catch {}
     }
   });

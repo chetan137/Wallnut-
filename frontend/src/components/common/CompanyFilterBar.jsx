@@ -29,22 +29,26 @@ export default function CompanyFilterBar({ companies, selectedCompanyId, onChang
   return (
     <div className="dashboard-control-bar" style={{
       display: 'flex',
+      flexWrap: 'wrap',
       justifyContent: 'space-between',
       alignItems: 'center',
+      gap: '8px',
       marginBottom: 'var(--space-4)',
-      padding: '10px 16px',
+      padding: '10px 14px',
       background: 'var(--card-bg)',
       border: '1px solid var(--card-border)',
       borderRadius: 'var(--border-radius-lg)',
     }}>
-      <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+      <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-secondary)', letterSpacing: '0.04em' }}>
         COMPANY
       </span>
       <select
         value={selectedCompanyId}
         onChange={(e) => onChange(e.target.value)}
         style={{
-          padding: '6px 14px',
+          flex: '1 1 180px',
+          maxWidth: '100%',
+          padding: '6px 12px',
           borderRadius: '6px',
           background: 'var(--bg-main)',
           color: 'var(--text-main)',

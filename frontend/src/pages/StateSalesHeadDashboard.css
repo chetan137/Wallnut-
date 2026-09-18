@@ -59,3 +59,195 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ──────────────────────────────────────────────
+   Top Actions Header (Quick Actions + Scope Bar)
+   Desktop default: side-by-side flex row
+   Mobile (<640px): stacked full-width touch targets
+   ────────────────────────────────────────────── */
+.dashboard-actions-header {
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  align-items: stretch;
+}
+
+.dashboard-actions-header .quick-actions-bar {
+  flex: 1;
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 10px 16px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg, 12px);
+}
+
+.dashboard-actions-header .quick-actions-title {
+  font-family: var(--font-heading);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+.dashboard-actions-header .action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px 18px;
+  border-radius: var(--radius-md, 8px);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+  box-shadow: var(--card-shadow);
+}
+
+.dashboard-actions-header .action-btn.visit {
+  background-color: var(--accent-secondary, #b45309);
+}
+
+.dashboard-actions-header .action-btn.visit:hover {
+  background-color: var(--accent-secondary-hover, #92400e);
+}
+
+.dashboard-control-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg, 12px);
+  white-space: nowrap;
+}
+
+.dashboard-control-bar.ceo-control-bar {
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.control-bar-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.control-bar-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.control-bar-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.control-bar-select {
+  padding: 6px 14px;
+  border-radius: 6px;
+  background: var(--bg-main);
+  color: var(--text-main);
+  border: 1px solid var(--card-border);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+
+@media (max-width: 640px) {
+  .dashboard-actions-header {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .dashboard-actions-header .quick-actions-bar {
+    width: 100%;
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 12px 14px;
+  }
+
+  .dashboard-actions-header .quick-actions-title {
+    margin-right: 0;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+
+  .dashboard-actions-header .action-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 16px;
+    font-size: 0.9rem;
+    min-height: 44px; /* Optimal mobile touch target */
+  }
+
+  .dashboard-control-bar {
+    width: 100%;
+    justify-content: space-between;
+    padding: 10px 14px;
+  }
+
+  .dashboard-control-bar.ceo-control-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .dashboard-control-bar.ceo-control-bar .control-bar-right {
+    justify-content: space-between;
+  }
+
+  .control-bar-select {
+    flex: 1;
+    max-width: 150px;
+    min-height: 38px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 360px) {
+  .ssh-dashboard {
+    gap: 10px;
+  }
+  .kpi-row {
+    gap: 8px;
+  }
+  .tables-section {
+    gap: 10px;
+  }
+  .dashboard-actions-header {
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .dashboard-actions-header .quick-actions-bar {
+    padding: 10px 12px;
+  }
+  .dashboard-actions-header .action-btn {
+    min-height: 40px;
+    font-size: 0.85rem;
+    padding: 10px 14px;
+  }
+  .dashboard-control-bar {
+    padding: 8px 12px;
+  }
+  .control-bar-select {
+    min-height: 34px;
+    font-size: 12px;
+  }
+}
+
+

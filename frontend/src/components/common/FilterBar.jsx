@@ -373,40 +373,7 @@ export default function FilterBar() {
           </div>
         )}
 
-        {/* Stock Group Dropdown */}
-        <div className="filter-group">
-          <label className="filter-label">Stock Group</label>
-          <select
-            className="filter-select-field"
-            value={filters.stockGroup}
-            onChange={e => {
-              const val = e.target.value;
-              setFilters(prev => ({ ...prev, stockGroup: val, stockCategory: '' }));
-            }}
-          >
-            <option value="">All Groups</option>
-            {availableStockGroups.map(group => (
-              <option key={group} value={group}>{group}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Stock Category Dropdown (Dependent on Stock Group) */}
-        <div className="filter-group">
-          <label className="filter-label">Stock Category</label>
-          <select
-            className="filter-select-field"
-            value={filters.stockCategory}
-            onChange={e => setFilters(prev => ({ ...prev, stockCategory: e.target.value }))}
-            disabled={!filters.stockGroup}
-            title={!filters.stockGroup ? "Select a Stock Group first" : ""}
-          >
-            <option value="">All Categories</option>
-            {availableStockCategories.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
-        </div>
+        {/* Stock Group & Category Dropdowns Hidden as per requirements */}
 
         {/* Searchable Dealer (Party Name) */}
         <div className="filter-group party-name-filter" ref={dealerRef}>

@@ -6,8 +6,11 @@ import TopProducts from '../components/charts/TopProducts';
 import TopSalesOfficers from '../components/charts/TopSalesOfficers';
 import AlertsPanel from '../components/panels/AlertsPanel';
 import DealerPerformanceTable from '../components/tables/DealerPerformanceTable';
+import DailySalesTable from '../components/tables/DailySalesTable';
+import SalesCallsReportTable from '../components/tables/SalesCallsReportTable';
+import LogSalesCallModal from '../components/common/LogSalesCallModal';
 import { useRole } from '../context/RoleContext';
-import { Calendar } from 'lucide-react';
+import { PhoneCall } from 'lucide-react';
 import {
   getKPIMetrics,
   getMonthlySalesTrend,
@@ -17,6 +20,7 @@ import {
   getFallingSalesAlerts,
   getHighOutstandingDealers,
   getDealerPerformanceSummary,
+  getDailySalesSummary,
 } from '../utils/dataProcessors';
 import './StateSalesHeadDashboard.css';
 import './SalesOfficerDashboard.css';
@@ -24,6 +28,7 @@ import './SalesOfficerDashboard.css';
 export default function DistrictManagerDashboard({ data }) {
   const {
     filteredComplaints,
+    filteredVisits,
     selectedDistrict,
     allDealers,
     allSalesOfficers,
@@ -31,10 +36,15 @@ export default function DistrictManagerDashboard({ data }) {
   } = useRole();
 
   const [selectedYear, setSelectedYear] = useState('All');
+  const [isCallModalOpen, setIsCallModalOpen] = useState(false);
 
-  // Available years derived from data
+  // Available years: always include 2026, 2025, 2024 + any additional years from data
   const availableYears = useMemo(() => {
-    const years = new Set(data.map(d => d.date?.slice(0, 4)).filter(y => y && y.length === 4));
+    const years = new Set(['2026', '2025', '2024']);
+    data.forEach(d => {
+      const y = d.date?.slice(0, 4);
+      if (y && y.length === 4) years.add(y);
+    });
     return [...years].sort((a, b) => b.localeCompare(a));
   }, [data]);
 
@@ -53,10 +63,7 @@ export default function DistrictManagerDashboard({ data }) {
   const fallingAlerts   = useMemo(() => getFallingSalesAlerts(scopedData), [scopedData]);
   const highOutstanding = useMemo(() => getHighOutstandingDealers(scopedData, 8), [scopedData]);
   const dealerSummary   = useMemo(() => getDealerPerformanceSummary(scopedData), [scopedData]);
-
-  // Visit assignment modal states
-  const [activeModal, setActiveModal] = useState(null); // null or 'visit'
-  const [visitForm, setVisitForm] = useState({ dealer: '', salesMan: '', purpose: '', date: '', notes: '' });
+  const dailySales      = useMemo(() => getDailySalesSummary(scopedData), [scopedData]);
 
   // Get dealers in this district
   const myDealers = useMemo(() => {
@@ -72,57 +79,22 @@ export default function DistrictManagerDashboard({ data }) {
       .map(o => o.name);
   }, [allSalesOfficers, selectedDistrict]);
 
-  const handleVisitSubmit = (e) => {
-    e.preventDefault();
-    if (!visitForm.dealer || !visitForm.salesMan || !visitForm.purpose || !visitForm.date) return;
-
-    addVisitEntry({
-      dealer: visitForm.dealer,
-      salesMan: visitForm.salesMan,
-      purpose: visitForm.purpose,
-      date: visitForm.date,
-      notes: visitForm.notes,
-    });
-
-    setActiveModal(null);
-    setVisitForm({ dealer: '', salesMan: '', purpose: '', date: '', notes: '' });
-  };
-
   return (
     <div className="ssh-dashboard" id="dm-dashboard">
       {/* Year Scope Selector + Quick Actions */}
-      <div style={{ display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-4)', alignItems: 'stretch' }}>
-        <div className="quick-actions-bar" style={{ flex: 1, marginBottom: 0 }}>
+      <div className="dashboard-actions-header">
+        <div className="quick-actions-bar">
           <span className="quick-actions-title">Quick Actions:</span>
-          <button className="action-btn visit" onClick={() => setActiveModal('visit')}>
-            <Calendar size={15} /> Add Visit Entry
+          <button className="action-btn visit" onClick={() => setIsCallModalOpen(true)}>
+            <PhoneCall size={15} /> Log Daily Sales Call
           </button>
         </div>
-        <div className="dashboard-control-bar" style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          padding: '10px 16px',
-          background: 'var(--card-bg)',
-          border: '1px solid var(--card-border)',
-          borderRadius: 'var(--border-radius-lg)',
-        }}>
-          <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '500' }}>Select Year:</span>
+        <div className="dashboard-control-bar">
+          <span className="control-bar-label">Select Year:</span>
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(e.target.value)}
-            style={{
-              padding: '6px 14px',
-              borderRadius: '6px',
-              background: 'var(--bg-main)',
-              color: 'var(--text-main)',
-              border: '1px solid var(--card-border)',
-              fontFamily: 'inherit',
-              fontSize: '12px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              outline: 'none',
-            }}
+            className="control-bar-select"
           >
             <option value="All">All Years</option>
             {availableYears.map(year => (
@@ -143,7 +115,7 @@ export default function DistrictManagerDashboard({ data }) {
           <div className="charts-row">
             {/* Sales Officer Performance bar within this district */}
             <TopSalesOfficers data={topOfficers} />
-            <StockGroupBreakdown data={stockBreakdown} />
+            {/* StockGroupBreakdown hidden as per requirements */}
           </div>
 
           <div className="charts-bottom-row">
@@ -160,95 +132,16 @@ export default function DistrictManagerDashboard({ data }) {
 
       {/* Dealer Performance Ranking Table */}
       <div className="tables-section">
+        <SalesCallsReportTable visits={filteredVisits} title="District Daily Sales Calls & Visits (Google Sheet Replacement)" />
+        <DailySalesTable data={dailySales} title="District Daily Sales Register (Excl. GST)" />
         <DealerPerformanceTable data={dealerSummary} />
       </div>
 
-      {/* Assign Visit Modal */}
-      {activeModal === 'visit' && (
-        <div className="modal-overlay" onClick={() => setActiveModal(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3 className="modal-title">Assign Visit to Officer</h3>
-              <span className="modal-close" onClick={() => setActiveModal(null)}>&times;</span>
-            </div>
-            <form onSubmit={handleVisitSubmit}>
-              <div className="modal-body modal-form">
-                <div className="login-field">
-                  <label className="login-label">Dealer / Party Name</label>
-                  <select
-                    className="login-input"
-                    value={visitForm.dealer}
-                    onChange={(e) => setVisitForm(v => ({ ...v, dealer: e.target.value }))}
-                    required
-                  >
-                    <option value="">Select Dealer...</option>
-                    {myDealers.map(d => (
-                      <option key={d} value={d}>{d}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="login-field">
-                  <label className="login-label">Assign Sales Officer</label>
-                  <select
-                    className="login-input"
-                    value={visitForm.salesMan}
-                    onChange={(e) => setVisitForm(v => ({ ...v, salesMan: e.target.value }))}
-                    required
-                  >
-                    <option value="">Select Officer...</option>
-                    {mySalesOfficers.map(o => (
-                      <option key={o} value={o}>{o}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="login-field">
-                  <label className="login-label">Purpose of Visit</label>
-                  <select
-                    className="login-input"
-                    value={visitForm.purpose}
-                    onChange={(e) => setVisitForm(v => ({ ...v, purpose: e.target.value }))}
-                    required
-                  >
-                    <option value="">Select Purpose...</option>
-                    <option value="Product Demonstration & Feedback">Product Demonstration & Feedback</option>
-                    <option value="Outstanding Payment Collection">Outstanding Payment Collection</option>
-                    <option value="New Order Pitching">New Order Pitching</option>
-                    <option value="Routine Courtesy Visit">Routine Courtesy Visit</option>
-                  </select>
-                </div>
-
-                <div className="login-field">
-                  <label className="login-label">Scheduled Date</label>
-                  <input
-                    type="date"
-                    className="login-input"
-                    value={visitForm.date}
-                    onChange={(e) => setVisitForm(v => ({ ...v, date: e.target.value }))}
-                    required
-                  />
-                </div>
-
-                <div className="login-field">
-                  <label className="login-label">Notes (Optional)</label>
-                  <textarea
-                    className="login-input"
-                    rows="3"
-                    placeholder="Add notes about the planned visit..."
-                    value={visitForm.notes}
-                    onChange={(e) => setVisitForm(v => ({ ...v, notes: e.target.value }))}
-                  />
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="modal-btn-cancel" onClick={() => setActiveModal(null)}>Cancel</button>
-                <button type="submit" className="modal-btn-submit visit">Assign Visit</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <LogSalesCallModal
+        isOpen={isCallModalOpen}
+        onClose={() => setIsCallModalOpen(false)}
+        defaultDistrict={selectedDistrict}
+      />
     </div>
   );
 }

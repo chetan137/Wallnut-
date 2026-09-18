@@ -86,9 +86,15 @@ export default function EwayBillsPage() {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
 
+  // Available years: always include 2026, 2025, 2024 + any additional years from data
   const availableYears = useMemo(() => {
-    if (!data) return [];
-    const years = new Set(data.bills.map((b) => String(b.date).slice(0, 4)).filter((y) => y.length === 4));
+    const years = new Set(['2026', '2025', '2024']);
+    if (data?.bills) {
+      data.bills.forEach((b) => {
+        const y = String(b.date).slice(0, 4);
+        if (y.length === 4) years.add(y);
+      });
+    }
     return [...years].sort((a, b) => b.localeCompare(a));
   }, [data]);
 

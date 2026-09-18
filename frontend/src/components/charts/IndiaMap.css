@@ -272,3 +272,45 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* ── Mobile Map Responsiveness ── */
+@media (max-width: 640px) {
+  .map-card {
+    min-height: 360px;
+    padding: 12px;
+  }
+  .map-card-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .map-controls {
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .map-metric-toggles {
+    flex: 1;
+    display: flex;
+  }
+  .map-metric-btn {
+    flex: 1;
+    text-align: center;
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+  .map-state-select {
+    width: 100%;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .map-card {
+    min-height: 320px;
+    padding: 10px;
+  }
+  .map-card-title {
+    font-size: 1.2rem;
+  }
+}

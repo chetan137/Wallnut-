@@ -48,30 +48,11 @@ export default function AlertsPanel({ fallingAlerts, highOutstanding, complaints
               <span className="alert-item-value outstanding">{abbreviateCurrency(item.outstanding)}</span>
             </div>
           ))}
-        </div>
-      </div>
-
-      {/* Complaint Summary */}
-      <div className="alert-section">
-        <div className="alert-section-header">
-          <span className="alert-section-title">
-            <MessageSquare size={15} style={{ color: 'var(--info)' }} />
-            Complaints
-          </span>
-          <span className="alert-section-count blue">{complaints.open} open</span>
-        </div>
-        <div className="alert-list">
-          {complaints.recent.map((c, i) => (
-            <div key={i} className="complaint-item">
-              <div className="complaint-item-header">
-                <span className="complaint-item-dealer">{c.dealer}</span>
-                <span className={`complaint-status ${c.status.toLowerCase().replace(/\s/g, '-')}`}>
-                  {c.status}
-                </span>
-              </div>
-              <div className="complaint-item-desc">{c.description}</div>
+          {highOutstanding.length === 0 && (
+            <div className="alert-item">
+              <span className="alert-item-name" style={{ color: 'var(--text-muted)' }}>No high outstanding alerts</span>
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>

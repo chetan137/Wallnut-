@@ -44,7 +44,8 @@ export default function IndiaMap({ data, isNational = true, defaultState = 'Madh
   const containerRef = useRef(null);
 
 
-  const stateSlug = useMemo(() => STATE_SLUGS[activeState] || 'madhya-pradesh', [activeState]);
+  const hasMapFile = isNational || Boolean(STATE_SLUGS[activeState]);
+  const stateSlug = useMemo(() => isNational ? null : (STATE_SLUGS[activeState] || null), [isNational, activeState]);
 
   // Aggregate metrics
   const regionMetrics = useMemo(() => {
@@ -65,6 +66,11 @@ export default function IndiaMap({ data, isNational = true, defaultState = 'Madh
 
   // Fetch and decode TopoJSON map data
   useEffect(() => {
+    if (!isNational && !stateSlug) {
+      setGeoData(null);
+      return;
+    }
+
     const mapUrl = isNational ? '/maps/india-states.json' : `/maps/${stateSlug}.json`;
     
     setGeoData(null); // Clear previous data
@@ -157,20 +163,6 @@ export default function IndiaMap({ data, isNational = true, defaultState = 'Madh
         </div>
 
         <div className="map-controls">
-          {/* State selection for state head preview */}
-          {!isNational && (
-            <select 
-              value={activeState} 
-              onChange={(e) => setSelectedState(e.target.value)}
-              className="map-state-select"
-              id="map-state-scope"
-            >
-              {availableStates.map(st => (
-                <option key={st} value={st}>{st}</option>
-              ))}
-            </select>
-          )}
-
           {/* Metric Selector Toggles */}
           <div className="map-metric-toggles">
             <button
@@ -191,7 +183,43 @@ export default function IndiaMap({ data, isNational = true, defaultState = 'Madh
 
       {/* Map Content */}
       <div className="map-body">
-        {geoData ? (
+        {!hasMapFile ? (
+          <div style={{
+            minHeight: '280px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+            padding: 'var(--space-6)',
+            background: 'var(--bg-main)',
+            borderRadius: 'var(--border-radius-md)',
+            border: '1px dashed var(--card-border)',
+            margin: 'var(--space-4)'
+          }}>
+            <Landmark size={32} style={{ color: 'var(--accent-primary)', marginBottom: 'var(--space-2)' }} />
+            <h4 style={{ margin: '0 0 6px 0', fontSize: '14px', color: 'var(--text-main)', fontWeight: 600 }}>
+              {activeState} Territory Overview
+            </h4>
+            <p style={{ margin: '0 0 16px 0', fontSize: '12px', color: 'var(--text-muted)', maxWidth: '380px' }}>
+              District map visualization is available for primary manufacturing & hub states. Full district & dealer performance for {activeState} are detailed below.
+            </p>
+            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
+              <div style={{ padding: '8px 16px', background: 'var(--card-bg)', borderRadius: '6px', border: '1px solid var(--card-border)' }}>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block' }}>Total Sales (Excl. GST)</span>
+                <strong style={{ fontSize: '14px', color: 'var(--accent-primary)' }}>
+                  {abbreviateCurrency(Object.values(regionMetrics).reduce((s, m) => s + (m.totalSales || 0), 0))}
+                </strong>
+              </div>
+              <div style={{ padding: '8px 16px', background: 'var(--card-bg)', borderRadius: '6px', border: '1px solid var(--card-border)' }}>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block' }}>Outstanding Amount</span>
+                <strong style={{ fontSize: '14px', color: 'var(--accent-secondary)' }}>
+                  {abbreviateCurrency(Object.values(regionMetrics).reduce((s, m) => s + (m.outstanding || 0), 0))}
+                </strong>
+              </div>
+            </div>
+          </div>
+        ) : geoData ? (
           <ComposableMap
             projection="geoMercator"
             projectionConfig={projectionConfig}
@@ -283,7 +311,7 @@ export default function IndiaMap({ data, isNational = true, defaultState = 'Madh
             <div className="tooltip-body">
               <div className="tooltip-row">
                 <span className="tooltip-label">
-                  <TrendingUp size={12} className="text-muted" /> Total Sales
+                  <TrendingUp size={12} className="text-muted" /> Total Sales (Excl. GST)
                 </span>
                 <span className="tooltip-value font-mono">
                   {abbreviateCurrency(hoveredGeo.metrics.totalSales)}

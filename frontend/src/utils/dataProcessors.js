@@ -363,26 +363,69 @@ export function getDealerPerformanceSummary(data) {
         totalSales: 0,
         outstanding: 0,
         transactions: 0,
+        products: {},
+        monthlySales: {},
       };
     }
     const entry = grouped[row.partyName];
-    // BUG FIX: used to lock in whichever value the dealer's FIRST row
-    // happened to carry. salesMan/areaCity aren't guaranteed on every
-    // inventory line (Cost Centre is only set on some real vouchers — see
-    // tallybackend/tally/parsers.js), so a dealer with hundreds of real
-    // transactions but only a handful carrying a Cost Centre often had its
-    // very first row be one of the blank ones — showing an empty Sales
-    // Officer/District even though the real value existed on that SAME
-    // dealer's other rows. Now takes the first REAL (non-empty) value found
-    // across all of the dealer's rows, checked independently per field.
     if (!entry.salesMan && row.salesMan) entry.salesMan = row.salesMan;
     if (!entry.district && row.areaCity) entry.district = row.areaCity;
     entry.totalSales += row.amount;
     entry.outstanding += row.finalOutstanding;
     entry.transactions += 1;
+
+    // Aggregate products purchased by this dealer
+    if (row.itemName) {
+      if (!entry.products[row.itemName]) {
+        entry.products[row.itemName] = {
+          name: row.itemName,
+          quantity: 0,
+          units: row.units || 'Units',
+          amount: 0,
+        };
+      }
+      entry.products[row.itemName].quantity += (row.quantity || 0);
+      entry.products[row.itemName].amount += (row.amount || 0);
+      if (row.units) entry.products[row.itemName].units = row.units;
+    }
+
+    // Aggregate monthly sales for PY comparison
+    if (row.date) {
+      const mKey = row.date.slice(0, 7);
+      entry.monthlySales[mKey] = (entry.monthlySales[mKey] || 0) + row.amount;
+    }
   }
 
-  return Object.values(grouped).sort((a, b) => b.totalSales - a.totalSales);
+  return Object.values(grouped).map(d => {
+    const productList = Object.values(d.products).map(p => ({
+      ...p,
+      avgRate: p.quantity > 0 ? Math.round(p.amount / p.quantity) : 0,
+      sharePct: d.totalSales > 0 ? Math.round((p.amount / d.totalSales) * 100) : 0,
+    })).sort((a, b) => b.amount - a.amount);
+
+    // Calculate PY (previous year same-month) or previous month growth if available
+    const months = Object.keys(d.monthlySales).sort();
+    const latestMonth = months[months.length - 1];
+    let pyGrowth = null;
+    if (latestMonth) {
+      const [year, month] = latestMonth.split('-').map(Number);
+      const pyMonthKey = `${year - 1}-${String(month).padStart(2, '0')}`;
+      const prevMonthKey = month === 1 ? `${year - 1}-12` : `${year}-${String(month - 1).padStart(2, '0')}`;
+
+      const curAmt = d.monthlySales[latestMonth] || 0;
+      if (d.monthlySales[pyMonthKey] !== undefined && d.monthlySales[pyMonthKey] > 0) {
+        pyGrowth = Math.round(((curAmt - d.monthlySales[pyMonthKey]) / d.monthlySales[pyMonthKey]) * 100);
+      } else if (d.monthlySales[prevMonthKey] !== undefined && d.monthlySales[prevMonthKey] > 0) {
+        pyGrowth = Math.round(((curAmt - d.monthlySales[prevMonthKey]) / d.monthlySales[prevMonthKey]) * 100);
+      }
+    }
+
+    return {
+      ...d,
+      productList,
+      pyGrowth,
+    };
+  }).sort((a, b) => b.totalSales - a.totalSales);
 }
 
 /**
@@ -494,3 +537,55 @@ export function getDistrictPerformanceForMap(data, stateName) {
     return acc;
   }, {});
 }
+
+/**
+ * Transforms sales rows into daily sales summary (Date, Invoices count, Quantities, Net Sales Excl. GST, Top Dealer).
+ * @param {Array} data - Filtered sales transactions
+ * @returns {Array} - List of daily aggregates sorted newest date first
+ */
+export function getDailySalesSummary(data) {
+  const map = {};
+  data.forEach((r) => {
+    if (!r.date) return;
+    if (!map[r.date]) {
+      map[r.date] = {
+        date: r.date,
+        invoices: new Set(),
+        totalAmount: 0,
+        totalQuantity: 0,
+        dealers: new Set(),
+        dealerAmounts: {},
+      };
+    }
+    const entry = map[r.date];
+    if (r.vchNo) entry.invoices.add(r.vchNo);
+    entry.totalAmount += Number(r.amount || 0);
+    entry.totalQuantity += Number(r.quantity || 0);
+    if (r.partyName) {
+      entry.dealers.add(r.partyName);
+      entry.dealerAmounts[r.partyName] = (entry.dealerAmounts[r.partyName] || 0) + Number(r.amount || 0);
+    }
+  });
+
+  return Object.values(map)
+    .map((d) => {
+      let topDealer = '-';
+      let maxDlrAmt = 0;
+      for (const [dealer, amt] of Object.entries(d.dealerAmounts)) {
+        if (amt > maxDlrAmt) {
+          maxDlrAmt = amt;
+          topDealer = dealer;
+        }
+      }
+      return {
+        date: d.date,
+        invoiceCount: d.invoices.size || 1,
+        totalAmount: d.totalAmount,
+        totalQuantity: d.totalQuantity,
+        dealerCount: d.dealers.size,
+        topDealer,
+      };
+    })
+    .sort((a, b) => b.date.localeCompare(a.date));
+}
+

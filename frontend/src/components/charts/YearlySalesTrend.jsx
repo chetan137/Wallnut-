@@ -135,7 +135,7 @@ export default function YearlySalesTrend({ data, selectedYear }) {
           <Legend verticalAlign="top" height={36} iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '11px', color: 'var(--text-secondary)' }} />
           <Bar
             dataKey="sales"
-            name="Total Sales"
+            name="Total Sales (Excl. GST)"
             fill="var(--accent-primary)"
             radius={[4, 4, 0, 0]}
             maxBarSize={32}

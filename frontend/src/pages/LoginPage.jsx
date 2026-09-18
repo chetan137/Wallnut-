@@ -6,13 +6,6 @@ import wallnutHero from '../assets/W.avif';
 import wallnutLogo from '../assets/logo.png';
 import './LoginPage.css';
 
-const DEMO_ACCOUNTS = [
-  { role: 'CEO / Admin', email: 'ceo@wallnut.in', password: 'admin123', color: '#82B22C' },
-  { role: 'State Sales Head', email: 'mp.head@wallnut.in', password: 'state123', color: '#5A9A20' },
-  { role: 'District Manager', email: 'indore.mgr@wallnut.in', password: 'dist123', color: '#C8742C' },
-  { role: 'Sales Officer', email: 'rajesh@wallnut.in', password: 'sales123', color: '#A85A1E' },
-];
-
 const STATS = [
   { value: '2017', label: 'Founded' },
   { value: '2', label: 'Factories' },
@@ -21,7 +14,7 @@ const STATS = [
 ];
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -33,7 +26,7 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     setTimeout(() => {
-      const result = login(email, password);
+      const result = login(username, password);
       setLoading(false);
       if (result.success) {
         navigate('/dashboard', { replace: true });
@@ -41,12 +34,6 @@ export default function LoginPage() {
         setError(result.error);
       }
     }, 400);
-  };
-
-  const fillDemo = (account) => {
-    setEmail(account.email);
-    setPassword(account.password);
-    setError('');
   };
 
   return (
@@ -102,15 +89,15 @@ export default function LoginPage() {
             )}
 
             <div className="login-field">
-              <label className="login-label" htmlFor="login-email">Email</label>
+              <label className="login-label" htmlFor="login-username">Username</label>
               <input
-                id="login-email"
+                id="login-username"
                 className="login-input"
                 type="text"
-                placeholder="name@wallnut.in"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
+                placeholder="Enter your username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                autoComplete="username"
                 required
               />
             </div>
@@ -133,34 +120,12 @@ export default function LoginPage() {
               type="submit"
               className="login-btn"
               id="login-submit"
-              disabled={loading || !email || !password}
+              disabled={loading || !username || !password}
             >
               {loading ? 'Signing in...' : 'Sign In'}
               {!loading && <ChevronRight size={16} />}
             </button>
           </form>
-
-          {/* Demo Accounts */}
-          <div className="login-demo-section">
-            <div className="login-demo-title">Quick Access — Demo Accounts</div>
-            <div className="login-demo-accounts">
-              {DEMO_ACCOUNTS.map((acc) => (
-                <div
-                  key={acc.email}
-                  className="login-demo-account"
-                  onClick={() => fillDemo(acc)}
-                  style={{ '--role-color': acc.color }}
-                >
-                  <div className="login-demo-dot" />
-                  <div className="login-demo-info">
-                    <span className="login-demo-role">{acc.role}</span>
-                    <span className="login-demo-email">{acc.email}</span>
-                  </div>
-                  <ChevronRight size={14} className="login-demo-arrow" />
-                </div>
-              ))}
-            </div>
-          </div>
 
           {/* Professional Footer */}
           <footer className="login-footer">

@@ -1,0 +1,29 @@
+{
+  "name": "Wallnut Analytics",
+  "short_name": "Wallnut",
+  "description": "Wallnut Analytics — Sales Intelligence, Dealer Tracking & Real-Time Performance Dashboard",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#F6F4ED",
+  "theme_color": "#82B22C",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "any",
+      "type": "image/png"
+    }
+  ]
+}

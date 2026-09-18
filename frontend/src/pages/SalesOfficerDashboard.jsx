@@ -1,10 +1,15 @@
 import { useState, useMemo } from 'react';
-import { IndianRupee, Users, ClipboardList, PlusCircle, MessageSquare, Clock, MapPin } from 'lucide-react';
+import { IndianRupee, Users, ClipboardList, PlusCircle, MessageSquare, Clock, MapPin, PhoneCall, Package } from 'lucide-react';
 import KPICard from '../components/cards/KPICard';
 import ChartCard from '../components/common/ChartCard';
 import DataTable from '../components/common/DataTable';
+import DailySalesTable from '../components/tables/DailySalesTable';
+import SalesCallsReportTable from '../components/tables/SalesCallsReportTable';
+import LogSalesCallModal from '../components/common/LogSalesCallModal';
+import DealerProductDrilldownModal from '../components/tables/DealerProductDrilldownModal';
 import { useRole } from '../context/RoleContext';
 import { abbreviateCurrency, formatNumber } from '../utils/formatters';
+import { getDailySalesSummary, getDealerPerformanceSummary } from '../utils/dataProcessors';
 import {
   ResponsiveContainer,
   LineChart, Line,
@@ -108,31 +113,38 @@ export default function SalesOfficerDashboard({ data }) {
 
   const COLORS = ['var(--accent-primary)', 'var(--accent-secondary)', 'var(--info)', 'var(--warning)', '#9b59b6', '#34495e'];
 
-  // Table 1: My Dealer Summary
+  // Table 1: My Dealer Summary with Product Drill-down support
   const dealerSummaryData = useMemo(() => {
+    const fullSummary = getDealerPerformanceSummary(data);
+    const summaryMap = {};
+    fullSummary.forEach(d => { summaryMap[d.dealer] = d; });
+
     const dealerMetrics = {};
-    // Initialize all assigned dealers
     myDealers.forEach(name => {
+      const match = summaryMap[name];
       dealerMetrics[name] = {
         name,
-        totalSales: 0,
+        dealer: name,
+        salesMan: officerName,
+        totalSales: match ? match.totalSales : 0,
         lastSaleDate: '-',
-        outstanding: 0,
+        outstanding: match ? match.outstanding : 0,
+        transactions: match ? match.transactions : 0,
+        productList: match ? match.productList : [],
+        pyGrowth: match ? match.pyGrowth : null,
+        monthlySales: match ? match.monthlySales : {},
         status: 'Active'
       };
     });
 
     data.forEach(r => {
       if (dealerMetrics[r.partyName]) {
-        dealerMetrics[r.partyName].totalSales += r.amount;
-        dealerMetrics[r.partyName].outstanding += r.finalOutstanding;
         if (dealerMetrics[r.partyName].lastSaleDate === '-' || r.date > dealerMetrics[r.partyName].lastSaleDate) {
           dealerMetrics[r.partyName].lastSaleDate = r.date;
         }
       }
     });
 
-    // Determine status: "At Risk" if high outstanding or no sale in June 2025
     return Object.values(dealerMetrics).map(d => {
       const limitDate = '2025-05-15';
       if (d.lastSaleDate !== '-' && d.lastSaleDate < limitDate) {
@@ -144,7 +156,9 @@ export default function SalesOfficerDashboard({ data }) {
       }
       return d;
     }).sort((a, b) => b.totalSales - a.totalSales);
-  }, [data, myDealers]);
+  }, [data, myDealers, officerName]);
+
+  const dailySales = useMemo(() => getDailySalesSummary(data), [data]);
 
   // Today's date string for comparing visits
   const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
@@ -163,6 +177,7 @@ export default function SalesOfficerDashboard({ data }) {
 
   // Modals Local State
   const [activeModal, setActiveModal] = useState(null); // 'sales', 'complaint'
+  const [isCallModalOpen, setIsCallModalOpen] = useState(false);
   const [salesForm, setSalesForm] = useState({ dealer: '', product: '', qty: '', rate: '' });
   const [complaintForm, setComplaintForm] = useState({ dealer: '', type: '', desc: '' });
 
@@ -222,10 +237,36 @@ export default function SalesOfficerDashboard({ data }) {
 
 
 
+  const [selectedDealerForDrilldown, setSelectedDealerForDrilldown] = useState(null);
+
   // Columns for My Dealer Summary table
   const dealerColumns = [
-    { header: 'Dealer Name', accessor: 'name' },
-    { header: 'Total Sales', accessor: 'totalSales', render: (val) => abbreviateCurrency(val), numeric: true },
+    {
+      header: 'Dealer Name',
+      accessor: 'name',
+      render: (val, row) => (
+        <button
+          onClick={() => setSelectedDealerForDrilldown(row)}
+          style={{
+            background: 'none',
+            border: 'none',
+            padding: 0,
+            color: 'var(--accent-primary)',
+            fontWeight: 600,
+            cursor: 'pointer',
+            textAlign: 'left',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+          title="Click to view product drill-down"
+        >
+          <span>{val}</span>
+          <Package size={13} style={{ opacity: 0.7 }} />
+        </button>
+      ),
+    },
+    { header: 'Total Sales (Excl. GST)', accessor: 'totalSales', render: (val) => abbreviateCurrency(val), numeric: true },
     { header: 'Last Sale Date', accessor: 'lastSaleDate', numeric: true },
     { header: 'Outstanding', accessor: 'outstanding', render: (val) => abbreviateCurrency(val), numeric: true },
     {
@@ -244,11 +285,8 @@ export default function SalesOfficerDashboard({ data }) {
       {/* Quick Actions Bar */}
       <div className="quick-actions-bar">
         <span className="quick-actions-title">Quick Actions:</span>
-        <button className="action-btn sales" onClick={() => setActiveModal('sales')}>
-          <PlusCircle size={15} /> Add Sales Entry
-        </button>
-        <button className="action-btn complaint" onClick={() => setActiveModal('complaint')}>
-          <MessageSquare size={15} /> Add Complaint
+        <button className="action-btn visit" onClick={() => setIsCallModalOpen(true)}>
+          <PhoneCall size={15} /> Log Daily Sales Call
         </button>
       </div>
 
@@ -256,13 +294,13 @@ export default function SalesOfficerDashboard({ data }) {
       <div className="so-kpi-row stagger-children">
         <KPICard
           icon={IndianRupee}
-          label="Today's Sales"
+          label="Today's Sales (Excl. GST)"
           value={abbreviateCurrency(todaysSales)}
           color="green"
         />
         <KPICard
           icon={ClipboardList}
-          label="Monthly Sales"
+          label="Monthly Sales (Excl. GST)"
           value={abbreviateCurrency(monthlySales)}
           color="blue"
         />
@@ -285,8 +323,8 @@ export default function SalesOfficerDashboard({ data }) {
         <div className="so-charts-col-left">
           {/* Trend Chart */}
           <ChartCard title="My Sales Trend" subtitle="Monthly sales performance">
-            <ResponsiveContainer width="100%" height={260}>
-              <LineChart data={salesTrendData} margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={salesTrendData} margin={{ top: 10, right: 10, left: -15, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
                 <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={(v) => abbreviateCurrency(v)} />
@@ -300,38 +338,17 @@ export default function SalesOfficerDashboard({ data }) {
             {/* Top Dealers Bar */}
             <ChartCard title="My Top Dealers" subtitle="Top 5 by sales volume">
               <ResponsiveContainer width="100%" height={240}>
-                <BarChart data={topDealersData} layout="vertical" margin={{ top: 5, right: 10, bottom: 5, left: 10 }}>
+                <BarChart data={topDealersData} layout="vertical" margin={{ top: 5, right: 10, bottom: 5, left: -10 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" horizontal={false} />
                   <XAxis type="number" tick={{ fontSize: 10, fill: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }} axisLine={false} tickLine={false} tickFormatter={(v) => abbreviateCurrency(v)} />
-                  <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} width={100} />
+                  <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} width={85} />
                   <Tooltip formatter={(v) => abbreviateCurrency(v)} />
                   <Bar dataKey="amount" fill="var(--accent-secondary)" radius={[0, 4, 4, 0]} maxBarSize={15} />
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>
 
-            {/* Product Mix Pie */}
-            <ChartCard title="Product Mix" subtitle="Category breakdown">
-              <ResponsiveContainer width="100%" height={240}>
-                <PieChart>
-                  <Pie
-                    data={productMixData}
-                    cx="50%"
-                    cy="45%"
-                    innerRadius={50}
-                    outerRadius={75}
-                    paddingAngle={3}
-                    dataKey="amount"
-                  >
-                    {productMixData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(v) => abbreviateCurrency(v)} />
-                  <Legend iconSize={8} iconType="circle" wrapperStyle={{ fontSize: '10px' }} />
-                </PieChart>
-              </ResponsiveContainer>
-            </ChartCard>
+            {/* Product Mix Category breakdown hidden as per requirements */}
           </div>
         </div>
 
@@ -393,6 +410,8 @@ export default function SalesOfficerDashboard({ data }) {
 
       {/* Bottom Table: Dealer Performance */}
       <div className="tables-section">
+        <SalesCallsReportTable visits={filteredVisits} title="My Daily Sales Calls & Visits (Google Sheet Replacement)" />
+        <DailySalesTable data={dailySales} title="My Daily Sales Register (Excl. GST)" />
         <DataTable
           title="My Dealer Summary"
           subtitle="Dealers performance and outstanding collection summary"
@@ -402,6 +421,18 @@ export default function SalesOfficerDashboard({ data }) {
           id="dealer-summary-table"
         />
       </div>
+
+      <LogSalesCallModal
+        isOpen={isCallModalOpen}
+        onClose={() => setIsCallModalOpen(false)}
+        defaultOfficer={officerName}
+      />
+
+      <DealerProductDrilldownModal
+        isOpen={Boolean(selectedDealerForDrilldown)}
+        onClose={() => setSelectedDealerForDrilldown(null)}
+        dealer={selectedDealerForDrilldown}
+      />
 
       {/* ================= MODALS ================= */}
 

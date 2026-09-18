@@ -20,9 +20,10 @@ const columns = [
   {
     header: 'District',
     accessor: 'district',
+    render: (val) => (val && val.trim() ? val : 'Unassigned'),
   },
   {
-    header: 'Total Sales',
+    header: 'Total Sales (Excl. GST)',
     accessor: 'totalSales',
     numeric: true,
     render: (val) => formatCurrency(val),

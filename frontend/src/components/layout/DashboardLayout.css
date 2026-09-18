@@ -66,6 +66,13 @@
   }
 }
 
+@media (max-width: 480px) {
+  .dashboard-content {
+    padding: var(--space-3);
+  }
+}
+
+
 /* Mobile Sidebar Backdrop Overlay */
 .sidebar-overlay {
   position: fixed;

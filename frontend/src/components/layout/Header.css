@@ -293,3 +293,35 @@
   }
 }
 
+/* Mobile S (320px screens) specific fit */
+@media (max-width: 360px) {
+  .header {
+    padding: 0 8px;
+    height: 52px;
+  }
+  .header-left {
+    gap: 6px;
+  }
+  .header-title {
+    font-size: 0.92rem;
+    white-space: nowrap;
+    letter-spacing: -0.2px;
+  }
+  .header-right {
+    gap: 4px;
+  }
+  .header-menu-btn,
+  .header-sync-btn,
+  .header-alert-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+  }
+  .header-data-badge {
+    padding: 2px 6px;
+    font-size: 10px;
+    gap: 3px;
+  }
+}
+
+

@@ -108,3 +108,34 @@
 .kpi-card-accent-line.orange { background: var(--accent-secondary); }
 .kpi-card-accent-line.blue { background: var(--info); }
 .kpi-card-accent-line.red { background: var(--danger); }
+
+@media (max-width: 480px) {
+  .kpi-card {
+    padding: var(--space-4);
+  }
+  .kpi-card-value {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .kpi-card {
+    padding: 10px 12px;
+    gap: 4px;
+  }
+  .kpi-card-value {
+    font-size: 1.35rem;
+  }
+  .kpi-card-label {
+    font-size: 0.78rem;
+  }
+  .kpi-card-description {
+    font-size: 0.68rem;
+  }
+  .kpi-card-icon {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+

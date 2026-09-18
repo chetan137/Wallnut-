@@ -68,8 +68,19 @@ export function RoleProvider({ children }) {
   const allSalesOfficers = useMemo(() => {
     const map = {};
     sales.forEach((r) => {
-      if (r.salesMan && !map[r.salesMan]) {
-        map[r.salesMan] = { name: r.salesMan, district: r.areaCity, state: r.state };
+      if (r.salesMan) {
+        const raw = r.salesMan.trim();
+        if (/branch|godown|warehouse|location/i.test(raw)) return;
+        const key = raw.replace(/^M[rs]\.\s+/i, '').trim().toLowerCase();
+        if (!map[key]) {
+          map[key] = { name: raw, district: r.areaCity || '', state: r.state || '' };
+        } else {
+          if (!map[key].name.startsWith('Mr.') && raw.startsWith('Mr.')) {
+            map[key].name = raw;
+          }
+          if (!map[key].state && r.state) map[key].state = r.state;
+          if (!map[key].district && r.areaCity) map[key].district = r.areaCity;
+        }
       }
     });
     return Object.values(map);
@@ -78,8 +89,15 @@ export function RoleProvider({ children }) {
   const allDealers = useMemo(() => {
     const map = {};
     sales.forEach((r) => {
-      if (r.partyName && !map[r.partyName]) {
-        map[r.partyName] = { name: r.partyName, salesOfficer: r.salesMan, district: r.areaCity, state: r.state };
+      if (r.partyName) {
+        const raw = r.partyName.trim();
+        if (!map[raw]) {
+          map[raw] = { name: raw, salesOfficer: r.salesMan || '', district: r.areaCity || '', state: r.state || '' };
+        } else {
+          if (!map[raw].salesOfficer && r.salesMan) map[raw].salesOfficer = r.salesMan;
+          if (!map[raw].state && r.state) map[raw].state = r.state;
+          if (!map[raw].district && r.areaCity) map[raw].district = r.areaCity;
+        }
       }
     });
     return Object.values(map);
@@ -145,6 +163,28 @@ export function RoleProvider({ children }) {
     }
   }, []);
 
+  const fetchCallsFromDb = useCallback(async () => {
+    try {
+      const res = await fetch('/api/calls', { headers: { 'X-API-Key': API_KEY } });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.ok && Array.isArray(json.calls) && json.calls.length > 0) {
+          setVisits(prev => {
+            const dbIds = new Set(json.calls.map(c => c.id));
+            const remaining = prev.filter(p => !dbIds.has(p.id));
+            const merged = [...json.calls, ...remaining];
+            try {
+              localStorage.setItem('wallnut_visits_records', JSON.stringify(merged));
+            } catch (e) { /* ignore */ }
+            return merged;
+          });
+        }
+      }
+    } catch (err) {
+      console.warn('Could not fetch calls from DB, using local calls', err);
+    }
+  }, []);
+
   // Only fetch real data once logged in — an unauthenticated visitor should
   // never trigger a request to the sales API, not just be blocked from
   // seeing it rendered.
@@ -155,8 +195,8 @@ export function RoleProvider({ children }) {
     if (cachedSource) setDataSource(cachedSource);
     if (cachedSync)   setLastSync(cachedSync);
     syncFromTally(true); // silent = no spinner on first load
-  }, [isAuthenticated, syncFromTally]);
-
+    fetchCallsFromDb();
+  }, [isAuthenticated, syncFromTally, fetchCallsFromDb]);
 
   const [complaints, setComplaints] = useState(() => {
     const saved = localStorage.getItem('wallnut_complaints_records');
@@ -185,18 +225,51 @@ export function RoleProvider({ children }) {
     });
   }, []);
 
-  const addVisitEntry = useCallback((entry) => {
-    const newRecord = {
-      ...entry,
+  const addVisitEntry = useCallback(async (entry) => {
+    const localRecord = {
       id: String(Date.now()),
-      status: 'Pending',
+      status: entry.status || 'Completed',
+      ...entry,
     };
 
+    // 1. Optimistic instant local update
     setVisits((prev) => {
-      const updated = [newRecord, ...prev];
-      localStorage.setItem('wallnut_visits_records', JSON.stringify(updated));
+      const updated = [localRecord, ...prev];
+      try {
+        localStorage.setItem('wallnut_visits_records', JSON.stringify(updated));
+      } catch (e) {
+        console.error('Failed to save visit to localStorage', e);
+      }
       return updated;
     });
+
+    // 2. Persist to PostgreSQL database on the VM
+    try {
+      const res = await fetch('/api/calls', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': API_KEY,
+        },
+        body: JSON.stringify(entry),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.ok && json.call) {
+          setVisits((prev) => {
+            const updated = prev.map(v => v.id === localRecord.id ? json.call : v);
+            try {
+              localStorage.setItem('wallnut_visits_records', JSON.stringify(updated));
+            } catch (e) { /* ignore */ }
+            return updated;
+          });
+        }
+      }
+    } catch (err) {
+      console.warn('Could not save call to DB, saved locally', err);
+    }
+
+    return localRecord;
   }, []);
 
   const addComplaintEntry = useCallback((entry) => {
@@ -271,13 +344,19 @@ export function RoleProvider({ children }) {
         const stateOfficers = allSalesOfficers
           .filter(o => o.state === selectedState)
           .map(o => o.name);
-        return visits.filter(v => stateOfficers.some(so => normalizeName(so) === normalizeName(v.salesMan)));
+        return visits.filter(v => 
+          v.state === selectedState || 
+          stateOfficers.some(so => normalizeName(so) === normalizeName(v.salesMan))
+        );
       }
       case ROLES.DISTRICT_MANAGER: {
         const districtOfficers = allSalesOfficers
           .filter(o => o.district === selectedDistrict)
           .map(o => o.name);
-        return visits.filter(v => districtOfficers.some(so => normalizeName(so) === normalizeName(v.salesMan)));
+        return visits.filter(v => 
+          v.district === selectedDistrict || 
+          districtOfficers.some(so => normalizeName(so) === normalizeName(v.salesMan))
+        );
       }
       case ROLES.SALES_OFFICER:
         return visits.filter(v => normalizeName(v.salesMan) === normalizeName(selectedSalesMan));
