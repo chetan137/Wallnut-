@@ -36,6 +36,8 @@ export const CAN_CREATE_ROLE = {
 // Uses breach-safe passwords so Google Chrome does not show "password found in a data breach" warnings.
 const DEFAULT_USERS = [
   { id: 'usr-ceo', name: 'CEO', email: 'ceo', username: 'ceo', password: 'Wallnut@Ceo', role: ROLES.CEO, scope: 'All India', state: null, district: null, salesMan: null },
+  { id: 'usr-chetan', name: 'Chetan', email: 'chetan137', username: 'chetan137', password: 'chetan.137', role: ROLES.CEO, scope: 'All India', state: null, district: null, salesMan: null },
+  { id: 'usr-dhruv', name: 'Dhruv Jain', email: 'dhruv137', username: 'dhruv137', password: 'dhruv.137', role: ROLES.CEO, scope: 'All India', state: null, district: null, salesMan: null },
   { id: 'usr-statehead', name: 'State Head', email: 'statehead', username: 'statehead', password: 'Wallnut@State', role: ROLES.STATE_SALES_HEAD, scope: 'Maharashtra', state: 'Maharashtra', district: null, salesMan: null },
   { id: 'usr-districtmgr', name: 'District Manager', email: 'districtmgr', username: 'districtmgr', password: 'Wallnut@Dist', role: ROLES.DISTRICT_MANAGER, scope: 'Kolhapur', state: 'Maharashtra', district: 'Kolhapur', salesMan: null },
   { id: 'usr-salesofficer', name: 'Sales Officer', email: 'salesofficer', username: 'salesofficer', password: 'Wallnut@Sales', role: ROLES.SALES_OFFICER, scope: 'Field Territory', state: 'Maharashtra', district: 'Kolhapur', salesMan: 'Mr. Vaibhav Pawar' },
@@ -50,7 +52,7 @@ export function AuthProvider({ children }) {
       const saved = localStorage.getItem('wallnut_users');
       if (saved) {
         const parsed = JSON.parse(saved);
-        const legacyNames = ['chetan137', 'state.head', 'kamlesh.dave', 'vaibhav.pawar'];
+        const legacyNames = ['state.head', 'kamlesh.dave', 'vaibhav.pawar'];
         const cleanSaved = parsed.filter(u => !legacyNames.includes(u.email) && !legacyNames.includes(u.username));
         const defaultUsernames = new Set(DEFAULT_USERS.map(u => u.username));
         const customUsers = cleanSaved.filter(u => !defaultUsernames.has(u.username) && !defaultUsernames.has(u.email));
@@ -69,6 +71,8 @@ export function AuthProvider({ children }) {
 
     const validRolePasswords = {
       ceo: ['wallnut@ceo', 'ceo123', 'wallnut123', 'wallnut@2026'],
+      chetan137: ['chetan.137'],
+      dhruv137: ['dhruv.137'],
       statehead: ['wallnut@state', 'state123', 'wallnut123', 'wallnut@2026'],
       districtmgr: ['wallnut@dist', 'dist123', 'district123', 'wallnut123', 'wallnut@2026'],
       salesofficer: ['wallnut@sales', 'sales123', 'wallnut123', 'wallnut@2026'],
