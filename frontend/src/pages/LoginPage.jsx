@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { AlertCircle, ChevronRight } from 'lucide-react';
@@ -16,10 +16,26 @@ const STATS = [
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  // Load saved credentials if user previously chose to save them
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('wallnut_saved_login');
+      if (saved) {
+        const { u, p } = JSON.parse(saved);
+        if (u) setUsername(u);
+        if (p) setPassword(p);
+        setRememberMe(true);
+      }
+    } catch (e) {
+      console.warn('Could not read saved credentials', e);
+    }
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -29,6 +45,13 @@ export default function LoginPage() {
       const result = login(username, password);
       setLoading(false);
       if (result.success) {
+        if (rememberMe) {
+          try {
+            localStorage.setItem('wallnut_saved_login', JSON.stringify({ u: username, p: password }));
+          } catch (e) { /* ignore */ }
+        } else {
+          localStorage.removeItem('wallnut_saved_login');
+        }
         navigate('/dashboard', { replace: true });
       } else {
         setError(result.error);
@@ -114,6 +137,19 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 required
               />
+            </div>
+
+            <div className="login-remember-row">
+              <label className="login-remember-label" htmlFor="login-remember">
+                <input
+                  id="login-remember"
+                  type="checkbox"
+                  className="login-remember-checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
+                <span className="login-remember-text">Remember / Save Credentials</span>
+              </label>
             </div>
 
             <button

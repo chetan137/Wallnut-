@@ -429,6 +429,43 @@
   color: var(--role-color, #82B22C);
 }
 
+/* ── Remember Me / Save Credentials ── */
+.login-remember-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: -2px;
+  margin-bottom: 8px;
+}
+
+.login-remember-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.login-remember-checkbox {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  accent-color: var(--accent-primary, #82B22C);
+  cursor: pointer;
+  margin: 0;
+}
+
+.login-remember-text {
+  font-size: 0.82rem;
+  color: var(--text-secondary, #475569);
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.login-remember-label:hover .login-remember-text {
+  color: var(--text-primary, #1e293b);
+}
+
 /* ── Responsive ── */
 @media (max-width: 960px) {
   .login-page {
@@ -437,10 +474,11 @@
     max-height: none;
     overflow: auto;
     grid-template-columns: 1fr;
+    padding-top: max(3rem, env(safe-area-inset-top, 0px));
   }
   .login-hero-panel {
-    min-height: 240px;
-    max-height: 300px;
+    min-height: 220px;
+    max-height: 280px;
     height: auto;
   }
   .login-hero-stats {
@@ -454,16 +492,19 @@
     max-height: none;
     overflow-y: visible;
     box-shadow: none;
-    padding: 28px 20px;
+    padding: 3rem 20px 28px; /* 3rem top padding for mobile */
   }
 }
 
 @media (max-width: 480px) {
+  .login-page {
+    padding-top: max(3rem, env(safe-area-inset-top, 0px));
+  }
   .login-hero-pills {
     display: none;
   }
   .login-form-panel {
-    padding: 20px 16px;
+    padding: 3rem 16px 24px; /* 3rem top padding for mobile */
   }
 }
 
