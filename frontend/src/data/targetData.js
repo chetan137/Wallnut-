@@ -3,13 +3,36 @@
  * Sales targets per district and per sales officer for Target Achievement % calculation.
  */
 
-// Monthly targets per district (in ₹)
+// Monthly targets per district / plant (in ₹)
 export const districtTargets = {
-  'Indore':   { monthly: 3500000, quarterly: 10500000 },
-  'Bhopal':   { monthly: 3000000, quarterly: 9000000 },
-  'Jabalpur': { monthly: 2200000, quarterly: 6600000 },
-  'Ujjain':   { monthly: 1500000, quarterly: 4500000 },
-  'Gwalior':  { monthly: 2500000, quarterly: 7500000 },
+  // Plants & Warehouses
+  'Kolhapur Plant':  { monthly: 2500000, quarterly: 7500000 },
+  'Vadodara Plant':  { monthly: 2000000, quarterly: 6000000 },
+  'Bhiwandi Godown': { monthly: 1500000, quarterly: 4500000 },
+  'Main Location':   { monthly: 1000000, quarterly: 3000000 },
+  'Amazon Godown':   { monthly: 500000,  quarterly: 1500000 },
+
+  // Maharashtra
+  'Kolhapur':        { monthly: 2500000, quarterly: 7500000 },
+  'Mumbai':          { monthly: 4000000, quarterly: 12000000 },
+  'Pune':            { monthly: 3000000, quarterly: 9000000 },
+  'Nashik':          { monthly: 2000000, quarterly: 6000000 },
+
+  // Gujarat
+  'Ahmedabad':       { monthly: 3500000, quarterly: 10500000 },
+  'Surat':           { monthly: 2800000, quarterly: 8400000 },
+  'Vadodara':        { monthly: 2200000, quarterly: 6600000 },
+
+  // Madhya Pradesh
+  'Indore':          { monthly: 3500000, quarterly: 10500000 },
+  'Bhopal':          { monthly: 3000000, quarterly: 9000000 },
+  'Jabalpur':        { monthly: 2200000, quarterly: 6600000 },
+  'Ujjain':          { monthly: 1500000, quarterly: 4500000 },
+  'Gwalior':         { monthly: 2500000, quarterly: 7500000 },
+
+  // Karnataka & Kerala
+  'Bengaluru':       { monthly: 4500000, quarterly: 13500000 },
+  'Ernakulam':       { monthly: 3800000, quarterly: 11400000 },
 };
 
 // Monthly targets per sales officer (in ₹)

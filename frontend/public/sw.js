@@ -23,7 +23,15 @@ self.addEventListener('fetch', (event) => {
 
   // NEVER cache API requests (Live Tally sync, calls, etc. must always hit the backend)
   if (url.pathname.startsWith('/api/')) {
-    event.respondWith(fetch(event.request));
+    event.respondWith(
+      fetch(event.request).catch((err) => {
+        console.warn('API fetch failed:', err);
+        return new Response(JSON.stringify({ ok: false, error: 'Network unavailable' }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      })
+    );
     return;
   }
 

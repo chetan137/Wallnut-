@@ -309,7 +309,13 @@ export function RoleProvider({ children }) {
       case ROLES.STATE_SALES_HEAD:
         return sales.filter(r => r.state === selectedState);
       case ROLES.DISTRICT_MANAGER:
-        return sales.filter(r => r.areaCity === selectedDistrict);
+        return sales.filter(r => {
+          if (!r.areaCity) return false;
+          if (r.areaCity === selectedDistrict) return true;
+          const normA = r.areaCity.replace(/\s*(Plant|Godown|Warehouse|Location|Branch)\s*/gi, '').trim().toLowerCase();
+          const normB = (selectedDistrict || '').replace(/\s*(Plant|Godown|Warehouse|Location|Branch)\s*/gi, '').trim().toLowerCase();
+          return normA === normB || (normB && r.areaCity.toLowerCase().includes(normB));
+        });
       case ROLES.SALES_OFFICER:
         return sales.filter(r => normalizeName(r.salesMan) === normalizeName(selectedSalesMan));
       default:
