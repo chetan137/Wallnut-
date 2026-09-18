@@ -324,4 +324,124 @@
   }
 }
 
+/* Install App Header Button */
+.header-install-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: #82B22C;
+  border: 1px solid #739e26;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(130, 178, 44, 0.35);
+}
 
+.header-install-btn:hover {
+  background: #739e26;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(130, 178, 44, 0.45);
+}
+
+/* Install Guide Modal */
+.install-guide-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.install-guide-modal {
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--card-border, #e2e8f0);
+  border-radius: var(--radius-lg, 12px);
+  max-width: 480px;
+  width: 100%;
+  padding: 22px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+  animation: sync-toast-in 0.2s ease-out;
+}
+
+.install-guide-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.install-guide-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary, #1e293b);
+  margin: 0;
+}
+
+.install-guide-close {
+  background: none;
+  border: none;
+  color: var(--text-muted, #64748b);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.install-guide-close:hover {
+  background: var(--bg-main, #f1f5f9);
+  color: var(--text-primary, #0f172a);
+}
+
+.install-guide-sub {
+  font-size: 13px;
+  color: var(--text-secondary, #475569);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.install-guide-card {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: var(--bg-main, #f8fafc);
+  border: 1px solid var(--card-border, #e2e8f0);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: var(--text-primary, #1e293b);
+}
+
+.install-guide-card-icon {
+  color: #82B22C;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.install-guide-card-content ol {
+  margin: 6px 0 0 16px;
+  padding: 0;
+  line-height: 1.6;
+}
+
+.install-guide-ok-btn {
+  padding: 7px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #82B22C;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.install-guide-ok-btn:hover {
+  background: #739e26;
+}
