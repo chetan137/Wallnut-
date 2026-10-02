@@ -15,6 +15,7 @@ import ChartCard from '../components/common/ChartCard';
 import { useRole } from '../context/RoleContext';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { abbreviateCurrency } from '../utils/formatters';
+import { fiscalYearOfDate, previousFiscalYear, fiscalYearOptions } from '../utils/fiscalYear';
 import {
   getDistrictPerformance,
   getStockCategoryBreakdown,
@@ -41,25 +42,20 @@ const aggDealers = (rows) => new Set(rows.map(d => d.partyName)).size;
 const aggOutstanding = (rows) => rows.reduce((sum, d) => sum + d.finalOutstanding, 0);
 
 function getYearlyKPIMetrics(allData, selectedYear) {
-  const yearsWithData = [...new Set(allData.map(d => d.date.slice(0, 4)))].sort();
-  const latestYear = yearsWithData[yearsWithData.length - 1] || '2026';
+  // `selectedYear` is a Financial Year label ("25-26", Apr-Mar) or 'All'.
+  const yearsWithData = [...new Set(allData.map(d => fiscalYearOfDate(d.date)).filter(Boolean))].sort();
+  const latestYear = yearsWithData[yearsWithData.length - 1] || '26-27';
   const currentYear = selectedYear === 'All' ? latestYear : selectedYear;
-  const prevYear = String(Number(currentYear) - 1);
+  const prevYear = previousFiscalYear(currentYear);
 
-  // BUG FIX: this Tally setup has a real ~13-month sync gap (Apr 2025-Mar
-  // 2026 was never synced for either company), so "2026" and "2025" are not
-  // adjacent, comparable years — verified against real data: 2026 only has
-  // Apr-Sep, 2025 only has Jan-Mar, ZERO overlapping calendar months. Any
-  // %-change between two calendar-year buckets like that compares different
-  // parts of the business calendar, not real growth (a Jan-Sep-2026 vs
-  // full-2025 comparison produced a "+41.8%" that was really just "6 months
-  // of one period vs 2 unrelated months of another"). Restrict the
-  // comparison to calendar months that actually appear in BOTH years —
-  // if there's no overlap at all, there's no fair basis for a trend, so
-  // leave it null (hidden) rather than show a number from mismatched data.
-  const currentYearRows = allData.filter(d => d.date.startsWith(currentYear));
+  // BUG FIX: a year-over-year %-change is only fair over calendar months that
+  // actually appear in BOTH years (e.g. FY 26-27 so far has Apr-Sep, so it is
+  // compared only with Apr-Sep of FY 25-26, not the full prior year). If
+  // there's no overlap at all, there's no fair basis for a trend, so leave it
+  // null (hidden) rather than show a number from mismatched data.
+  const currentYearRows = allData.filter(d => fiscalYearOfDate(d.date) === currentYear);
   const currentMonthsOfYear = new Set(currentYearRows.map(d => d.date.slice(5, 7)));
-  const prevYearRows = allData.filter(d => d.date.startsWith(prevYear) && currentMonthsOfYear.has(d.date.slice(5, 7)));
+  const prevYearRows = allData.filter(d => fiscalYearOfDate(d.date) === prevYear && currentMonthsOfYear.has(d.date.slice(5, 7)));
 
   const salesTrend = prevYearRows.length > 0 ? pctChange(aggSales(currentYearRows), aggSales(prevYearRows)) : null;
   const dealersTrend = prevYearRows.length > 0 ? pctChange(aggDealers(currentYearRows), aggDealers(prevYearRows)) : null;
@@ -67,7 +63,7 @@ function getYearlyKPIMetrics(allData, selectedYear) {
 
   const scopedData = selectedYear === 'All'
     ? allData
-    : allData.filter(d => d.date.startsWith(selectedYear));
+    : allData.filter(d => fiscalYearOfDate(d.date) === selectedYear);
 
   const totalSales = aggSales(scopedData);
   const activeDealers = aggDealers(scopedData);
@@ -141,16 +137,16 @@ function getYearlySalesAndOutstanding(allData) {
 }
 
 function getYearlyFallingSalesAlerts(allData, selectedYear) {
-  const yearsWithData = [...new Set(allData.map(d => d.date.slice(0, 4)))].sort();
-  const latestYear = yearsWithData[yearsWithData.length - 1] || '2026';
+  const yearsWithData = [...new Set(allData.map(d => fiscalYearOfDate(d.date)).filter(Boolean))].sort();
+  const latestYear = yearsWithData[yearsWithData.length - 1] || '26-27';
   const currentYear = selectedYear === 'All' ? latestYear : selectedYear;
-  const prevYear = String(Number(currentYear) - 1);
+  const prevYear = previousFiscalYear(currentYear);
 
   const currentSales = {};
   const prevSales = {};
 
   for (const row of allData) {
-    const year = row.date.slice(0, 4);
+    const year = fiscalYearOfDate(row.date);
     if (year === currentYear) {
       currentSales[row.partyName] = (currentSales[row.partyName] || 0) + row.amount;
     } else if (year === prevYear) {
@@ -185,7 +181,7 @@ export default function CEODashboard({ data }) {
 
   const filteredData = useMemo(() => {
     if (selectedYear === 'All') return data;
-    return data.filter(r => r.date.startsWith(selectedYear));
+    return data.filter(r => fiscalYearOfDate(r.date) === selectedYear);
   }, [data, selectedYear]);
 
   const metrics = useMemo(() => getYearlyKPIMetrics(data, selectedYear), [data, selectedYear]);
@@ -220,15 +216,8 @@ export default function CEODashboard({ data }) {
       .slice(0, 6);
   }, [filteredData]);
 
-  // Available years: always include 2026, 2025, 2024 + any additional years from data
-  const availableYears = useMemo(() => {
-    const years = new Set(['2026', '2025', '2024']);
-    data.forEach(d => {
-      const y = d.date?.slice(0, 4);
-      if (y && y.length === 4) years.add(y);
-    });
-    return [...years].sort((a, b) => b.localeCompare(a));
-  }, [data]);
+  // Financial Years (Apr-Mar): FY 25-26 and 24-25 always, plus any in the data (e.g. 26-27)
+  const availableYears = useMemo(() => fiscalYearOptions(data), [data]);
 
   return (
     <div className="ssh-dashboard" id="ceo-dashboard">
@@ -239,7 +228,7 @@ export default function CEODashboard({ data }) {
           </span>
         </div>
         <div className="control-bar-right">
-          <span className="control-bar-label">Select Year:</span>
+          <span className="control-bar-label">Financial Year:</span>
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(e.target.value)}
@@ -247,7 +236,7 @@ export default function CEODashboard({ data }) {
           >
             <option value="All">All Years</option>
             {availableYears.map(year => (
-              <option key={year} value={year}>{year}</option>
+              <option key={year} value={year}>FY {year}</option>
             ))}
           </select>
         </div>

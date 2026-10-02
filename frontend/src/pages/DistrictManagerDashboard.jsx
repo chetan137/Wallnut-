@@ -11,6 +11,7 @@ import NonSalesInvoicesTable from '../components/tables/NonSalesInvoicesTable';
 import SalesCallsReportTable from '../components/tables/SalesCallsReportTable';
 import LogSalesCallModal from '../components/common/LogSalesCallModal';
 import { useRole } from '../context/RoleContext';
+import { fiscalYearOfDate, fiscalYearOptions, isFiscalYear } from '../utils/fiscalYear';
 import { PhoneCall } from 'lucide-react';
 import {
   getKPIMetrics,
@@ -38,7 +39,10 @@ export default function DistrictManagerDashboard({ data }) {
 
   const [selectedYear, setSelectedYear] = useState(() => {
     try {
-      return localStorage.getItem('wallnut_dm_year') || 'All';
+      // Only a Financial Year label ("25-26") or 'All' is valid now — an old
+      // saved calendar year like "2026" would filter everything out.
+      const saved = localStorage.getItem('wallnut_dm_year');
+      return isFiscalYear(saved) ? saved : 'All';
     } catch {
       return 'All';
     }
@@ -52,20 +56,13 @@ export default function DistrictManagerDashboard({ data }) {
     } catch (e) { /* ignore */ }
   };
 
-  // Available years: always include 2026, 2025, 2024 + any additional years from data
-  const availableYears = useMemo(() => {
-    const years = new Set(['2026', '2025', '2024']);
-    data.forEach(d => {
-      const y = d.date?.slice(0, 4);
-      if (y && y.length === 4) years.add(y);
-    });
-    return [...years].sort((a, b) => b.localeCompare(a));
-  }, [data]);
+  // Financial Years (Apr-Mar): FY 25-26 and 24-25 always, plus any in the data (e.g. 26-27)
+  const availableYears = useMemo(() => fiscalYearOptions(data), [data]);
 
   // Year-scoped data for charts + KPI totals
   const scopedData = useMemo(() => {
     if (selectedYear === 'All') return data;
-    return data.filter(r => r.date?.startsWith(selectedYear));
+    return data.filter(r => fiscalYearOfDate(r.date) === selectedYear);
   }, [data, selectedYear]);
 
   // KPI metrics: scoped data for totals, full data for cross-year trend lookups
@@ -104,7 +101,7 @@ export default function DistrictManagerDashboard({ data }) {
           </button>
         </div>
         <div className="dashboard-control-bar">
-          <span className="control-bar-label">Select Year:</span>
+          <span className="control-bar-label">Financial Year:</span>
           <select
             value={selectedYear}
             onChange={(e) => handleYearChange(e.target.value)}
@@ -112,7 +109,7 @@ export default function DistrictManagerDashboard({ data }) {
           >
             <option value="All">All Years</option>
             {availableYears.map(year => (
-              <option key={year} value={year}>{year}</option>
+              <option key={year} value={year}>FY {year}</option>
             ))}
           </select>
         </div>

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import DataTable from '../common/DataTable';
 import { useRole } from '../../context/RoleContext';
+import { fiscalYearOfDate } from '../../utils/fiscalYear';
 import { formatCurrency, formatNumber, formatDate } from '../../utils/formatters';
 import './NonSalesInvoicesTable.css';
 
@@ -75,7 +76,7 @@ const columns = [
  * Branch Transfer + Sample invoices. These are Sales-type vouchers in Tally
  * but not real customer sales, so they are kept out of every sales total and
  * listed here instead. Reads the role/filter-scoped list from RoleContext;
- * `selectedYear` is the dashboard's own Select Year control ('All' = no limit).
+ * `selectedYear` is the dashboard's Financial Year control ("25-26", or 'All' = no limit).
  */
 export default function NonSalesInvoicesTable({ selectedYear = 'All', title = 'Branch Transfer & Sample Invoices' }) {
   const { filteredNonSalesInvoices } = useRole();
@@ -84,7 +85,7 @@ export default function NonSalesInvoicesTable({ selectedYear = 'All', title = 'B
   const invoices = useMemo(() => {
     const rows = selectedYear === 'All'
       ? filteredNonSalesInvoices
-      : filteredNonSalesInvoices.filter((r) => r.date?.startsWith(selectedYear));
+      : filteredNonSalesInvoices.filter((r) => fiscalYearOfDate(r.date) === selectedYear);
     return groupInvoices(rows);
   }, [filteredNonSalesInvoices, selectedYear]);
 

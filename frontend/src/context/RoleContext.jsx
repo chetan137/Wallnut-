@@ -19,21 +19,6 @@ export const ROLES = {
 
 const RoleContext = createContext(null);
 
-/**
- * Indian Financial Year label ("24-25", "25-26", "26-27") of a sales row,
- * from the invoice DATE (FY runs Apr-Mar). Deliberately NOT taken from the
- * Tally company the row was synced from: the "…-2025-26" company file also
- * holds Apr-Sep 2026 vouchers, which Tally's own mobile dashboard reports as
- * the next year (2025 = Apr-2025→Mar-2026 = ₹9.27Cr, 2026 = Apr-Sep 2026 =
- * ₹3.56Cr), so labelling by company would disagree with Tally.
- */
-function fiscalYearOf(row) {
-  const [y, m] = (row.date || '').split('-').map(Number);
-  if (!y || !m) return '';
-  const start = m >= 4 ? y : y - 1;
-  return `${String(start).slice(2)}-${String(start + 1).slice(2)}`;
-}
-
 export function RoleProvider({ children }) {
   const { isAuthenticated } = useAuth();
   const [currentRole, setCurrentRole] = useState(() => {
@@ -369,7 +354,6 @@ export function RoleProvider({ children }) {
   }, []);
 
   const [filters, setFilters] = useState({
-    fiscalYear: '',
     fromDate: '',
     toDate: '',
     areas: [],
@@ -460,14 +444,6 @@ export function RoleProvider({ children }) {
   }, [currentRole, selectedState, selectedDistrict, selectedSalesMan, visits, allSalesOfficers, normalizeName]);
 
   // Available options for the filters based on baseline
-  // Financial Years present in the data ("25-26", "24-25", newest first) for
-  // the FilterBar's Financial Year dropdown. Built from every synced row
-  // (not just the scoped ones) so the options don't shrink as filters narrow.
-  const availableFiscalYears = useMemo(
-    () => [...new Set(allSales.map(fiscalYearOf).filter(Boolean))].sort().reverse(),
-    [allSales]
-  );
-
   const availableAreas = useMemo(() => {
     const unique = new Set(baseSales.map(r => r.areaCity).filter(Boolean));
     return [...unique].sort();
@@ -501,9 +477,6 @@ export function RoleProvider({ children }) {
   const applySalesFilters = useCallback((rows) => {
     let result = rows;
 
-    if (filters.fiscalYear) {
-      result = result.filter(r => fiscalYearOf(r) === filters.fiscalYear);
-    }
     if (filters.fromDate) {
       result = result.filter(r => r.date >= filters.fromDate);
     }
@@ -589,7 +562,6 @@ export function RoleProvider({ children }) {
 
   const clearFilters = useCallback(() => {
     setFilters({
-      fiscalYear: '',
       fromDate: '',
       toDate: '',
       areas: [],
@@ -663,7 +635,6 @@ export function RoleProvider({ children }) {
     filters,
     setFilters,
     clearFilters,
-    availableFiscalYears,
     availableAreas,
     availableSalesMen,
     availableStockGroups,
@@ -697,7 +668,6 @@ export function RoleProvider({ children }) {
     allDealers,
     filters,
     clearFilters,
-    availableFiscalYears,
     availableAreas,
     availableSalesMen,
     availableStockGroups,

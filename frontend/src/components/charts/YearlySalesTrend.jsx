@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import ChartCard from '../common/ChartCard';
 import { abbreviateCurrency, formatMonthKey } from '../../utils/formatters';
+import { fiscalYearOfDate } from '../../utils/fiscalYear';
 
 function CustomTooltip({ active, payload, label, viewMode }) {
   if (!active || !payload?.length) return null;
@@ -32,20 +33,22 @@ export default function YearlySalesTrend({ data, selectedYear }) {
   const yearlyData = useMemo(() => {
     const grouped = {};
     for (const row of data) {
-      const year = row.date.slice(0, 4);
-      if (!grouped[year]) {
-        grouped[year] = { year, sales: 0, outstanding: 0 };
+      // Financial Year (Apr-Mar), same split as Tally's own yearly view.
+      const fy = fiscalYearOfDate(row.date);
+      if (!fy) continue;
+      if (!grouped[fy]) {
+        grouped[fy] = { fy, year: `FY ${fy}`, sales: 0, outstanding: 0 };
       }
-      grouped[year].sales += row.amount;
-      grouped[year].outstanding += row.finalOutstanding;
+      grouped[fy].sales += row.amount;
+      grouped[fy].outstanding += row.finalOutstanding;
     }
-    return Object.values(grouped).sort((a, b) => a.year.localeCompare(b.year));
+    return Object.values(grouped).sort((a, b) => a.fy.localeCompare(b.fy));
   }, [data]);
 
   const monthlyData = useMemo(() => {
     const filtered = selectedYear === 'All'
       ? data
-      : data.filter(d => d.date.startsWith(selectedYear));
+      : data.filter(d => fiscalYearOfDate(d.date) === selectedYear);
     const grouped = {};
     for (const row of filtered) {
       const month = row.date.slice(0, 7);
@@ -108,7 +111,7 @@ export default function YearlySalesTrend({ data, selectedYear }) {
   return (
     <ChartCard 
       title={viewMode === 'yearly' ? "Yearly Sales & Outstanding Trend" : "Monthly Sales & Outstanding Trend"} 
-      subtitle={viewMode === 'yearly' ? "Total Sales and Outstanding aggregated by year" : `Total Sales and Outstanding aggregated by month (${selectedYear === 'All' ? 'All Years' : selectedYear})`}
+      subtitle={viewMode === 'yearly' ? "Total Sales and Outstanding aggregated by financial year (Apr-Mar)" : `Total Sales and Outstanding aggregated by month (${selectedYear === 'All' ? 'All Years' : `FY ${selectedYear}`})`}
       action={headerAction}
     >
       <ResponsiveContainer width="100%" height={280}>
