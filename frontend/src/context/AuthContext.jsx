@@ -1,9 +1,9 @@
 /**
  * Wallnut — Authentication Context
- * Manages login state, role-based access, and user management.
+ * Manages login state (server-verified) and CEO-only user management.
  */
 
-import { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 
 export const ROLES = {
   CEO: 'ceo',
@@ -21,86 +21,47 @@ export const ROLE_LABELS = {
 
 export const ROLE_HIERARCHY = [ROLES.CEO, ROLES.STATE_SALES_HEAD, ROLES.DISTRICT_MANAGER, ROLES.SALES_OFFICER];
 
-// Which role can a given role create?
-export const CAN_CREATE_ROLE = {
-  [ROLES.CEO]: ROLES.STATE_SALES_HEAD,
-  [ROLES.STATE_SALES_HEAD]: ROLES.DISTRICT_MANAGER,
-  [ROLES.DISTRICT_MANAGER]: ROLES.SALES_OFFICER,
-  [ROLES.SALES_OFFICER]: null,
+const API_KEY = import.meta.env.VITE_API_KEY || '';
+const TOKEN_KEY = 'wallnut_auth_token';
+
+const getToken = () => {
+  try { return localStorage.getItem(TOKEN_KEY); } catch { return null; }
 };
 
-// 4 Generic Trial Accounts (One per Role, without personal names):
-// 1. CEO / Admin: username "ceo", password "ceo123" (Scope: All India)
-// 2. State Sales Head: username "statehead", password "state123" (Scope: Maharashtra)
-// 4 Generic Trial Accounts (One per Role, without personal names):
-// Uses breach-safe passwords so Google Chrome does not show "password found in a data breach" warnings.
-const DEFAULT_USERS = [
-  { id: 'usr-ceo', name: 'CEO', email: 'ceo', username: 'ceo', password: 'Wallnut@Ceo', role: ROLES.CEO, scope: 'All India', state: null, district: null, salesMan: null },
-  { id: 'usr-chetan', name: 'Chetan', email: 'chetan137', username: 'chetan137', password: 'chetan.137', role: ROLES.CEO, scope: 'All India', state: null, district: null, salesMan: null },
-  { id: 'usr-dhruv', name: 'Dhruv Jain', email: 'dhruv137', username: 'dhruv137', password: 'dhruv.137', role: ROLES.CEO, scope: 'All India', state: null, district: null, salesMan: null },
-  { id: 'usr-statehead', name: 'State Head', email: 'statehead', username: 'statehead', password: 'Wallnut@State', role: ROLES.STATE_SALES_HEAD, scope: 'Maharashtra', state: 'Maharashtra', district: null, salesMan: null },
-  { id: 'usr-districtmgr', name: 'District Manager', email: 'districtmgr', username: 'districtmgr', password: 'Wallnut@Dist', role: ROLES.DISTRICT_MANAGER, scope: 'Kolhapur', state: 'Maharashtra', district: 'Kolhapur', salesMan: null },
-  { id: 'usr-salesofficer', name: 'Sales Officer', email: 'salesofficer', username: 'salesofficer', password: 'Wallnut@Sales', role: ROLES.SALES_OFFICER, scope: 'Field Territory', state: 'Maharashtra', district: 'Kolhapur', salesMan: 'Mr. Vaibhav Pawar' },
-];
+// Calls the user-management API. Resolves to { ok, ...body } and never throws,
+// so callers can show body.error directly.
+async function api(path, { method = 'GET', body } = {}) {
+  const headers = { 'X-API-Key': API_KEY };
+  const token = getToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+  if (body) headers['Content-Type'] = 'application/json';
+  try {
+    const res = await fetch(`/api/users${path}`, { method, headers, body: body ? JSON.stringify(body) : undefined });
+    const json = await res.json().catch(() => ({}));
+    return { ok: res.ok && json.ok !== false, status: res.status, ...json };
+  } catch {
+    return { ok: false, status: 0, error: 'Could not reach the server' };
+  }
+}
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [users, setUsers] = useState(() => {
+  const [currentUser, setCurrentUser] = useState(() => {
     try {
-      const saved = localStorage.getItem('wallnut_users');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        const legacyNames = ['state.head', 'kamlesh.dave', 'vaibhav.pawar'];
-        const cleanSaved = parsed.filter(u => !legacyNames.includes(u.email) && !legacyNames.includes(u.username));
-        const defaultUsernames = new Set(DEFAULT_USERS.map(u => u.username));
-        const customUsers = cleanSaved.filter(u => !defaultUsernames.has(u.username) && !defaultUsernames.has(u.email));
-        const merged = [...DEFAULT_USERS, ...customUsers];
-        localStorage.setItem('wallnut_users', JSON.stringify(merged));
-        return merged;
-      }
-    } catch (e) { /* ignore */ }
-    localStorage.setItem('wallnut_users', JSON.stringify(DEFAULT_USERS));
-    return DEFAULT_USERS;
-  });
-
-  const login = useCallback((identifier, password) => {
-    const cleanId = (identifier || '').trim().toLowerCase();
-    const cleanPw = (password || '').trim();
-
-    const validRolePasswords = {
-      ceo: ['wallnut@ceo', 'ceo123', 'wallnut123', 'wallnut@2026'],
-      chetan137: ['chetan.137'],
-      dhruv137: ['dhruv.137'],
-      statehead: ['wallnut@state', 'state123', 'wallnut123', 'wallnut@2026'],
-      districtmgr: ['wallnut@dist', 'dist123', 'district123', 'wallnut123', 'wallnut@2026'],
-      salesofficer: ['wallnut@sales', 'sales123', 'wallnut123', 'wallnut@2026'],
-    };
-
-    const user = users.find(u => {
-      const matchId = (u.email?.toLowerCase() === cleanId || u.username?.toLowerCase() === cleanId);
-      if (!matchId) return false;
-
-      const acceptedList = validRolePasswords[u.username?.toLowerCase()] || [];
-      return (
-        u.password === cleanPw ||
-        cleanPw.toLowerCase() === u.password?.toLowerCase() ||
-        acceptedList.includes(cleanPw.toLowerCase())
-      );
-    });
-
-    if (user) {
-      setCurrentUser(user);
-      localStorage.setItem('wallnut_current_user', JSON.stringify(user));
-      return { success: true, user };
+      const saved = localStorage.getItem('wallnut_current_user');
+      return saved && getToken() ? JSON.parse(saved) : null;
+    } catch {
+      return null;
     }
-    return { success: false, error: 'Invalid username or password' };
-  }, [users]);
+  });
+  const [users, setUsers] = useState([]);
 
-  const logout = useCallback(() => {
+  const clearSession = useCallback(() => {
     setCurrentUser(null);
+    setUsers([]);
     try {
+      localStorage.removeItem(TOKEN_KEY);
       localStorage.removeItem('wallnut_current_user');
       localStorage.removeItem('wallnut_last_synced_user_id');
       localStorage.removeItem('wallnut_selected_district');
@@ -110,60 +71,69 @@ export function AuthProvider({ children }) {
     } catch (e) { /* ignore */ }
   }, []);
 
-  const addUser = useCallback((newUser) => {
-    if (!currentUser) return { success: false, error: 'Not authenticated' };
+  const refreshUsers = useCallback(async () => {
+    const res = await api('/');
+    if (res.ok) setUsers(res.users);
+    return res;
+  }, []);
 
-    const creatableRole = CAN_CREATE_ROLE[currentUser.role];
-    if (!creatableRole || creatableRole !== newUser.role) {
-      return { success: false, error: 'You cannot create users with this role' };
-    }
+  const login = useCallback(async (identifier, password) => {
+    const res = await api('/login', { method: 'POST', body: { username: identifier, password } });
+    if (!res.ok) return { success: false, error: res.error || 'Invalid username or password' };
+    try {
+      localStorage.setItem(TOKEN_KEY, res.token);
+      localStorage.setItem('wallnut_current_user', JSON.stringify(res.user));
+    } catch (e) { /* ignore */ }
+    setCurrentUser(res.user);
+    return { success: true, user: res.user };
+  }, []);
 
-    if (users.some(u => u.email === newUser.email)) {
-      return { success: false, error: 'Email already exists' };
-    }
+  const logout = clearSession;
 
-    const user = {
-      ...newUser,
-      id: String(Date.now()),
-      createdBy: currentUser.id,
-    };
-
-    const updated = [...users, user];
-    setUsers(updated);
-    localStorage.setItem('wallnut_users', JSON.stringify(updated));
-    return { success: true, user };
-  }, [currentUser, users]);
-
-  const deleteUser = useCallback((userId) => {
-    if (!currentUser) return { success: false };
-    const target = users.find(u => u.id === userId);
-    if (!target) return { success: false, error: 'User not found' };
-
-    const creatableRole = CAN_CREATE_ROLE[currentUser.role];
-    if (target.role !== creatableRole) {
-      return { success: false, error: 'Cannot delete this user' };
-    }
-
-    const updated = users.filter(u => u.id !== userId);
-    setUsers(updated);
-    localStorage.setItem('wallnut_users', JSON.stringify(updated));
-    return { success: true };
-  }, [currentUser, users]);
-
-  const getManagedUsers = useCallback(() => {
-    if (!currentUser) return [];
-    const creatableRole = CAN_CREATE_ROLE[currentUser.role];
-    if (!creatableRole) return [];
-
-    return users.filter(u => {
-      if (u.role !== creatableRole) return false;
-      // Scope check: only show users within the manager's scope
-      if (currentUser.role === ROLES.CEO) return true;
-      if (currentUser.role === ROLES.STATE_SALES_HEAD) return u.state === currentUser.state;
-      if (currentUser.role === ROLES.DISTRICT_MANAGER) return u.district === currentUser.district;
-      return false;
+  // Re-validate a restored session against the server: picks up role/scope
+  // changes the CEO made, and signs out accounts that were disabled or removed.
+  useEffect(() => {
+    if (!currentUser) return;
+    let cancelled = false;
+    api('/me').then((res) => {
+      if (cancelled) return;
+      if (res.status === 401) return clearSession();
+      if (res.ok) {
+        setCurrentUser(res.user);
+        try { localStorage.setItem('wallnut_current_user', JSON.stringify(res.user)); } catch (e) { /* ignore */ }
+      }
     });
-  }, [currentUser, users]);
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser?.id]);
+
+  const canManageUsers = useMemo(() => currentUser?.role === ROLES.CEO, [currentUser]);
+
+  useEffect(() => {
+    if (canManageUsers) refreshUsers();
+  }, [canManageUsers, refreshUsers]);
+
+  // CEO-only CRUD. The server enforces this too; these just keep local state in sync.
+  const addUser = useCallback(async (data) => {
+    const res = await api('/', { method: 'POST', body: data });
+    if (res.ok) setUsers((prev) => [...prev, res.user]);
+    return res.ok ? { success: true, user: res.user } : { success: false, error: res.error };
+  }, []);
+
+  const updateUser = useCallback(async (id, data) => {
+    const res = await api(`/${id}`, { method: 'PUT', body: data });
+    if (res.ok) {
+      setUsers((prev) => prev.map((u) => (u.id === id ? res.user : u)));
+      if (id === currentUser?.id) setCurrentUser(res.user);
+    }
+    return res.ok ? { success: true, user: res.user } : { success: false, error: res.error };
+  }, [currentUser?.id]);
+
+  const deleteUser = useCallback(async (id) => {
+    const res = await api(`/${id}`, { method: 'DELETE' });
+    if (res.ok) setUsers((prev) => prev.filter((u) => u.id !== id));
+    return res.ok ? { success: true } : { success: false, error: res.error };
+  }, []);
 
   // Filter sales data by user's role/scope
   const getDataFilter = useCallback(() => {
@@ -182,49 +152,22 @@ export function AuthProvider({ children }) {
     }
   }, [currentUser]);
 
-  const canManageUsers = useMemo(() => {
-    return currentUser && CAN_CREATE_ROLE[currentUser.role] !== null;
-  }, [currentUser]);
-
-  // Restore session on mount
-  useState(() => {
-    const saved = localStorage.getItem('wallnut_current_user');
-    if (saved) {
-      try {
-        const user = JSON.parse(saved);
-        const legacyNames = ['chetan137', 'state.head', 'kamlesh.dave', 'vaibhav.pawar'];
-        if (legacyNames.includes(user.email) || legacyNames.includes(user.username)) {
-          localStorage.removeItem('wallnut_current_user');
-          setCurrentUser(null);
-          return;
-        }
-        const exists = DEFAULT_USERS.find(u => u.username === user.username || u.email === user.email || u.id === user.id);
-        if (exists) {
-          setCurrentUser(exists);
-          localStorage.setItem('wallnut_current_user', JSON.stringify(exists));
-        } else {
-          setCurrentUser(user);
-        }
-      } catch {}
-    }
-  });
-
   const value = useMemo(() => ({
     currentUser,
     isAuthenticated: !!currentUser,
     login,
     logout,
     addUser,
+    updateUser,
     deleteUser,
-    getManagedUsers,
+    refreshUsers,
     getDataFilter,
     canManageUsers,
     users,
     ROLES,
     ROLE_LABELS,
     ROLE_HIERARCHY,
-    CAN_CREATE_ROLE,
-  }), [currentUser, login, logout, addUser, deleteUser, getManagedUsers, getDataFilter, canManageUsers, users]);
+  }), [currentUser, login, logout, addUser, updateUser, deleteUser, refreshUsers, getDataFilter, canManageUsers, users]);
 
   return (
     <AuthContext.Provider value={value}>

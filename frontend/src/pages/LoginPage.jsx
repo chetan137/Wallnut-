@@ -37,26 +37,24 @@ export default function LoginPage() {
     }
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    setTimeout(() => {
-      const result = login(username, password);
-      setLoading(false);
-      if (result.success) {
-        if (rememberMe) {
-          try {
-            localStorage.setItem('wallnut_saved_login', JSON.stringify({ u: username, p: password }));
-          } catch (e) { /* ignore */ }
-        } else {
-          localStorage.removeItem('wallnut_saved_login');
-        }
-        navigate('/dashboard', { replace: true });
+    const result = await login(username, password);
+    setLoading(false);
+    if (result.success) {
+      if (rememberMe) {
+        try {
+          localStorage.setItem('wallnut_saved_login', JSON.stringify({ u: username, p: password }));
+        } catch (e) { /* ignore */ }
       } else {
-        setError(result.error);
+        localStorage.removeItem('wallnut_saved_login');
       }
-    }, 400);
+      navigate('/dashboard', { replace: true });
+    } else {
+      setError(result.error);
+    }
   };
 
   return (

@@ -1,185 +1,227 @@
-import { useState } from 'react';
-import { useAuth, ROLE_LABELS, CAN_CREATE_ROLE } from '../context/AuthContext';
+import { useState, useMemo } from 'react';
+import { useAuth, ROLES, ROLE_LABELS, ROLE_HIERARCHY } from '../context/AuthContext';
 import { useRole } from '../context/RoleContext';
-import { UserPlus, Trash2 } from 'lucide-react';
+import { UserPlus, Trash2, Pencil } from 'lucide-react';
 import './ManageUsers.css';
 
-export default function ManageUsers() {
-  const { currentUser, getManagedUsers, addUser, deleteUser, canManageUsers } = useAuth();
-  const { allDistricts, allSalesOfficers } = useRole();
-  const [showForm, setShowForm] = useState(false);
-  const [formError, setFormError] = useState('');
-  const [form, setForm] = useState({ name: '', email: '', password: '', scope: '' });
+const EMPTY_FORM = { name: '', username: '', password: '', role: ROLES.SALES_OFFICER, state: '', district: '', salesMan: '', active: true };
 
-  const managedUsers = getManagedUsers();
-  const creatableRole = CAN_CREATE_ROLE[currentUser?.role];
+export default function ManageUsers() {
+  const { currentUser, users, addUser, updateUser, deleteUser, canManageUsers } = useAuth();
+  const { allStates, allDistricts, allSalesOfficers } = useRole();
+  const [editing, setEditing] = useState(null); // null = closed, 'new' = create, or a user object
+  const [formError, setFormError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [form, setForm] = useState(EMPTY_FORM);
+
+  const visibleUsers = useMemo(
+    () => users.filter((u) => roleFilter === 'all' || u.role === roleFilter),
+    [users, roleFilter]
+  );
 
   if (!canManageUsers) {
     return (
       <div className="manage-users-page">
-        <h2 className="manage-users-title">Manage Users</h2>
-        <p style={{ color: 'var(--text-muted)' }}>You do not have permission to manage users.</p>
+        <h2 className="manage-users-title">User Management</h2>
+        <p style={{ color: 'var(--text-muted)' }}>Only the CEO can manage users.</p>
       </div>
     );
   }
 
-  const getScopeOptions = () => {
-    if (creatableRole === 'district_manager') {
-      return allDistricts.map(d => ({ value: d, label: d }));
-    }
-    if (creatableRole === 'sales_officer') {
-      const districtOfficers = allSalesOfficers.filter(o => o.district === currentUser.district);
-      return districtOfficers.map(o => ({ value: o.name, label: o.name }));
-    }
-    return [{ value: 'Madhya Pradesh', label: 'Madhya Pradesh' }];
+  const openCreate = () => {
+    setForm(EMPTY_FORM);
+    setFormError('');
+    setEditing('new');
   };
 
-  const handleSubmit = (e) => {
+  const openEdit = (user) => {
+    setForm({
+      name: user.name,
+      username: user.username,
+      password: '',
+      role: user.role,
+      state: user.state || '',
+      district: user.district || '',
+      salesMan: user.salesMan || '',
+      active: user.active,
+    });
+    setFormError('');
+    setEditing(user);
+  };
+
+  const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+
+  // Picking a sales person from the Tally list also fills in their area.
+  const pickSalesMan = (e) => {
+    const name = e.target.value;
+    const match = allSalesOfficers.find((o) => o.name === name);
+    setForm((f) => ({
+      ...f,
+      salesMan: name,
+      state: match?.state || f.state,
+      district: match?.district || f.district,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError('');
-
-    if (!form.name || !form.email || !form.password || !form.scope) {
-      setFormError('All fields are required');
-      return;
-    }
-
-    const newUser = {
+    const isNew = editing === 'new';
+    const payload = {
       name: form.name,
-      email: form.email,
-      password: form.password,
-      role: creatableRole,
-      scope: form.scope,
-      state: currentUser.state || 'Madhya Pradesh',
-      district: creatableRole === 'district_manager' ? form.scope : (currentUser.district || null),
-      salesMan: creatableRole === 'sales_officer' ? form.scope : null,
+      username: form.username,
+      role: form.role,
+      state: form.role === ROLES.CEO ? '' : form.state,
+      district: form.role === ROLES.DISTRICT_MANAGER || form.role === ROLES.SALES_OFFICER ? form.district : '',
+      salesMan: form.role === ROLES.SALES_OFFICER ? form.salesMan : '',
+      active: form.active,
     };
+    if (isNew || form.password) payload.password = form.password;
 
-    const result = addUser(newUser);
-    if (result.success) {
-      setShowForm(false);
-      setForm({ name: '', email: '', password: '', scope: '' });
-    } else {
-      setFormError(result.error);
-    }
+    setSaving(true);
+    const result = isNew ? await addUser(payload) : await updateUser(editing.id, payload);
+    setSaving(false);
+    if (result.success) setEditing(null);
+    else setFormError(result.error || 'Something went wrong');
   };
 
-  const handleDelete = (userId) => {
-    if (window.confirm('Are you sure you want to remove this user?')) {
-      deleteUser(userId);
-    }
+  const handleDelete = async (user) => {
+    if (!window.confirm(`Remove ${user.name} (${user.username})? They will no longer be able to sign in.`)) return;
+    const result = await deleteUser(user.id);
+    if (!result.success) window.alert(result.error);
   };
+
+  const isNew = editing === 'new';
 
   return (
     <div className="manage-users-page">
       <div className="manage-users-header">
         <div>
-          <h2 className="manage-users-title">Manage Users</h2>
+          <h2 className="manage-users-title">User Management</h2>
           <p className="manage-users-subtitle">
-            Create and manage {ROLE_LABELS[creatableRole]} accounts
+            Add, edit, replace or remove dashboard logins. These accounts are separate from Tally.
           </p>
         </div>
-        <button className="add-user-btn" onClick={() => setShowForm(true)} id="add-user-btn">
+        <button className="add-user-btn" onClick={openCreate} id="add-user-btn">
           <UserPlus size={16} />
-          Add {ROLE_LABELS[creatableRole]}
+          Add User
         </button>
       </div>
 
-      {/* User Cards */}
+      <div className="users-filter-row">
+        {['all', ...ROLE_HIERARCHY].map((r) => (
+          <button
+            key={r}
+            className={`users-filter-chip ${roleFilter === r ? 'active' : ''}`}
+            onClick={() => setRoleFilter(r)}
+          >
+            {r === 'all' ? `All (${users.length})` : `${ROLE_LABELS[r]} (${users.filter((u) => u.role === r).length})`}
+          </button>
+        ))}
+      </div>
+
       <div className="users-grid">
-        {managedUsers.map(user => (
-          <div key={user.id} className="user-card">
+        {visibleUsers.map((user) => (
+          <div key={user.id} className={`user-card ${user.active ? '' : 'inactive'}`}>
             <div className="user-card-top">
-              <div className="user-card-avatar">
-                {user.name.charAt(0)}
+              <div className="user-card-avatar">{user.name.charAt(0)}</div>
+              <div className="user-card-actions">
+                <button className="user-card-delete" onClick={() => openEdit(user)} title="Edit user">
+                  <Pencil size={15} />
+                </button>
+                {user.id !== currentUser.id && (
+                  <button className="user-card-delete" onClick={() => handleDelete(user)} title="Remove user">
+                    <Trash2 size={15} />
+                  </button>
+                )}
               </div>
-              <button className="user-card-delete" onClick={() => handleDelete(user.id)} title="Remove user">
-                <Trash2 size={15} />
-              </button>
             </div>
-            <div className="user-card-name">{user.name}</div>
-            <div className="user-card-email">{user.email}</div>
+            <div className="user-card-name">{user.name}{user.id === currentUser.id && ' (you)'}</div>
+            <div className="user-card-email">{user.username}</div>
             <div className="user-card-meta">
               <span className="user-card-badge role">{ROLE_LABELS[user.role]}</span>
-              <span className="user-card-badge scope">{user.scope}</span>
+              <span className="user-card-badge scope">{user.salesMan || user.scope}</span>
+              {!user.active && <span className="user-card-badge disabled">Disabled</span>}
             </div>
           </div>
         ))}
 
-        {managedUsers.length === 0 && (
-          <div style={{ color: 'var(--text-muted)', padding: 'var(--space-4)' }}>
-            No {ROLE_LABELS[creatableRole]} accounts yet. Click "Add" to create one.
-          </div>
+        {visibleUsers.length === 0 && (
+          <div style={{ color: 'var(--text-muted)', padding: 'var(--space-4)' }}>No users found.</div>
         )}
       </div>
 
-      {/* Add User Modal */}
-      {showForm && (
-        <div className="add-user-overlay" onClick={(e) => e.target === e.currentTarget && setShowForm(false)}>
+      {editing && (
+        <div className="add-user-overlay" onClick={(e) => e.target === e.currentTarget && setEditing(null)}>
           <div className="add-user-modal">
-            <h3 className="add-user-modal-title">Add {ROLE_LABELS[creatableRole]}</h3>
+            <h3 className="add-user-modal-title">{isNew ? 'Add User' : `Edit ${editing.name}`}</h3>
             <form className="add-user-form" onSubmit={handleSubmit}>
               <div className="login-field">
                 <label className="login-label">Full Name</label>
-                <input
-                  className="login-input"
-                  type="text"
-                  placeholder="e.g. Rajesh Sharma"
-                  value={form.name}
-                  onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
-                  required
-                />
+                <input className="login-input" type="text" value={form.name} onChange={set('name')} required />
               </div>
 
               <div className="login-field">
-                <label className="login-label">Email / Username</label>
-                <input
-                  className="login-input"
-                  type="text"
-                  placeholder="e.g. rajesh@wallnut.in"
-                  value={form.email}
-                  onChange={(e) => setForm(f => ({ ...f, email: e.target.value }))}
-                  required
-                />
+                <label className="login-label">Username</label>
+                <input className="login-input" type="text" value={form.username} onChange={set('username')} autoComplete="off" required />
               </div>
 
               <div className="login-field">
-                <label className="login-label">Password</label>
+                <label className="login-label">{isNew ? 'Password' : 'New Password (leave blank to keep current)'}</label>
                 <input
                   className="login-input"
-                  type="password"
+                  type="text"
                   placeholder="Minimum 6 characters"
                   value={form.password}
-                  onChange={(e) => setForm(f => ({ ...f, password: e.target.value }))}
-                  required
+                  onChange={set('password')}
+                  autoComplete="new-password"
+                  required={isNew}
                 />
               </div>
 
               <div className="login-field">
-                <label className="login-label">
-                  {creatableRole === 'state_sales_head' ? 'State' :
-                   creatableRole === 'district_manager' ? 'District / Area-City' :
-                   'Sales Officer Identity'}
-                </label>
-                <select
-                  value={form.scope}
-                  onChange={(e) => setForm(f => ({ ...f, scope: e.target.value }))}
-                  required
-                >
-                  <option value="">Select scope...</option>
-                  {getScopeOptions().map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
+                <label className="login-label">Role</label>
+                <select value={form.role} onChange={set('role')}>
+                  {ROLE_HIERARCHY.map((r) => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
                 </select>
               </div>
+
+              {form.role !== ROLES.CEO && (
+                <div className="login-field">
+                  <label className="login-label">State</label>
+                  <input className="login-input" list="um-states" value={form.state} onChange={set('state')} required={form.role === ROLES.STATE_SALES_HEAD} />
+                  <datalist id="um-states">{allStates.map((s) => <option key={s} value={s} />)}</datalist>
+                </div>
+              )}
+
+              {(form.role === ROLES.DISTRICT_MANAGER || form.role === ROLES.SALES_OFFICER) && (
+                <div className="login-field">
+                  <label className="login-label">District / Area-City</label>
+                  <input className="login-input" list="um-districts" value={form.district} onChange={set('district')} required={form.role === ROLES.DISTRICT_MANAGER} />
+                  <datalist id="um-districts">{allDistricts.map((d) => <option key={d} value={d} />)}</datalist>
+                </div>
+              )}
+
+              {form.role === ROLES.SALES_OFFICER && (
+                <div className="login-field">
+                  <label className="login-label">Sales Person (as named in Tally)</label>
+                  <input className="login-input" list="um-salesmen" value={form.salesMan} onChange={pickSalesMan} required />
+                  <datalist id="um-salesmen">{allSalesOfficers.map((o) => <option key={o.name} value={o.name} />)}</datalist>
+                </div>
+              )}
+
+              <label className="login-remember-label">
+                <input type="checkbox" className="login-remember-checkbox" checked={form.active} onChange={(e) => setForm((f) => ({ ...f, active: e.target.checked }))} />
+                <span className="login-remember-text">Active (can sign in)</span>
+              </label>
 
               {formError && <div className="form-error">{formError}</div>}
 
               <div className="add-user-actions">
-                <button type="button" className="add-user-cancel" onClick={() => setShowForm(false)}>
-                  Cancel
-                </button>
-                <button type="submit" className="add-user-submit" id="submit-new-user">
-                  Create Account
+                <button type="button" className="add-user-cancel" onClick={() => setEditing(null)}>Cancel</button>
+                <button type="submit" className="add-user-submit" id="submit-new-user" disabled={saving}>
+                  {saving ? 'Saving...' : isNew ? 'Create Account' : 'Save Changes'}
                 </button>
               </div>
             </form>
