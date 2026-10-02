@@ -8,6 +8,7 @@ import AlertsPanel from '../components/panels/AlertsPanel';
 import DealerPerformanceTable from '../components/tables/DealerPerformanceTable';
 import DailySalesTable from '../components/tables/DailySalesTable';
 import NonSalesInvoicesTable from '../components/tables/NonSalesInvoicesTable';
+import SalesReconciliationTable from '../components/tables/SalesReconciliationTable';
 import SalesCallsReportTable from '../components/tables/SalesCallsReportTable';
 import LogSalesCallModal from '../components/common/LogSalesCallModal';
 import { useRole } from '../context/RoleContext';
@@ -146,6 +147,7 @@ export default function DistrictManagerDashboard({ data }) {
         <SalesCallsReportTable visits={filteredVisits} title="District Daily Sales Calls & Visits (Google Sheet Replacement)" />
         <DailySalesTable data={dailySales} title="District Daily Sales Register (Excl. GST)" />
         <DealerPerformanceTable data={dealerSummary} />
+        <SalesReconciliationTable salesRows={scopedData} selectedYear={selectedYear} title="District Sales Breakdown (compare with Tally)" />
         <NonSalesInvoicesTable selectedYear={selectedYear} title="District Branch Transfer & Sample Invoices" />
       </div>
 
