@@ -9,6 +9,7 @@ export default function FilterBar() {
     filters,
     setFilters,
     clearFilters,
+    availableFiscalYears,
     availableAreas,
     availableSalesMen,
     availableStockGroups,
@@ -155,6 +156,9 @@ export default function FilterBar() {
   // Calculate Active Filter Count & Chips
   const activeChips = useMemo(() => {
     const chips = [];
+    if (filters.fiscalYear) {
+      chips.push({ field: 'fiscalYear', label: `FY ${filters.fiscalYear}` });
+    }
     if (filters.fromDate || filters.toDate) {
       if (filters.fromDate && filters.toDate) {
         chips.push({ field: 'date', label: `${filters.fromDate} to ${filters.toDate}` });
@@ -220,6 +224,21 @@ export default function FilterBar() {
 
       <div className={`filter-bar-container ${isCollapsed ? 'collapsed' : ''}`} ref={dropdownRef}>
         
+        {/* Financial Year (24-25 / 25-26) — one Tally company per FY */}
+        <div className="filter-group">
+          <label className="filter-label">Financial Year</label>
+          <select
+            className={`filter-dropdown-trigger filter-select-field ${filters.fiscalYear ? "active" : ""}`}
+            value={filters.fiscalYear}
+            onChange={e => setFilters(prev => ({ ...prev, fiscalYear: e.target.value }))}
+          >
+            <option value="">All Years</option>
+            {availableFiscalYears.map(fy => (
+              <option key={fy} value={fy}>FY {fy}</option>
+            ))}
+          </select>
+        </div>
+
         {/* Date From & Date To */}
         <div className="filter-group">
           <label className="filter-label">Date Range</label>
