@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import KPIRow from '../components/cards/KPIRow';
 import YearlySalesTrend from '../components/charts/YearlySalesTrend';
 import IndiaMap from '../components/charts/IndiaMap';
@@ -12,12 +12,15 @@ import DailySalesTable from '../components/tables/DailySalesTable';
 import NonSalesInvoicesTable from '../components/tables/NonSalesInvoicesTable';
 import SalesReconciliationTable from '../components/tables/SalesReconciliationTable';
 import CalculationNotes from '../components/panels/CalculationNotes';
+import CeoFilterBar from '../components/filters/CeoFilterBar';
+import DrillDownDrawer from '../components/panels/DrillDownDrawer';
 import SalesCallsReportTable from '../components/tables/SalesCallsReportTable';
 import ChartCard from '../components/common/ChartCard';
 import { useRole } from '../context/RoleContext';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { abbreviateCurrency } from '../utils/formatters';
 import { fiscalYearOfDate, previousFiscalYear, fiscalYearOptions } from '../utils/fiscalYear';
+import { EMPTY_CEO_FILTERS, buildDealerIndex, applyCeoFilters } from '../utils/ceoFilters';
 import {
   getDistrictPerformance,
   getStockCategoryBreakdown,
@@ -181,24 +184,50 @@ function getYearlyFallingSalesAlerts(allData, selectedYear) {
 }
 
 export default function CEODashboard({ data }) {
-  const { filteredComplaints, filteredVisits } = useRole();
+  const { filteredComplaints, filteredVisits, filteredNonSalesInvoices, clearFilters } = useRole();
   // Defaults to "All" rather than a hardcoded year — real synced Tally data
   // won't necessarily fall in whatever year this was last hardcoded to
   // (e.g. real vouchers dated 2025 while this defaulted to 2026), which
   // silently zeroed every KPI card despite real data existing.
   const [selectedYear, setSelectedYear] = useState('All');
 
-  const filteredData = useMemo(() => {
-    if (selectedYear === 'All') return data;
-    return data.filter(r => fiscalYearOfDate(r.date) === selectedYear);
-  }, [data, selectedYear]);
+  // The CEO page has its own filters (below). The shared filter bar is hidden for the CEO, so make
+  // sure no filter chosen earlier in it is still silently applied to `data`.
+  useEffect(() => { clearFilters(); }, [clearFilters]);
 
-  const metrics = useMemo(() => getYearlyKPIMetrics(data, selectedYear), [data, selectedYear]);
+  // CEO filters: date range, State > District > City, Sales Officer, Dealer. Every card, chart,
+  // table and click-through list below is built from `localRows`.
+  const [ceoFilters, setCeoFilters] = useState({ ...EMPTY_CEO_FILTERS });
+  const [drill, setDrill] = useState(null); // 'sales' | 'dealers' | 'outstanding' | null
+  const dealerIndex = useMemo(() => buildDealerIndex(data), [data]);
+  const localRows = useMemo(() => applyCeoFilters(data, ceoFilters, dealerIndex), [data, ceoFilters, dealerIndex]);
+  const nonSalesRows = useMemo(
+    () => applyCeoFilters(filteredNonSalesInvoices, ceoFilters, dealerIndex),
+    [filteredNonSalesInvoices, ceoFilters, dealerIndex]
+  );
+
+  const changeYear = (year) => {
+    setSelectedYear(year);
+    // Dates must stay inside the Financial Year.
+    setCeoFilters((prev) => ({ ...prev, fromDate: '', toDate: '' }));
+  };
+  const fyRange = useMemo(() => {
+    if (selectedYear === 'All') return null;
+    const start = 2000 + Number(selectedYear.slice(0, 2));
+    return { min: `${start}-04-01`, max: `${start + 1}-03-31` };
+  }, [selectedYear]);
+
+  const filteredData = useMemo(() => {
+    if (selectedYear === 'All') return localRows;
+    return localRows.filter(r => fiscalYearOfDate(r.date) === selectedYear);
+  }, [localRows, selectedYear]);
+
+  const metrics = useMemo(() => getYearlyKPIMetrics(localRows, selectedYear), [localRows, selectedYear]);
   const districtPerf = useMemo(() => getDistrictPerformance(filteredData), [filteredData]);
   const stockBreakdown = useMemo(() => getStockCategoryBreakdown(filteredData), [filteredData]);
   const topProducts = useMemo(() => getTopProducts(filteredData, 10), [filteredData]);
   const topOfficers = useMemo(() => getTopSalesOfficers(filteredData, 9), [filteredData]);
-  const fallingAlerts = useMemo(() => getYearlyFallingSalesAlerts(data, selectedYear), [data, selectedYear]);
+  const fallingAlerts = useMemo(() => getYearlyFallingSalesAlerts(localRows, selectedYear), [localRows, selectedYear]);
   const highOutstanding = useMemo(() => getHighOutstandingDealers(filteredData, 8), [filteredData]);
   const dealerSummary = useMemo(() => getDealerPerformanceSummary(filteredData), [filteredData]);
   const dailySales = useMemo(() => getDailySalesSummary(filteredData), [filteredData]);
@@ -228,6 +257,14 @@ export default function CEODashboard({ data }) {
   // Financial Years (Apr-Mar): FY 25-26 and 24-25 always, plus any in the data (e.g. 26-27)
   const availableYears = useMemo(() => fiscalYearOptions(data), [data]);
 
+  const periodLabel = useMemo(() => {
+    const parts = [selectedYear === 'All' ? 'All years' : `FY ${selectedYear}`];
+    if (ceoFilters.fromDate || ceoFilters.toDate) parts.push(`${ceoFilters.fromDate || '…'} to ${ceoFilters.toDate || '…'}`);
+    ['state', 'district', 'city'].forEach((k) => { if (ceoFilters[k]) parts.push(ceoFilters[k]); });
+    if (ceoFilters.dealer) parts.push(ceoFilters.dealer);
+    return parts.join(' · ');
+  }, [selectedYear, ceoFilters]);
+
   return (
     <div className="ssh-dashboard" id="ceo-dashboard">
       <div className="dashboard-control-bar ceo-control-bar">
@@ -240,7 +277,7 @@ export default function CEODashboard({ data }) {
           <span className="control-bar-label">Financial Year:</span>
           <select
             value={selectedYear}
-            onChange={(e) => setSelectedYear(e.target.value)}
+            onChange={(e) => changeYear(e.target.value)}
             className="control-bar-select"
           >
             <option value="All">All Years</option>
@@ -251,6 +288,8 @@ export default function CEODashboard({ data }) {
         </div>
       </div>
 
+      <CeoFilterBar filters={ceoFilters} setFilters={setCeoFilters} dealerIndex={dealerIndex} fyRange={fyRange} />
+
       <CalculationNotes />
 
       <KPIRow
@@ -258,13 +297,29 @@ export default function CEODashboard({ data }) {
         isYearly={true}
         showBothTrends={true}
         descriptions={KPI_DESCRIPTIONS}
+        onCardClick={{
+          sales: () => setDrill('sales'),
+          dealers: () => setDrill('dealers'),
+          outstanding: () => setDrill('outstanding'),
+        }}
       />
+
+      {drill && (
+        <DrillDownDrawer
+          key={drill}
+          kind={drill}
+          rows={filteredData}
+          dealerIndex={dealerIndex}
+          periodLabel={periodLabel}
+          onClose={() => setDrill(null)}
+        />
+      )}
 
       <div className="charts-with-alerts">
         <div className="charts-main">
           <div className="charts-row">
             <IndiaMap data={filteredData} isNational={true} />
-            <YearlySalesTrend data={data} selectedYear={selectedYear} />
+            <YearlySalesTrend data={localRows} selectedYear={selectedYear} />
           </div>
 
           <div className="charts-row">
@@ -321,7 +376,7 @@ export default function CEODashboard({ data }) {
         <DistrictPerformanceTable data={districtPerf} />
         <DealerPerformanceTable data={dealerSummary} />
         <SalesReconciliationTable salesRows={filteredData} selectedYear={selectedYear} title="All-India Sales Breakdown (compare with Tally)" />
-        <NonSalesInvoicesTable selectedYear={selectedYear} title="All-India Branch Transfer & Sample Invoices" />
+        <NonSalesInvoicesTable selectedYear={selectedYear} rows={nonSalesRows} title="All-India Branch Transfer & Sample Invoices" />
       </div>
     </div>
   );

@@ -1,11 +1,21 @@
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import './KPICard.css';
 
-export default function KPICard({ icon: Icon, label, value, description, trend, trendLabel, trends, color = 'green' }) {
+export default function KPICard({ icon: Icon, label, value, description, trend, trendLabel, trends, color = 'green', onClick }) {
   const isPositive = trend >= 0;
 
   return (
-    <div className="kpi-card" id={`kpi-${label.toLowerCase().replace(/\s+/g, '-')}`}>
+    <div
+      className={`kpi-card${onClick ? ' kpi-card--clickable' : ''}`}
+      id={`kpi-${label.toLowerCase().replace(/\s+/g, '-')}`}
+      {...(onClick ? {
+        role: 'button',
+        tabIndex: 0,
+        title: 'Click to see the details',
+        onClick,
+        onKeyDown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } },
+      } : {})}
+    >
       <div className="kpi-card-header">
         <div className={`kpi-card-icon ${color}`}>
           <Icon size={20} />
@@ -61,6 +71,7 @@ export default function KPICard({ icon: Icon, label, value, description, trend, 
           </div>
         )
       )}
+      {onClick && <div className="kpi-card-more">Click for details &rarr;</div>}
       <div className={`kpi-card-accent-line ${color}`} />
     </div>
   );

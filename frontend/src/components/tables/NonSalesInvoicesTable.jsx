@@ -78,8 +78,9 @@ const columns = [
  * listed here instead. Reads the role/filter-scoped list from RoleContext;
  * `selectedYear` is the dashboard's Financial Year control ("25-26", or 'All' = no limit).
  */
-export default function NonSalesInvoicesTable({ selectedYear = 'All', title = 'Branch Transfer & Sample Invoices' }) {
-  const { filteredNonSalesInvoices } = useRole();
+export default function NonSalesInvoicesTable({ selectedYear = 'All', title = 'Branch Transfer & Sample Invoices', rows: rowsProp }) {
+  const { filteredNonSalesInvoices: contextRows } = useRole();
+  const filteredNonSalesInvoices = rowsProp || contextRows;
   const [category, setCategory] = useState('all');
 
   const invoices = useMemo(() => {

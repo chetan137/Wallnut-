@@ -139,3 +139,8 @@
 }
 
 
+
+.kpi-card--clickable { cursor: pointer; transition: box-shadow 0.15s ease, transform 0.15s ease; }
+.kpi-card--clickable:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
+.kpi-card--clickable:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+.kpi-card-more { margin-top: var(--space-2); font-size: var(--text-xs); font-weight: 600; color: var(--accent-primary); }

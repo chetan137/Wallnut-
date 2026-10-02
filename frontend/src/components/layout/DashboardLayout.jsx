@@ -2,10 +2,12 @@ import { useState } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import FilterBar from '../common/FilterBar';
+import { useRole, ROLES } from '../../context/RoleContext';
 import './DashboardLayout.css';
 
 export default function DashboardLayout({ children, hideFilterBar = false }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { currentRole } = useRole();
 
   return (
     <div className="dashboard-layout">
@@ -27,7 +29,8 @@ export default function DashboardLayout({ children, hideFilterBar = false }) {
             dropdown/search here looked live but silently did nothing on
             those pages. Only /dashboard's role dashboards actually consume
             filteredSales, so it's hidden everywhere else. */}
-        {!hideFilterBar && <FilterBar />}
+        {/* The CEO dashboard has its own filter bar (State > District > City, officer, dealer). */}
+        {!hideFilterBar && currentRole !== ROLES.CEO && <FilterBar />}
         <main className="dashboard-content">
           {children}
         </main>
