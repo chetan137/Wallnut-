@@ -23,14 +23,14 @@ export const ROLES = {
 const RoleContext = createContext(null);
 
 /**
- * Financial Year label ("24-25", "25-26") of a sales row. The backend sends
- * it from the Tally company the invoice was synced from — that is the real
- * FY here, since the 25-26 company also holds Apr-Sep 2026 vouchers. Rows
- * without it (mock data, records cached before this field existed) fall back
- * to the Indian FY the invoice date falls in (Apr-Mar).
+ * Indian Financial Year label ("24-25", "25-26", "26-27") of a sales row,
+ * from the invoice DATE (FY runs Apr-Mar). Deliberately NOT taken from the
+ * Tally company the row was synced from: the "…-2025-26" company file also
+ * holds Apr-Sep 2026 vouchers, which Tally's own mobile dashboard reports as
+ * the next year (2025 = Apr-2025→Mar-2026 = ₹9.27Cr, 2026 = Apr-Sep 2026 =
+ * ₹3.56Cr), so labelling by company would disagree with Tally.
  */
 function fiscalYearOf(row) {
-  if (row.fiscalYear) return row.fiscalYear;
   const [y, m] = (row.date || '').split('-').map(Number);
   if (!y || !m) return '';
   const start = m >= 4 ? y : y - 1;
