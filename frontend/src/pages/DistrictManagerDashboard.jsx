@@ -7,12 +7,9 @@ import TopSalesOfficers from '../components/charts/TopSalesOfficers';
 import AlertsPanel from '../components/panels/AlertsPanel';
 import DealerPerformanceTable from '../components/tables/DealerPerformanceTable';
 import DailySalesTable from '../components/tables/DailySalesTable';
-import NonSalesInvoicesTable from '../components/tables/NonSalesInvoicesTable';
-import SalesReconciliationTable from '../components/tables/SalesReconciliationTable';
 import SalesCallsReportTable from '../components/tables/SalesCallsReportTable';
 import LogSalesCallModal from '../components/common/LogSalesCallModal';
 import { useRole } from '../context/RoleContext';
-import { fiscalYearOfDate, fiscalYearOptions, isFiscalYear } from '../utils/fiscalYear';
 import { PhoneCall } from 'lucide-react';
 import {
   getKPIMetrics,
@@ -40,10 +37,11 @@ export default function DistrictManagerDashboard({ data }) {
 
   const [selectedYear, setSelectedYear] = useState(() => {
     try {
-      // Only a Financial Year label ("25-26") or 'All' is valid now — an old
-      // saved calendar year like "2026" would filter everything out.
+      // Only 'All' or a 4-digit calendar year is valid here. A Financial Year label
+      // saved by the short-lived FY version of this page ("25-26") would match no
+      // dates and leave the dashboard empty.
       const saved = localStorage.getItem('wallnut_dm_year');
-      return isFiscalYear(saved) ? saved : 'All';
+      return saved && /^(All|\d{4})$/.test(saved) ? saved : 'All';
     } catch {
       return 'All';
     }
@@ -57,13 +55,20 @@ export default function DistrictManagerDashboard({ data }) {
     } catch (e) { /* ignore */ }
   };
 
-  // Financial Years (Apr-Mar): FY 25-26 and 24-25 always, plus any in the data (e.g. 26-27)
-  const availableYears = useMemo(() => fiscalYearOptions(data), [data]);
+  // Available years: always include 2026, 2025, 2024 + any additional years from data
+  const availableYears = useMemo(() => {
+    const years = new Set(['2026', '2025', '2024']);
+    data.forEach(d => {
+      const y = d.date?.slice(0, 4);
+      if (y && y.length === 4) years.add(y);
+    });
+    return [...years].sort((a, b) => b.localeCompare(a));
+  }, [data]);
 
   // Year-scoped data for charts + KPI totals
   const scopedData = useMemo(() => {
     if (selectedYear === 'All') return data;
-    return data.filter(r => fiscalYearOfDate(r.date) === selectedYear);
+    return data.filter(r => r.date?.startsWith(selectedYear));
   }, [data, selectedYear]);
 
   // KPI metrics: scoped data for totals, full data for cross-year trend lookups
@@ -102,7 +107,7 @@ export default function DistrictManagerDashboard({ data }) {
           </button>
         </div>
         <div className="dashboard-control-bar">
-          <span className="control-bar-label">Financial Year:</span>
+          <span className="control-bar-label">Select Year:</span>
           <select
             value={selectedYear}
             onChange={(e) => handleYearChange(e.target.value)}
@@ -110,7 +115,7 @@ export default function DistrictManagerDashboard({ data }) {
           >
             <option value="All">All Years</option>
             {availableYears.map(year => (
-              <option key={year} value={year}>FY {year}</option>
+              <option key={year} value={year}>{year}</option>
             ))}
           </select>
         </div>
@@ -147,8 +152,6 @@ export default function DistrictManagerDashboard({ data }) {
         <SalesCallsReportTable visits={filteredVisits} title="District Daily Sales Calls & Visits (Google Sheet Replacement)" />
         <DailySalesTable data={dailySales} title="District Daily Sales Register (Excl. GST)" />
         <DealerPerformanceTable data={dealerSummary} />
-        <SalesReconciliationTable salesRows={scopedData} selectedYear={selectedYear} title="District Sales Breakdown (compare with Tally)" />
-        <NonSalesInvoicesTable selectedYear={selectedYear} title="District Branch Transfer & Sample Invoices" />
       </div>
 
       <LogSalesCallModal

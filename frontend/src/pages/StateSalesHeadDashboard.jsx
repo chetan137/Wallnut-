@@ -10,12 +10,9 @@ import AlertsPanel from '../components/panels/AlertsPanel';
 import DistrictPerformanceTable from '../components/tables/DistrictPerformanceTable';
 import DealerPerformanceTable from '../components/tables/DealerPerformanceTable';
 import DailySalesTable from '../components/tables/DailySalesTable';
-import NonSalesInvoicesTable from '../components/tables/NonSalesInvoicesTable';
-import SalesReconciliationTable from '../components/tables/SalesReconciliationTable';
 import SalesCallsReportTable from '../components/tables/SalesCallsReportTable';
 import LogSalesCallModal from '../components/common/LogSalesCallModal';
 import { useRole } from '../context/RoleContext';
-import { fiscalYearOfDate, fiscalYearOptions } from '../utils/fiscalYear';
 import { PhoneCall } from 'lucide-react';
 import {
   getKPIMetrics,
@@ -37,13 +34,20 @@ export default function StateSalesHeadDashboard({ data }) {
   const [selectedYear, setSelectedYear] = useState('All');
   const [isCallModalOpen, setIsCallModalOpen] = useState(false);
 
-  // Financial Years (Apr-Mar): FY 25-26 and 24-25 always, plus any in the data (e.g. 26-27)
-  const availableYears = useMemo(() => fiscalYearOptions(data), [data]);
+  // Available years: always include 2026, 2025, 2024 + any additional years from data
+  const availableYears = useMemo(() => {
+    const years = new Set(['2026', '2025', '2024']);
+    data.forEach(d => {
+      const y = d.date?.slice(0, 4);
+      if (y && y.length === 4) years.add(y);
+    });
+    return [...years].sort((a, b) => b.localeCompare(a));
+  }, [data]);
 
   // Year-scoped data for charts + KPI totals
   const scopedData = useMemo(() => {
     if (selectedYear === 'All') return data;
-    return data.filter(r => fiscalYearOfDate(r.date) === selectedYear);
+    return data.filter(r => r.date?.startsWith(selectedYear));
   }, [data, selectedYear]);
 
   // KPI metrics: scoped data for totals, full data for cross-year trend lookups
@@ -69,7 +73,7 @@ export default function StateSalesHeadDashboard({ data }) {
           </button>
         </div>
         <div className="dashboard-control-bar">
-          <span className="control-bar-label">Financial Year:</span>
+          <span className="control-bar-label">Select Year:</span>
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(e.target.value)}
@@ -77,7 +81,7 @@ export default function StateSalesHeadDashboard({ data }) {
           >
             <option value="All">All Years</option>
             {availableYears.map(year => (
-              <option key={year} value={year}>FY {year}</option>
+              <option key={year} value={year}>{year}</option>
             ))}
           </select>
         </div>
@@ -122,8 +126,6 @@ export default function StateSalesHeadDashboard({ data }) {
         <DailySalesTable data={dailySales} title="State Daily Sales Register (Excl. GST)" />
         <DistrictPerformanceTable data={districtPerf} />
         <DealerPerformanceTable data={dealerSummary} />
-        <SalesReconciliationTable salesRows={scopedData} selectedYear={selectedYear} title="State Sales Breakdown (compare with Tally)" />
-        <NonSalesInvoicesTable selectedYear={selectedYear} title="State Branch Transfer & Sample Invoices" />
       </div>
 
       <LogSalesCallModal
