@@ -4,9 +4,6 @@
  */
 
 import { createContext, useContext, useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { salesData } from '../data/salesData';
-import { complaintsData } from '../data/complaintsData';
-import { visitsData } from '../data/visitsData';
 import { useAuth } from './AuthContext';
 
 // Sent as X-API-Key so the backend can reject requests that don't come from
@@ -99,7 +96,10 @@ export function RoleProvider({ children }) {
   // into a KPI/chart — use `sales` below, which leaves those two out.
   const [allSales, setSales] = useState(() => {
     const saved = localStorage.getItem('wallnut_sales_records');
-    return saved ? JSON.parse(saved) : salesData;
+    // No bundled demo data: until the first real sync lands (or when there is
+    // no cached copy yet) the dashboard starts empty rather than showing
+    // fabricated sales.
+    return saved ? JSON.parse(saved) : [];
   });
 
   // Real customer sales only — what every KPI, chart and table is built from.
@@ -282,12 +282,12 @@ export function RoleProvider({ children }) {
 
   const [complaints, setComplaints] = useState(() => {
     const saved = localStorage.getItem('wallnut_complaints_records');
-    return saved ? JSON.parse(saved) : complaintsData;
+    return saved ? JSON.parse(saved) : [];
   });
 
   const [visits, setVisits] = useState(() => {
     const saved = localStorage.getItem('wallnut_visits_records');
-    return saved ? JSON.parse(saved) : visitsData;
+    return saved ? JSON.parse(saved) : [];
   });
 
   // Action methods
