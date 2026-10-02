@@ -87,6 +87,10 @@ export function RoleProvider({ children }) {
     return saved ? JSON.parse(saved) : [];
   });
 
+  // Monthly Collection (Receipt vouchers) from the backend: [{ month: 'YYYY-MM', receipts, amount }].
+  // Company-wide — not scoped by role or filters. Shown in the CEO Sales Breakdown table.
+  const [collections, setCollections] = useState([]);
+
   // Real customer sales only — what every KPI, chart and table is built from.
   // Rows without an invoiceCategory (mock data, records cached before this
   // field existed) count as normal sales.
@@ -194,6 +198,7 @@ export function RoleProvider({ children }) {
       if (json.ok && Array.isArray(json.data?.salesData)) {
         const records = json.data.salesData;
         setSales(records);
+        setCollections(Array.isArray(json.data?.collections) ? json.data.collections : []);
         setDataSource(json.source || 'local');
         const syncTime = json.source === 'tally' || json.source === 'db' ? (json.lastSync || new Date().toISOString()) : null;
         if (syncTime) setLastSync(syncTime);
@@ -623,6 +628,7 @@ export function RoleProvider({ children }) {
     allRoles,
     filteredSales,
     filteredNonSalesInvoices,
+    collections,
     filteredComplaints,
     filteredVisits,
     addSalesEntry,
@@ -657,6 +663,7 @@ export function RoleProvider({ children }) {
     allRoles,
     filteredSales,
     filteredNonSalesInvoices,
+    collections,
     filteredComplaints,
     filteredVisits,
     addSalesEntry,

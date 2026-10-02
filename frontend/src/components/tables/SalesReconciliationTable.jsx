@@ -19,6 +19,12 @@ const columns = [
   },
   { header: 'Branch Transfer (not in sales)', accessor: 'branchTransfer', numeric: true, render: (val) => formatCurrency(val) },
   { header: 'Sample (not in sales)', accessor: 'sample', numeric: true, render: (val) => formatCurrency(val) },
+  {
+    header: 'Collection (receipts)',
+    accessor: 'collection',
+    numeric: true,
+    render: (val) => <span style={{ fontWeight: 600 }}>{formatCurrency(val)}</span>,
+  },
 ];
 
 /**
@@ -33,19 +39,22 @@ const columns = [
  *   Branch Transfer       invoices to the company's own branches — Tally keeps
  *                         these out of "Sales Accounts", so they are NOT sales
  *   Sample                sample / free-goods invoices — NOT sales
+ *   Collection            money received — the month's Receipt vouchers (Tally mobile's
+ *                         "Collection"); company-wide, so it ignores the area / officer /
+ *                         dealer filters, unlike the columns above
  *
  * `salesRows` is the already year/role/filter-scoped sales array of the
  * dashboard; Branch Transfer / Sample come from RoleContext, scoped the same way.
  */
 export default function SalesReconciliationTable({ salesRows, selectedYear = 'All', title = 'Sales Breakdown (compare with Tally)' }) {
-  const { filteredNonSalesInvoices } = useRole();
+  const { filteredNonSalesInvoices, collections } = useRole();
 
   const { months, totals } = useMemo(() => {
     const byMonth = {};
     const bucket = (date) => {
       const key = String(date || '').slice(0, 7);
       if (key.length !== 7) return null;
-      if (!byMonth[key]) byMonth[key] = { month: key, sales: 0, creditNotes: 0, branchTransfer: 0, sample: 0 };
+      if (!byMonth[key]) byMonth[key] = { month: key, sales: 0, creditNotes: 0, branchTransfer: 0, sample: 0, collection: 0 };
       return byMonth[key];
     };
 
@@ -63,6 +72,12 @@ export default function SalesReconciliationTable({ salesRows, selectedYear = 'Al
       else if (r.invoiceCategory === 'sample') b.sample += Number(r.amount) || 0;
     }
 
+    for (const c of collections || []) {
+      if (selectedYear !== 'All' && fiscalYearOfDate(`${c.month}-01`) !== selectedYear) continue;
+      const b = bucket(`${c.month}-01`);
+      if (b) b.collection += Number(c.amount) || 0;
+    }
+
     const rows = Object.values(byMonth)
       .map((b) => ({ ...b, netSales: b.sales + b.creditNotes }))
       .sort((a, b) => b.month.localeCompare(a.month));
@@ -70,9 +85,9 @@ export default function SalesReconciliationTable({ salesRows, selectedYear = 'Al
     const sum = (k) => rows.reduce((s, r) => s + r[k], 0);
     return {
       months: rows,
-      totals: { sales: sum('sales'), creditNotes: sum('creditNotes'), branchTransfer: sum('branchTransfer'), sample: sum('sample') },
+      totals: { sales: sum('sales'), creditNotes: sum('creditNotes'), branchTransfer: sum('branchTransfer'), sample: sum('sample'), collection: sum('collection') },
     };
-  }, [salesRows, filteredNonSalesInvoices, selectedYear]);
+  }, [salesRows, filteredNonSalesInvoices, collections, selectedYear]);
 
   const toolbar = (
     <div className="non-sales-toolbar">
@@ -92,6 +107,11 @@ export default function SalesReconciliationTable({ salesRows, selectedYear = 'Al
           <span className="non-sales-stat-value">{formatCurrency(totals.branchTransfer + totals.sample)}</span>
           <span className="non-sales-stat-sub">kept out of sales</span>
         </div>
+        <div className="non-sales-stat non-sales-stat--branch_transfer">
+          <span className="non-sales-stat-label">Collection</span>
+          <span className="non-sales-stat-value">{formatCurrency(totals.collection)}</span>
+          <span className="non-sales-stat-sub">receipts, company-wide</span>
+        </div>
       </div>
     </div>
   );
@@ -99,7 +119,7 @@ export default function SalesReconciliationTable({ salesRows, selectedYear = 'Al
   return (
     <DataTable
       title={title}
-      subtitle="What the Net Sales card is made of, month by month: Sales Invoices + Credit Notes (negative). Same as Tally's Sales; Branch Transfer and Sample are left out."
+      subtitle="Month by month, like Tally's mobile app: Net Sales = Sales Invoices + Credit Notes (negative), Branch Transfer and Sample left out; Collection = receipts."
       columns={columns}
       data={months}
       id="sales-breakdown-table"
