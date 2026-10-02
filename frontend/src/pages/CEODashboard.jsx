@@ -9,6 +9,7 @@ import AlertsPanel from '../components/panels/AlertsPanel';
 import DistrictPerformanceTable from '../components/tables/DistrictPerformanceTable';
 import DealerPerformanceTable from '../components/tables/DealerPerformanceTable';
 import DailySalesTable from '../components/tables/DailySalesTable';
+import NonSalesInvoicesTable from '../components/tables/NonSalesInvoicesTable';
 import SalesCallsReportTable from '../components/tables/SalesCallsReportTable';
 import ChartCard from '../components/common/ChartCard';
 import { useRole } from '../context/RoleContext';
@@ -314,6 +315,7 @@ export default function CEODashboard({ data }) {
         <DailySalesTable data={dailySales} title="All-India Daily Sales Register (Excl. GST)" />
         <DistrictPerformanceTable data={districtPerf} />
         <DealerPerformanceTable data={dealerSummary} />
+        <NonSalesInvoicesTable selectedYear={selectedYear} title="All-India Branch Transfer & Sample Invoices" />
       </div>
     </div>
   );

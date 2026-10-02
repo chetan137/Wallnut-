@@ -10,6 +10,7 @@ import AlertsPanel from '../components/panels/AlertsPanel';
 import DistrictPerformanceTable from '../components/tables/DistrictPerformanceTable';
 import DealerPerformanceTable from '../components/tables/DealerPerformanceTable';
 import DailySalesTable from '../components/tables/DailySalesTable';
+import NonSalesInvoicesTable from '../components/tables/NonSalesInvoicesTable';
 import SalesCallsReportTable from '../components/tables/SalesCallsReportTable';
 import LogSalesCallModal from '../components/common/LogSalesCallModal';
 import { useRole } from '../context/RoleContext';
@@ -126,6 +127,7 @@ export default function StateSalesHeadDashboard({ data }) {
         <DailySalesTable data={dailySales} title="State Daily Sales Register (Excl. GST)" />
         <DistrictPerformanceTable data={districtPerf} />
         <DealerPerformanceTable data={dealerSummary} />
+        <NonSalesInvoicesTable selectedYear={selectedYear} title="State Branch Transfer & Sample Invoices" />
       </div>
 
       <LogSalesCallModal

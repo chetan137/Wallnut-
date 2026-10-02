@@ -1,0 +1,89 @@
+.non-sales-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--card-border);
+}
+
+.non-sales-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.non-sales-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 150px;
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--card-border);
+  border-left-width: 3px;
+  border-radius: var(--radius-md);
+  background: var(--bg-main);
+}
+
+.non-sales-stat--branch_transfer { border-left-color: var(--accent-primary); }
+.non-sales-stat--sample          { border-left-color: var(--text-muted); }
+
+.non-sales-stat-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.non-sales-stat-value {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.non-sales-stat-sub {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.non-sales-filters {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.non-sales-filter-btn {
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  background: var(--bg-main);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.non-sales-filter-btn:hover { border-color: var(--accent-primary); }
+
+.non-sales-filter-btn.active {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  font-weight: 600;
+}
+
+.non-sales-badge {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.non-sales-badge--branch_transfer {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.non-sales-badge--sample { color: var(--text-muted); }

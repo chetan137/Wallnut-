@@ -79,15 +79,33 @@ export function RoleProvider({ children }) {
   }, [selectedSalesMan]);
 
   // Mutable states persisted in localStorage
-  const [sales, setSales] = useState(() => {
+  // Every synced invoice row, including Branch Transfer and Sample invoices
+  // (tagged by the backend via `invoiceCategory`). Never feed this straight
+  // into a KPI/chart — use `sales` below, which leaves those two out.
+  const [allSales, setSales] = useState(() => {
     const saved = localStorage.getItem('wallnut_sales_records');
     return saved ? JSON.parse(saved) : salesData;
   });
 
-  // Mirrors `sales` so syncFromTally (a stable useCallback with no deps) can
-  // read the pre-sync record set without needing `sales` as a dependency.
-  const salesRef = useRef(sales);
-  useEffect(() => { salesRef.current = sales; }, [sales]);
+  // Real customer sales only — what every KPI, chart and table is built from.
+  // Rows without an invoiceCategory (mock data, records cached before this
+  // field existed) count as normal sales.
+  const sales = useMemo(
+    () => allSales.filter((r) => !r.invoiceCategory || r.invoiceCategory === 'sale'),
+    [allSales]
+  );
+
+  // Branch Transfer + Sample invoices — shown only in their own dashboard
+  // section, never counted in sales totals.
+  const nonSalesInvoices = useMemo(
+    () => allSales.filter((r) => r.invoiceCategory === 'branch_transfer' || r.invoiceCategory === 'sample'),
+    [allSales]
+  );
+
+  // Mirrors `allSales` so syncFromTally (a stable useCallback with no deps)
+  // can read the pre-sync record set without needing it as a dependency.
+  const salesRef = useRef(allSales);
+  useEffect(() => { salesRef.current = allSales; }, [allSales]);
 
   // No stable row id comes back from the API (see dbDataService.js), so a
   // composite of fields that together identify one (voucher, line item) row
@@ -351,14 +369,16 @@ export function RoleProvider({ children }) {
   }, []);
 
   // Baseline scoped datasets (before global filters)
-  const baseSales = useMemo(() => {
+  // Same role scoping for sales rows and for Branch Transfer / Sample rows,
+  // so the extra section respects the viewer's state/district/officer scope.
+  const scopeByRole = useCallback((rows) => {
     switch (currentRole) {
       case ROLES.CEO:
-        return sales;
+        return rows;
       case ROLES.STATE_SALES_HEAD:
-        return sales.filter(r => r.state === selectedState);
+        return rows.filter(r => r.state === selectedState);
       case ROLES.DISTRICT_MANAGER:
-        return sales.filter(r => {
+        return rows.filter(r => {
           if (!r.areaCity) return false;
           if (r.areaCity === selectedDistrict) return true;
           const normA = r.areaCity.replace(/\s*(Plant|Godown|Warehouse|Location|Branch)\s*/gi, '').trim().toLowerCase();
@@ -366,11 +386,14 @@ export function RoleProvider({ children }) {
           return normA === normB || (normB && r.areaCity.toLowerCase().includes(normB));
         });
       case ROLES.SALES_OFFICER:
-        return sales.filter(r => normalizeName(r.salesMan) === normalizeName(selectedSalesMan));
+        return rows.filter(r => normalizeName(r.salesMan) === normalizeName(selectedSalesMan));
       default:
         return [];
     }
-  }, [currentRole, selectedState, selectedDistrict, selectedSalesMan, sales, normalizeName]);
+  }, [currentRole, selectedState, selectedDistrict, selectedSalesMan, normalizeName]);
+
+  const baseSales = useMemo(() => scopeByRole(sales), [scopeByRole, sales]);
+  const baseNonSales = useMemo(() => scopeByRole(nonSalesInvoices), [scopeByRole, nonSalesInvoices]);
 
   const baseComplaints = useMemo(() => {
     switch (currentRole) {
@@ -451,8 +474,8 @@ export function RoleProvider({ children }) {
   }, [baseSales]);
 
   // Apply Global Filters (AND Logic)
-  const filteredSales = useMemo(() => {
-    let result = baseSales;
+  const applySalesFilters = useCallback((rows) => {
+    let result = rows;
 
     if (filters.fromDate) {
       result = result.filter(r => r.date >= filters.fromDate);
@@ -478,7 +501,10 @@ export function RoleProvider({ children }) {
     }
 
     return result;
-  }, [baseSales, filters, normalizeName]);
+  }, [filters, normalizeName]);
+
+  const filteredSales = useMemo(() => applySalesFilters(baseSales), [applySalesFilters, baseSales]);
+  const filteredNonSalesInvoices = useMemo(() => applySalesFilters(baseNonSales), [applySalesFilters, baseNonSales]);
 
   const filteredComplaints = useMemo(() => {
     let result = baseComplaints;
@@ -596,6 +622,7 @@ export function RoleProvider({ children }) {
     roleConfig,
     allRoles,
     filteredSales,
+    filteredNonSalesInvoices,
     filteredComplaints,
     filteredVisits,
     addSalesEntry,
@@ -629,6 +656,7 @@ export function RoleProvider({ children }) {
     roleConfig,
     allRoles,
     filteredSales,
+    filteredNonSalesInvoices,
     filteredComplaints,
     filteredVisits,
     addSalesEntry,
