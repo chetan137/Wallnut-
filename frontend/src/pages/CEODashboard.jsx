@@ -11,6 +11,7 @@ import DealerPerformanceTable from '../components/tables/DealerPerformanceTable'
 import DailySalesTable from '../components/tables/DailySalesTable';
 import NonSalesInvoicesTable from '../components/tables/NonSalesInvoicesTable';
 import SalesReconciliationTable from '../components/tables/SalesReconciliationTable';
+import CalculationNotes from '../components/panels/CalculationNotes';
 import SalesCallsReportTable from '../components/tables/SalesCallsReportTable';
 import ChartCard from '../components/common/ChartCard';
 import { useRole } from '../context/RoleContext';
@@ -37,6 +38,13 @@ import './StateSalesHeadDashboard.css'; // Share layout CSS
 function pctChange(current, prev) {
   return prev > 0 ? ((current - prev) / prev) * 100 : null;
 }
+
+// What each CEO card means, in plain words (see CalculationNotes for the full explanation).
+const KPI_DESCRIPTIONS = {
+  sales: "Tally's Sales: Sales Accounts postings after discount, without GST. Credit notes are subtracted; Branch Transfer and Sample invoices are not included.",
+  dealers: 'Customers with a sales invoice or credit note in the period. Branch Transfer and Sample are not counted.',
+  outstanding: "Pending amount of Tally's bills for invoices raised in the period. Old bills with no invoice in this system are not included yet.",
+};
 
 const aggSales = (rows) => rows.reduce((sum, d) => sum + d.amount, 0);
 const aggDealers = (rows) => new Set(rows.map(d => d.partyName)).size;
@@ -243,7 +251,14 @@ export default function CEODashboard({ data }) {
         </div>
       </div>
 
-      <KPIRow metrics={metrics} isYearly={true} showBothTrends={true} />
+      <CalculationNotes />
+
+      <KPIRow
+        metrics={metrics}
+        isYearly={true}
+        showBothTrends={true}
+        descriptions={KPI_DESCRIPTIONS}
+      />
 
       <div className="charts-with-alerts">
         <div className="charts-main">

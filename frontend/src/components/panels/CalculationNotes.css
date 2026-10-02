@@ -1,0 +1,63 @@
+.calc-notes {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-5);
+  min-width: 0;
+}
+
+.calc-notes-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--font-heading);
+  font-size: var(--text-md, 0.95rem);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.calc-notes-summary::-webkit-details-marker { display: none; }
+
+.calc-notes-summary svg { color: var(--accent-primary); flex-shrink: 0; }
+
+.calc-notes-hint {
+  margin-left: auto;
+  font-family: var(--font-body, inherit);
+  font-size: var(--text-xs);
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.calc-notes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--card-border);
+}
+
+.calc-notes-block h4 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.calc-notes-block p {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.calc-notes-block b { font-weight: 600; }
+
+.calc-notes-excluded {
+  padding-left: var(--space-3);
+  border-left: 3px solid var(--accent-primary);
+}

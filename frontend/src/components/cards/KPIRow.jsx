@@ -2,7 +2,7 @@ import { IndianRupee, Users, AlertCircle } from 'lucide-react';
 import KPICard from './KPICard';
 import { abbreviateCurrency, formatNumber } from '../../utils/formatters';
 
-export default function KPIRow({ metrics, isYearly = false, showBothTrends = false }) {
+export default function KPIRow({ metrics, isYearly = false, showBothTrends = false, descriptions = {} }) {
   const trendLabel = isYearly ? 'vs last year' : 'vs last month';
 
   const asTrends = (monthValue, yearValue) => showBothTrends ? [
@@ -19,7 +19,7 @@ export default function KPIRow({ metrics, isYearly = false, showBothTrends = fal
       <KPICard
         icon={IndianRupee}
         label="Net Sales (Excl. GST)"
-        description="Net taxable sales amount without GST in the selected period"
+        description={descriptions.sales || "Net taxable sales amount without GST in the selected period"}
         value={abbreviateCurrency(metrics.totalSales)}
         trend={showBothTrends ? null : metrics.salesTrend}
         trendLabel={showBothTrends ? null : trendLabel}
@@ -29,7 +29,7 @@ export default function KPIRow({ metrics, isYearly = false, showBothTrends = fal
       <KPICard
         icon={Users}
         label="Active Dealers"
-        description="Unique dealers who billed at least once in this period"
+        description={descriptions.dealers || "Unique dealers who billed at least once in this period"}
         value={formatNumber(metrics.activeDealers)}
         trend={showBothTrends ? null : metrics.dealersTrend}
         trendLabel={showBothTrends ? null : trendLabel}
@@ -39,7 +39,7 @@ export default function KPIRow({ metrics, isYearly = false, showBothTrends = fal
       <KPICard
         icon={AlertCircle}
         label="Outstanding Amount"
-        description="Unpaid receivable value against bills raised in this period"
+        description={descriptions.outstanding || "Unpaid receivable value against bills raised in this period"}
         value={abbreviateCurrency(metrics.totalOutstanding)}
         trend={showBothTrends ? null : metrics.outstandingTrend}
         trendLabel={showBothTrends ? null : trendLabel}
