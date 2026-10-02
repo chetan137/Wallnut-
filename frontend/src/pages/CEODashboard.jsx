@@ -41,9 +41,9 @@ function pctChange(current, prev) {
 
 // What each CEO card means, in plain words (see CalculationNotes for the full explanation).
 const KPI_DESCRIPTIONS = {
-  sales: "Tally's Sales: Sales Accounts postings after discount, without GST. Credit notes are subtracted; Branch Transfer and Sample invoices are not included.",
-  dealers: 'Customers with a sales invoice or credit note in the period. Branch Transfer and Sample are not counted.',
-  outstanding: "Pending amount of Tally's bills for invoices raised in the period. Old bills with no invoice in this system are not included yet.",
+  sales: "Same as Tally's Sales: after discount, without GST. Credit notes are subtracted. Branch Transfer and Sample are not included.",
+  dealers: 'Customers with a sales invoice or credit note in this period. Branch Transfer and Sample are not counted.',
+  outstanding: "Money customers still have to pay (Tally's pending bills) for invoices of this period. Very old bills are not included yet.",
 };
 
 const aggSales = (rows) => rows.reduce((sum, d) => sum + d.amount, 0);
