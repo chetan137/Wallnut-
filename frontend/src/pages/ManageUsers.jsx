@@ -7,17 +7,19 @@ import './ManageUsers.css';
 const EMPTY_FORM = { name: '', username: '', password: '', role: ROLES.SALES_OFFICER, state: '', district: '', salesMan: '', active: true };
 
 export default function ManageUsers() {
-  const { currentUser, users, addUser, updateUser, deleteUser, canManageUsers } = useAuth();
-  const { allStates, allDistricts, allSalesOfficers } = useRole();
+  const { currentUser, users = [], addUser, updateUser, deleteUser, canManageUsers } = useAuth();
+  const { allStates = [], allDistricts = [], allSalesOfficers = [] } = useRole();
   const [editing, setEditing] = useState(null); // null = closed, 'new' = create, or a user object
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
   const [roleFilter, setRoleFilter] = useState('all');
   const [form, setForm] = useState(EMPTY_FORM);
 
+  const userList = Array.isArray(users) ? users : [];
+
   const visibleUsers = useMemo(
-    () => users.filter((u) => roleFilter === 'all' || u.role === roleFilter),
-    [users, roleFilter]
+    () => userList.filter((u) => roleFilter === 'all' || u.role === roleFilter),
+    [userList, roleFilter]
   );
 
   if (!canManageUsers) {
@@ -116,7 +118,7 @@ export default function ManageUsers() {
             className={`users-filter-chip ${roleFilter === r ? 'active' : ''}`}
             onClick={() => setRoleFilter(r)}
           >
-            {r === 'all' ? `All (${users.length})` : `${ROLE_LABELS[r]} (${users.filter((u) => u.role === r).length})`}
+            {r === 'all' ? `All (${userList.length})` : `${ROLE_LABELS[r]} (${userList.filter((u) => u.role === r).length})`}
           </button>
         ))}
       </div>
@@ -130,14 +132,14 @@ export default function ManageUsers() {
                 <button className="user-card-delete" onClick={() => openEdit(user)} title="Edit user">
                   <Pencil size={15} />
                 </button>
-                {user.id !== currentUser.id && (
+                {currentUser && user.id !== currentUser.id && (
                   <button className="user-card-delete" onClick={() => handleDelete(user)} title="Remove user">
                     <Trash2 size={15} />
                   </button>
                 )}
               </div>
             </div>
-            <div className="user-card-name">{user.name}{user.id === currentUser.id && ' (you)'}</div>
+            <div className="user-card-name">{user.name}{currentUser && user.id === currentUser.id && ' (you)'}</div>
             <div className="user-card-email">{user.username}</div>
             <div className="user-card-meta">
               <span className="user-card-badge role">{ROLE_LABELS[user.role]}</span>

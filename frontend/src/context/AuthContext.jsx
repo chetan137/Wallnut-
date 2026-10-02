@@ -38,7 +38,7 @@ async function api(path, { method = 'GET', body } = {}) {
   try {
     const res = await fetch(`/api/users${path}`, { method, headers, body: body ? JSON.stringify(body) : undefined });
     const json = await res.json().catch(() => ({}));
-    return { ok: res.ok && json.ok !== false, status: res.status, ...json };
+    return { ok: res.ok && json.ok === true, status: res.status, ...json };
   } catch {
     return { ok: false, status: 0, error: 'Could not reach the server' };
   }
@@ -73,7 +73,11 @@ export function AuthProvider({ children }) {
 
   const refreshUsers = useCallback(async () => {
     const res = await api('/');
-    if (res.ok) setUsers(res.users);
+    if (res.ok && Array.isArray(res.users)) {
+      setUsers(res.users);
+    } else if (!res.ok) {
+      setUsers([]);
+    }
     return res;
   }, []);
 
@@ -116,14 +120,14 @@ export function AuthProvider({ children }) {
   // CEO-only CRUD. The server enforces this too; these just keep local state in sync.
   const addUser = useCallback(async (data) => {
     const res = await api('/', { method: 'POST', body: data });
-    if (res.ok) setUsers((prev) => [...prev, res.user]);
+    if (res.ok && res.user) setUsers((prev) => [...(Array.isArray(prev) ? prev : []), res.user]);
     return res.ok ? { success: true, user: res.user } : { success: false, error: res.error };
   }, []);
 
   const updateUser = useCallback(async (id, data) => {
     const res = await api(`/${id}`, { method: 'PUT', body: data });
-    if (res.ok) {
-      setUsers((prev) => prev.map((u) => (u.id === id ? res.user : u)));
+    if (res.ok && res.user) {
+      setUsers((prev) => (Array.isArray(prev) ? prev : []).map((u) => (u.id === id ? res.user : u)));
       if (id === currentUser?.id) setCurrentUser(res.user);
     }
     return res.ok ? { success: true, user: res.user } : { success: false, error: res.error };
@@ -131,7 +135,7 @@ export function AuthProvider({ children }) {
 
   const deleteUser = useCallback(async (id) => {
     const res = await api(`/${id}`, { method: 'DELETE' });
-    if (res.ok) setUsers((prev) => prev.filter((u) => u.id !== id));
+    if (res.ok) setUsers((prev) => (Array.isArray(prev) ? prev : []).filter((u) => u.id !== id));
     return res.ok ? { success: true } : { success: false, error: res.error };
   }, []);
 
