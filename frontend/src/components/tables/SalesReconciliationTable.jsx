@@ -12,19 +12,13 @@ const columns = [
   { header: 'Sales Invoices', accessor: 'sales', numeric: true, render: (val) => formatCurrency(val) },
   { header: 'Credit Notes', accessor: 'creditNotes', numeric: true, render: (val) => formatCurrency(val) },
   {
-    header: 'Sales − Credit Notes',
-    accessor: 'salesMinusCredit',
-    numeric: true,
-    render: (val) => <span style={{ fontWeight: 600 }}>{formatCurrency(val)}</span>,
-  },
-  { header: 'Branch Transfer (not in sales)', accessor: 'branchTransfer', numeric: true, render: (val) => formatCurrency(val) },
-  { header: 'Sample (not in sales)', accessor: 'sample', numeric: true, render: (val) => formatCurrency(val) },
-  {
-    header: 'Counted in Net Sales card',
-    accessor: 'countedInKpi',
+    header: 'Net Sales (Tally "Sales")',
+    accessor: 'netSales',
     numeric: true,
     render: (val) => <span style={{ fontWeight: 600, color: 'var(--accent-primary)' }}>{formatCurrency(val)}</span>,
   },
+  { header: 'Branch Transfer (not in sales)', accessor: 'branchTransfer', numeric: true, render: (val) => formatCurrency(val) },
+  { header: 'Sample (not in sales)', accessor: 'sample', numeric: true, render: (val) => formatCurrency(val) },
 ];
 
 /**
@@ -33,12 +27,12 @@ const columns = [
  * P&L "Sales Accounts"). Every figure is excl. GST.
  *
  *   Sales Invoices        Sales vouchers (Sales-Kolhapur, Sales-Gujarat, …)
- *   Credit Notes          Credit Note vouchers (sales returns / adjustments)
- *   Sales − Credit Notes  how Tally nets them
+ *   Credit Notes          Credit Note vouchers — negative, they reduce sales
+ *   Net Sales             Sales Invoices + Credit Notes = the Net Sales card
+ *                         (the net of Tally's "Sales Accounts" ledgers)
  *   Branch Transfer       invoices to the company's own branches — Tally keeps
  *                         these out of "Sales Accounts", so they are NOT sales
  *   Sample                sample / free-goods invoices — NOT sales
- *   Counted in Net Sales  what the Net Sales card above currently adds up
  *
  * `salesRows` is the already year/role/filter-scoped sales array of the
  * dashboard; Branch Transfer / Sample come from RoleContext, scoped the same way.
@@ -70,7 +64,7 @@ export default function SalesReconciliationTable({ salesRows, selectedYear = 'Al
     }
 
     const rows = Object.values(byMonth)
-      .map((b) => ({ ...b, salesMinusCredit: b.sales - b.creditNotes, countedInKpi: b.sales + b.creditNotes }))
+      .map((b) => ({ ...b, netSales: b.sales + b.creditNotes }))
       .sort((a, b) => b.month.localeCompare(a.month));
 
     const sum = (k) => rows.reduce((s, r) => s + r[k], 0);
@@ -91,7 +85,7 @@ export default function SalesReconciliationTable({ salesRows, selectedYear = 'Al
         <div className="non-sales-stat non-sales-stat--sample">
           <span className="non-sales-stat-label">Credit Notes</span>
           <span className="non-sales-stat-value">{formatCurrency(totals.creditNotes)}</span>
-          <span className="non-sales-stat-sub">Tally subtracts these</span>
+          <span className="non-sales-stat-sub">negative — they reduce sales</span>
         </div>
         <div className="non-sales-stat non-sales-stat--sample">
           <span className="non-sales-stat-label">Branch Transfer + Sample</span>
@@ -105,7 +99,7 @@ export default function SalesReconciliationTable({ salesRows, selectedYear = 'Al
   return (
     <DataTable
       title={title}
-      subtitle="What the Net Sales card is made of, month by month. Tally's Sales = Sales Invoices − Credit Notes, and leaves Branch Transfer out."
+      subtitle="What the Net Sales card is made of, month by month: Sales Invoices + Credit Notes (negative). Same as Tally's Sales; Branch Transfer and Sample are left out."
       columns={columns}
       data={months}
       id="sales-breakdown-table"
