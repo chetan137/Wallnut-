@@ -45,7 +45,7 @@ function verifyPassword(password, stored) {
 function toUser(row) {
   const scope =
     row.role === 'ceo' ? 'All India'
-    : row.role === 'state_sales_head' ? row.state
+    : row.role === 'state_sales_head' ? ((Array.isArray(row.states) && row.states.length ? row.states : [row.state]).filter(Boolean).join(', '))
     : row.role === 'district_manager' ? row.district
     : 'Field Territory';
   return {
@@ -55,6 +55,8 @@ function toUser(row) {
     email: row.username,
     role: row.role,
     state: row.state || null,
+    // Every state the CEO assigned (a State Sales Head can have several). Older rows only have `state`.
+    states: Array.isArray(row.states) && row.states.length ? row.states : (row.state ? [row.state] : []),
     district: row.district || null,
     salesMan: row.sales_man || null,
     scope: scope || '',
@@ -80,6 +82,8 @@ async function ensureSchema() {
       updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
+  // Additive: several states per user. `state` stays (first state) so older code keeps working.
+  await query('ALTER TABLE app_users ADD COLUMN IF NOT EXISTS states TEXT[]');
   await query('CREATE UNIQUE INDEX IF NOT EXISTS app_users_username_key ON app_users (LOWER(username))');
 
   const { rows } = await query('SELECT COUNT(*)::int AS n FROM app_users');

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import DataTable from '../common/DataTable';
-import { formatCurrency } from '../../utils/formatters';
+import { formatCurrency, formatNumber } from '../../utils/formatters';
 import { Package, TrendingUp, TrendingDown } from 'lucide-react';
 import DealerProductDrilldownModal from './DealerProductDrilldownModal';
 
@@ -48,6 +48,12 @@ export default function DealerPerformanceTable({ data }) {
       accessor: 'totalSales',
       numeric: true,
       render: (val) => formatCurrency(val),
+    },
+    {
+      header: 'Quantity',
+      accessor: 'quantity',
+      numeric: true,
+      render: (val) => formatNumber(Math.round(val || 0)),
     },
     {
       header: 'Growth (PY)',

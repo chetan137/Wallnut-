@@ -4,11 +4,11 @@ import { useRole } from '../context/RoleContext';
 import { UserPlus, Trash2, Pencil } from 'lucide-react';
 import './ManageUsers.css';
 
-const EMPTY_FORM = { name: '', username: '', password: '', role: ROLES.SALES_OFFICER, state: '', district: '', salesMan: '', active: true };
+const EMPTY_FORM = { name: '', username: '', password: '', role: ROLES.SALES_OFFICER, state: '', states: [], district: '', salesMan: '', active: true };
 
 export default function ManageUsers() {
   const { currentUser, users = [], addUser, updateUser, deleteUser, canManageUsers } = useAuth();
-  const { allStates = [], allDistricts = [], allSalesOfficers = [] } = useRole();
+  const { allStates = [], allDistricts = [], districtToState = {}, allSalesOfficers = [] } = useRole();
   const [editing, setEditing] = useState(null); // null = closed, 'new' = create, or a user object
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -44,6 +44,7 @@ export default function ManageUsers() {
       password: '',
       role: user.role,
       state: user.state || '',
+      states: Array.isArray(user.states) && user.states.length ? user.states : (user.state ? [user.state] : []),
       district: user.district || '',
       salesMan: user.salesMan || '',
       active: user.active,
@@ -53,6 +54,26 @@ export default function ManageUsers() {
   };
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+
+  // Step 1 of the form: pick the person from the people found in the Tally data. Fills the name
+  // (still editable); for a Sales Officer it also sets the Tally sales-person name and area.
+  const pickPerson = (e) => {
+    const name = e.target.value;
+    if (!name) return;
+    const match = allSalesOfficers.find((o) => o.name === name);
+    setForm((f) => ({
+      ...f,
+      name,
+      salesMan: f.role === ROLES.SALES_OFFICER ? name : f.salesMan,
+      state: f.role === ROLES.SALES_OFFICER ? (match?.state || f.state) : f.state,
+      district: f.role === ROLES.SALES_OFFICER ? (match?.district || f.district) : f.district,
+    }));
+  };
+
+  const toggleState = (s) => setForm((f) => ({
+    ...f,
+    states: f.states.includes(s) ? f.states.filter((x) => x !== s) : [...f.states, s],
+  }));
 
   // Picking a sales person from the Tally list also fills in their area.
   const pickSalesMan = (e) => {
@@ -74,7 +95,8 @@ export default function ManageUsers() {
       name: form.name,
       username: form.username,
       role: form.role,
-      state: form.role === ROLES.CEO ? '' : form.state,
+      state: form.role === ROLES.CEO ? '' : (form.role === ROLES.STATE_SALES_HEAD ? (form.states[0] || '') : form.state),
+      states: form.role === ROLES.STATE_SALES_HEAD ? form.states : [],
       district: form.role === ROLES.DISTRICT_MANAGER || form.role === ROLES.SALES_OFFICER ? form.district : '',
       salesMan: form.role === ROLES.SALES_OFFICER ? form.salesMan : '',
       active: form.active,
@@ -160,6 +182,14 @@ export default function ManageUsers() {
             <h3 className="add-user-modal-title">{isNew ? 'Add User' : `Edit ${editing.name}`}</h3>
             <form className="add-user-form" onSubmit={handleSubmit}>
               <div className="login-field">
+                <label className="login-label">1. Person (from Tally data)</label>
+                <select value="" onChange={pickPerson}>
+                  <option value="">Select a person from Tally… (or type the name below)</option>
+                  {allSalesOfficers.map((o) => <option key={o.name} value={o.name}>{o.name}{o.state ? ` — ${o.state}` : ''}</option>)}
+                </select>
+              </div>
+
+              <div className="login-field">
                 <label className="login-label">Full Name</label>
                 <input className="login-input" type="text" value={form.name} onChange={set('name')} required />
               </div>
@@ -183,33 +213,56 @@ export default function ManageUsers() {
               </div>
 
               <div className="login-field">
-                <label className="login-label">Role</label>
+                <label className="login-label">2. Role</label>
                 <select value={form.role} onChange={set('role')}>
                   {ROLE_HIERARCHY.map((r) => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
                 </select>
               </div>
 
-              {form.role !== ROLES.CEO && (
+              {form.role === ROLES.STATE_SALES_HEAD && (
                 <div className="login-field">
-                  <label className="login-label">State</label>
-                  <input className="login-input" list="um-states" value={form.state} onChange={set('state')} required={form.role === ROLES.STATE_SALES_HEAD} />
-                  <datalist id="um-states">{allStates.map((s) => <option key={s} value={s} />)}</datalist>
+                  <label className="login-label">3. States this person can see (one or more)</label>
+                  <div className="um-state-grid">
+                    {[...new Set([...allStates, ...form.states])].map((st) => (
+                      <label key={st} className={`um-state-chip ${form.states.includes(st) ? 'on' : ''}`}>
+                        <input type="checkbox" checked={form.states.includes(st)} onChange={() => toggleState(st)} />
+                        {st}
+                      </label>
+                    ))}
+                  </div>
+                  {form.states.length === 0 && <span className="um-hint">Pick at least one state.</span>}
                 </div>
               )}
 
               {(form.role === ROLES.DISTRICT_MANAGER || form.role === ROLES.SALES_OFFICER) && (
-                <div className="login-field">
-                  <label className="login-label">District / Area-City</label>
-                  <input className="login-input" list="um-districts" value={form.district} onChange={set('district')} required={form.role === ROLES.DISTRICT_MANAGER} />
-                  <datalist id="um-districts">{allDistricts.map((d) => <option key={d} value={d} />)}</datalist>
-                </div>
+                <>
+                  <div className="login-field">
+                    <label className="login-label">3. State</label>
+                    <select value={form.state} onChange={(e) => setForm((f) => ({ ...f, state: e.target.value, district: '' }))} required>
+                      <option value="">Select a state…</option>
+                      {[...new Set([...allStates, form.state].filter(Boolean))].map((st) => <option key={st} value={st}>{st}</option>)}
+                    </select>
+                  </div>
+                  <div className="login-field">
+                    <label className="login-label">District</label>
+                    <select value={form.district} onChange={set('district')} required={form.role === ROLES.DISTRICT_MANAGER} disabled={!form.state}>
+                      <option value="">{form.state ? 'Select a district…' : 'Pick a state first'}</option>
+                      {[...new Set([
+                        ...allDistricts.filter((d) => districtToState[d] === form.state),
+                        form.district,
+                      ].filter(Boolean))].sort().map((d) => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                  </div>
+                </>
               )}
 
               {form.role === ROLES.SALES_OFFICER && (
                 <div className="login-field">
                   <label className="login-label">Sales Person (as named in Tally)</label>
-                  <input className="login-input" list="um-salesmen" value={form.salesMan} onChange={pickSalesMan} required />
-                  <datalist id="um-salesmen">{allSalesOfficers.map((o) => <option key={o.name} value={o.name} />)}</datalist>
+                  <select value={form.salesMan} onChange={pickSalesMan} required>
+                    <option value="">Select the Tally sales person…</option>
+                    {[...new Set([...allSalesOfficers.map((o) => o.name), form.salesMan].filter(Boolean))].map((n) => <option key={n} value={n}>{n}</option>)}
+                  </select>
                 </div>
               )}
 

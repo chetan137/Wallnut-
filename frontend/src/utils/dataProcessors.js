@@ -5,6 +5,7 @@
 
 import { getMonthKey, formatMonthKey, percentChange } from './formatters';
 import { districtTargets, stateTarget } from '../data/targetData';
+import { canonicalDistrict } from './districtNames';
 
 /**
  * Get KPI metrics: total sales, active dealers, outstanding, target achievement.
@@ -117,11 +118,13 @@ export function getDistrictPerformance(data) {
   const grouped = {};
 
   for (const row of data) {
-    const key = (row.areaCity && row.areaCity.trim()) ? row.areaCity.trim() : 'Other Area';
+    // The dealer's real district (from its ledger pincode) - NOT row.areaCity, which is the plant/godown.
+    const key = (row.district && row.district.trim()) ? row.district.trim() : 'Unknown';
     if (!grouped[key]) {
-      grouped[key] = { totalSales: 0, outstanding: 0, dealers: new Set() };
+      grouped[key] = { totalSales: 0, quantity: 0, outstanding: 0, dealers: new Set() };
     }
     grouped[key].totalSales += row.amount;
+    grouped[key].quantity += Number(row.quantity) || 0;
     grouped[key].outstanding += row.finalOutstanding;
     if (row.partyName) grouped[key].dealers.add(row.partyName);
   }
@@ -140,11 +143,30 @@ export function getDistrictPerformance(data) {
       return {
         district,
         totalSales: metrics.totalSales,
+        quantity: metrics.quantity,
         outstanding: metrics.outstanding,
         dealers: metrics.dealers.size,
         targetPct: Math.round(targetPct * 10) / 10,
       };
     })
+    .sort((a, b) => b.totalSales - a.totalSales);
+}
+
+/**
+ * City-wise performance (the dealer's real city, from its ledger pincode). Used inside a district.
+ */
+export function getCityPerformance(data) {
+  const grouped = {};
+  for (const row of data) {
+    const key = (row.city && row.city.trim()) ? row.city.trim() : 'Unknown';
+    if (!grouped[key]) grouped[key] = { city: key, totalSales: 0, quantity: 0, outstanding: 0, dealers: new Set() };
+    grouped[key].totalSales += row.amount;
+    grouped[key].quantity += Number(row.quantity) || 0;
+    grouped[key].outstanding += row.finalOutstanding;
+    if (row.partyName) grouped[key].dealers.add(row.partyName);
+  }
+  return Object.values(grouped)
+    .map((c) => ({ ...c, dealers: c.dealers.size }))
     .sort((a, b) => b.totalSales - a.totalSales);
 }
 
@@ -331,7 +353,7 @@ export function getHighOutstandingDealers(data, limit = 10) {
 
   for (const row of data) {
     if (!grouped[row.partyName]) {
-      grouped[row.partyName] = { outstanding: 0, totalSales: 0, district: row.areaCity };
+      grouped[row.partyName] = { outstanding: 0, totalSales: 0, district: row.district || '' };
     }
     grouped[row.partyName].outstanding += row.finalOutstanding;
     grouped[row.partyName].totalSales += row.amount;
@@ -362,6 +384,7 @@ export function getDealerPerformanceSummary(data) {
         salesMan: '',
         district: '',
         totalSales: 0,
+        quantity: 0,
         outstanding: 0,
         transactions: 0,
         products: {},
@@ -370,8 +393,9 @@ export function getDealerPerformanceSummary(data) {
     }
     const entry = grouped[row.partyName];
     if (!entry.salesMan && row.salesMan) entry.salesMan = row.salesMan;
-    if (!entry.district && row.areaCity) entry.district = row.areaCity;
+    if (!entry.district && row.district) entry.district = row.district;
     entry.totalSales += row.amount;
+    entry.quantity += Number(row.quantity) || 0;
     entry.outstanding += row.finalOutstanding;
     entry.transactions += 1;
 
@@ -493,7 +517,9 @@ export function getDistrictPerformanceForMap(data, stateName) {
   const grouped = {};
   
   for (const row of filtered) {
-    const district = row.areaCity;
+    // Real district of the dealer, spelled like the state map files so it colours the right district.
+    const district = canonicalDistrict(row.district);
+    if (!district) continue;
     if (!grouped[district]) {
       grouped[district] = {
         district,

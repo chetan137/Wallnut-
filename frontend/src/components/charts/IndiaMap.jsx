@@ -34,10 +34,11 @@ const STATE_SLUGS = {
   'Rajasthan': 'rajasthan'
 };
 
-export default function IndiaMap({ data, isNational = true, defaultState = 'Madhya Pradesh' }) {
+export default function IndiaMap({ data, isNational = true, defaultState = 'Madhya Pradesh', stateName = null }) {
   const [activeMetric, setActiveMetric] = useState('sales'); // 'sales' | 'outstanding'
   const { selectedState, setSelectedState } = useRole();
-  const activeState = isNational ? defaultState : selectedState;
+  // stateName lets a dashboard pick the state itself (e.g. the CEO's State filter) instead of the global role state.
+  const activeState = isNational ? defaultState : (stateName || selectedState);
   const [geoData, setGeoData] = useState(null);
   const [hoveredGeo, setHoveredGeo] = useState(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });

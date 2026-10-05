@@ -16,10 +16,10 @@ function TargetBar({ value }) {
   );
 }
 
-const columns = [
+const buildColumns = (label, accessor, showTarget) => [
   {
-    header: 'District',
-    accessor: 'district',
+    header: label,
+    accessor,
     render: (val) => (val && val.trim() ? val : 'Unassigned'),
   },
   {
@@ -27,6 +27,12 @@ const columns = [
     accessor: 'totalSales',
     numeric: true,
     render: (val) => formatCurrency(val),
+  },
+  {
+    header: 'Quantity',
+    accessor: 'quantity',
+    numeric: true,
+    render: (val) => formatNumber(Math.round(val || 0)),
   },
   {
     header: 'Dealers',
@@ -46,16 +52,16 @@ const columns = [
     numeric: false,
     render: (val) => <TargetBar value={val} />,
   },
-];
+].filter((c) => showTarget || c.accessor !== 'targetPct');
 
-export default function DistrictPerformanceTable({ data }) {
+export default function DistrictPerformanceTable({ data, title = 'District Performance', label = 'District', accessor = 'district', showTarget = true }) {
   return (
     <DataTable
-      title="District Performance"
-      columns={columns}
+      title={title}
+      columns={buildColumns(label, accessor, showTarget)}
       data={data}
       searchable={false}
-      id="district-performance-table"
+      id={`${accessor}-performance-table`}
     />
   );
 }

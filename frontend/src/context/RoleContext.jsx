@@ -20,7 +20,7 @@ export const ROLES = {
 const RoleContext = createContext(null);
 
 export function RoleProvider({ children }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, currentUser } = useAuth();
   const [currentRole, setCurrentRole] = useState(() => {
     try {
       return localStorage.getItem('wallnut_view_role') || ROLES.STATE_SALES_HEAD;
@@ -35,13 +35,19 @@ export function RoleProvider({ children }) {
       return 'Maharashtra';
     }
   });
-  const [selectedDistrict, setSelectedDistrict] = useState(() => {
+  const [selectedDistrictState, setSelectedDistrict] = useState(() => {
     try {
       return localStorage.getItem('wallnut_selected_district') || 'Kolhapur';
     } catch {
       return 'Kolhapur';
     }
   });
+  // A District Manager only ever sees the district (and state) the CEO assigned in User Management,
+  // whatever was last picked in this browser. Others (e.g. the CEO previewing) use the picked one.
+  const selectedDistrict = currentUser?.role === ROLES.DISTRICT_MANAGER && currentUser.district
+    ? currentUser.district
+    : selectedDistrictState;
+  const districtState = currentUser?.role === ROLES.DISTRICT_MANAGER ? (currentUser.state || '') : '';
   const [selectedSalesMan, setSelectedSalesMan] = useState(() => {
     try {
       return localStorage.getItem('wallnut_selected_salesman') || 'Mr. Vaibhav Pawar';
@@ -130,7 +136,7 @@ export function RoleProvider({ children }) {
 
   const districtToState = useMemo(() => {
     const map = {};
-    sales.forEach((r) => { if (r.areaCity) map[r.areaCity] = r.state; });
+    sales.forEach((r) => { if (r.district) map[r.district] = r.state; });
     return map;
   }, [sales]);
 
@@ -144,13 +150,13 @@ export function RoleProvider({ children }) {
         if (/branch|godown|warehouse|location/i.test(raw)) return;
         const key = raw.replace(/^M[rs]\.\s+/i, '').trim().toLowerCase();
         if (!map[key]) {
-          map[key] = { name: raw, district: r.areaCity || '', state: r.state || '' };
+          map[key] = { name: raw, district: r.district || '', state: r.state || '' };
         } else {
           if (!map[key].name.startsWith('Mr.') && raw.startsWith('Mr.')) {
             map[key].name = raw;
           }
           if (!map[key].state && r.state) map[key].state = r.state;
-          if (!map[key].district && r.areaCity) map[key].district = r.areaCity;
+          if (!map[key].district && r.district) map[key].district = r.district;
         }
       }
     });
@@ -163,11 +169,11 @@ export function RoleProvider({ children }) {
       if (r.partyName) {
         const raw = r.partyName.trim();
         if (!map[raw]) {
-          map[raw] = { name: raw, salesOfficer: r.salesMan || '', district: r.areaCity || '', state: r.state || '' };
+          map[raw] = { name: raw, salesOfficer: r.salesMan || '', district: r.district || '', state: r.state || '' };
         } else {
           if (!map[raw].salesOfficer && r.salesMan) map[raw].salesOfficer = r.salesMan;
           if (!map[raw].state && r.state) map[raw].state = r.state;
-          if (!map[raw].district && r.areaCity) map[raw].district = r.areaCity;
+          if (!map[raw].district && r.district) map[raw].district = r.district;
         }
       }
     });
@@ -373,6 +379,18 @@ export function RoleProvider({ children }) {
     return name.replace(/^M[rs]\.\s+/, '').trim().toLowerCase();
   }, []);
 
+  // States a State Sales Head may see: the ones the CEO assigned in User Management (can be
+  // several). When the CEO previews the State Sales Head view, it is just the chosen state.
+  const assignedStates = useMemo(
+    () => (currentUser?.role === ROLES.STATE_SALES_HEAD && Array.isArray(currentUser.states) && currentUser.states.length
+      ? currentUser.states : null),
+    [currentUser]
+  );
+  const stateScope = useMemo(
+    () => assignedStates || (selectedState ? [selectedState] : []),
+    [assignedStates, selectedState]
+  );
+
   // Baseline scoped datasets (before global filters)
   // Same role scoping for sales rows and for Branch Transfer / Sample rows,
   // so the extra section respects the viewer's state/district/officer scope.
@@ -381,21 +399,23 @@ export function RoleProvider({ children }) {
       case ROLES.CEO:
         return rows;
       case ROLES.STATE_SALES_HEAD:
-        return rows.filter(r => r.state === selectedState);
+        return rows.filter(r => stateScope.includes(r.state));
       case ROLES.DISTRICT_MANAGER:
         return rows.filter(r => {
-          if (!r.areaCity) return false;
-          if (r.areaCity === selectedDistrict) return true;
-          const normA = r.areaCity.replace(/\s*(Plant|Godown|Warehouse|Location|Branch)\s*/gi, '').trim().toLowerCase();
-          const normB = (selectedDistrict || '').replace(/\s*(Plant|Godown|Warehouse|Location|Branch)\s*/gi, '').trim().toLowerCase();
-          return normA === normB || (normB && r.areaCity.toLowerCase().includes(normB));
+          // The dealer's real district (not the plant/godown in r.areaCity).
+          if (!r.district) return false;
+          // The same district name can exist in two states, so the assigned state must match too.
+          if (districtState && r.state !== districtState) return false;
+          if (r.district === selectedDistrict) return true;
+          const strip = (x) => (x || '').replace(/\s*(Plant|Godown|Warehouse|Location|Branch)\s*/gi, '').trim().toLowerCase();
+          return strip(r.district) === strip(selectedDistrict);
         });
       case ROLES.SALES_OFFICER:
         return rows.filter(r => normalizeName(r.salesMan) === normalizeName(selectedSalesMan));
       default:
         return [];
     }
-  }, [currentRole, selectedState, selectedDistrict, selectedSalesMan, normalizeName]);
+  }, [currentRole, stateScope, selectedDistrict, districtState, selectedSalesMan, normalizeName]);
 
   const baseSales = useMemo(() => scopeByRole(sales), [scopeByRole, sales]);
   const baseNonSales = useMemo(() => scopeByRole(nonSalesInvoices), [scopeByRole, nonSalesInvoices]);
@@ -405,7 +425,7 @@ export function RoleProvider({ children }) {
       case ROLES.CEO:
         return complaints;
       case ROLES.STATE_SALES_HEAD:
-        return complaints.filter(c => districtToState[c.district] === selectedState);
+        return complaints.filter(c => stateScope.includes(districtToState[c.district]));
       case ROLES.DISTRICT_MANAGER:
         return complaints.filter(c => c.district === selectedDistrict);
       case ROLES.SALES_OFFICER: {
@@ -417,7 +437,7 @@ export function RoleProvider({ children }) {
       default:
         return [];
     }
-  }, [currentRole, selectedState, selectedDistrict, selectedSalesMan, complaints, allDealers, normalizeName]);
+  }, [currentRole, stateScope, selectedDistrict, selectedSalesMan, complaints, allDealers, districtToState, normalizeName]);
 
   const baseVisits = useMemo(() => {
     switch (currentRole) {
@@ -425,10 +445,10 @@ export function RoleProvider({ children }) {
         return visits;
       case ROLES.STATE_SALES_HEAD: {
         const stateOfficers = allSalesOfficers
-          .filter(o => o.state === selectedState)
+          .filter(o => stateScope.includes(o.state))
           .map(o => o.name);
         return visits.filter(v => 
-          v.state === selectedState || 
+          stateScope.includes(v.state) || 
           stateOfficers.some(so => normalizeName(so) === normalizeName(v.salesMan))
         );
       }
@@ -446,11 +466,11 @@ export function RoleProvider({ children }) {
       default:
         return [];
     }
-  }, [currentRole, selectedState, selectedDistrict, selectedSalesMan, visits, allSalesOfficers, normalizeName]);
+  }, [currentRole, stateScope, selectedDistrict, selectedSalesMan, visits, allSalesOfficers, normalizeName]);
 
   // Available options for the filters based on baseline
   const availableAreas = useMemo(() => {
-    const unique = new Set(baseSales.map(r => r.areaCity).filter(Boolean));
+    const unique = new Set(baseSales.map(r => r.district).filter(Boolean));
     return [...unique].sort();
   }, [baseSales]);
 
@@ -489,7 +509,7 @@ export function RoleProvider({ children }) {
       result = result.filter(r => r.date <= filters.toDate);
     }
     if (filters.areas && filters.areas.length > 0) {
-      result = result.filter(r => filters.areas.includes(r.areaCity));
+      result = result.filter(r => filters.areas.includes(r.district));
     }
     if (filters.salesMen && filters.salesMen.length > 0) {
       const normalizedFilters = filters.salesMen.map(sm => normalizeName(sm));
@@ -588,8 +608,8 @@ export function RoleProvider({ children }) {
       case ROLES.STATE_SALES_HEAD:
         return {
           label: 'State Sales Head',
-          description: `${selectedState} State`,
-          scope: `${selectedState} Branch`,
+          description: `${stateScope.join(', ')} State`,
+          scope: `${stateScope.join(', ')} Branch`,
         };
       case ROLES.DISTRICT_MANAGER:
         return {
@@ -606,7 +626,7 @@ export function RoleProvider({ children }) {
       default:
         return { label: '', description: '', scope: '' };
     }
-  }, [currentRole, selectedState, selectedDistrict, selectedSalesMan]);
+  }, [currentRole, stateScope, selectedDistrict, selectedSalesMan]);
 
   const allRoles = useMemo(() => [
     { key: ROLES.CEO, label: 'CEO / Admin', description: 'Company-wide Overview' },
@@ -620,6 +640,8 @@ export function RoleProvider({ children }) {
     setRole: setCurrentRole,
     selectedState,
     setSelectedState,
+    assignedStates,
+    stateScope,
     selectedDistrict,
     setSelectedDistrict,
     selectedSalesMan,
@@ -636,6 +658,7 @@ export function RoleProvider({ children }) {
     addComplaintEntry,
     allStates,
     allDistricts,
+    districtToState,
     allSalesOfficers,
     allDealers,
     filters,
@@ -657,6 +680,8 @@ export function RoleProvider({ children }) {
   }), [
     currentRole,
     selectedState,
+    assignedStates,
+    stateScope,
     selectedDistrict,
     selectedSalesMan,
     roleConfig,
@@ -671,6 +696,7 @@ export function RoleProvider({ children }) {
     addComplaintEntry,
     allStates,
     allDistricts,
+    districtToState,
     allSalesOfficers,
     allDealers,
     filters,

@@ -86,13 +86,19 @@ function parseUserInput(body, { partial }) {
   for (const [key, field] of [['state', 'state'], ['district', 'district'], ['salesMan', 'sales_man']]) {
     if (body[key] !== undefined) v[field] = clean(body[key]) || null;
   }
+  if (body.states !== undefined) {
+    if (!Array.isArray(body.states)) return { error: 'states must be a list' };
+    const list = [...new Set(body.states.map(clean).filter(Boolean))];
+    v.states = list;
+    if (list[0]) v.state = list[0]; // keep the single `state` column = first assigned state
+  }
   if (body.active !== undefined) v.active = !!body.active;
   return { value: v };
 }
 
 /** The scope field a role needs, or null if the role is complete. */
 function missingScope(role, u) {
-  if (role === 'state_sales_head' && !u.state) return 'State is required for a State Sales Head';
+  if (role === 'state_sales_head' && !u.state && !(Array.isArray(u.states) && u.states.length)) return 'At least one state is required for a State Sales Head';
   if (role === 'district_manager' && !u.district) return 'District is required for a District Manager';
   if (role === 'sales_officer' && !u.sales_man) return 'Sales person name is required for a Sales Officer';
   return null;
@@ -136,9 +142,9 @@ router.post('/', requireAuth, requireCeo, async (req, res) => {
   if (scopeError) return res.status(400).json({ ok: false, error: scopeError });
   try {
     const { rows } = await query(
-      `INSERT INTO app_users (name, username, password_hash, role, state, district, sales_man, active)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-      [v.name, v.username, hashPassword(v.password), v.role, v.state || null, v.district || null, v.sales_man || null, v.active !== false]
+      `INSERT INTO app_users (name, username, password_hash, role, state, states, district, sales_man, active)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [v.name, v.username, hashPassword(v.password), v.role, v.state || null, v.states && v.states.length ? v.states : (v.state ? [v.state] : null), v.district || null, v.sales_man || null, v.active !== false]
     );
     res.status(201).json({ ok: true, user: toUser(rows[0]) });
   } catch (err) {
@@ -171,11 +177,12 @@ router.put('/:id', requireAuth, requireCeo, async (req, res) => {
     }
 
     const { rows } = await query(
-      `UPDATE app_users SET name=$2, username=$3, password_hash=$4, role=$5, state=$6, district=$7,
-              sales_man=$8, active=$9, updated_at=NOW()
+      `UPDATE app_users SET name=$2, username=$3, password_hash=$4, role=$5, state=$6, states=$7, district=$8,
+              sales_man=$9, active=$10, updated_at=NOW()
        WHERE id=$1 RETURNING *`,
       [id, next.name, next.username, v.password ? hashPassword(v.password) : existing.password_hash,
-       next.role, next.state || null, next.district || null, next.sales_man || null, next.active]
+       next.role, next.state || null, next.states && next.states.length ? next.states : (next.state ? [next.state] : null),
+       next.district || null, next.sales_man || null, next.active]
     );
     res.json({ ok: true, user: toUser(rows[0]) });
   } catch (err) {

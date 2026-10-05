@@ -5,6 +5,7 @@ import IndiaMap from '../components/charts/IndiaMap';
 import StockGroupBreakdown from '../components/charts/StockGroupBreakdown';
 import TopProducts from '../components/charts/TopProducts';
 import TopSalesOfficers from '../components/charts/TopSalesOfficers';
+import DistrictPerformance from '../components/charts/DistrictPerformance';
 import AlertsPanel from '../components/panels/AlertsPanel';
 import DistrictPerformanceTable from '../components/tables/DistrictPerformanceTable';
 import DealerPerformanceTable from '../components/tables/DealerPerformanceTable';
@@ -20,6 +21,7 @@ import TabBar from '../components/common/TabBar';
 import { useRole } from '../context/RoleContext';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { abbreviateCurrency } from '../utils/formatters';
+import { STATES_WITH_DISTRICT_MAP } from '../utils/districtNames';
 import { fiscalYearOfDate, previousFiscalYear, fiscalYearOptions } from '../utils/fiscalYear';
 import { EMPTY_CEO_FILTERS, buildDealerIndex, applyCeoFilters } from '../utils/ceoFilters';
 import {
@@ -30,6 +32,7 @@ import {
   getHighOutstandingDealers,
   getDealerPerformanceSummary,
   getDailySalesSummary,
+  getCityPerformance,
 } from '../utils/dataProcessors';
 import './StateSalesHeadDashboard.css'; // Share layout CSS
 
@@ -184,20 +187,25 @@ function getYearlyFallingSalesAlerts(allData, selectedYear) {
   return alerts.sort((a, b) => a.change - b.change);
 }
 
+// views: ceo = CEO, state = State Sales Head, district = District Manager
 const DASHBOARD_TABS = [
-  { key: 'overview', label: 'Overview' },
-  { key: 'states', label: 'State Performance' },
-  { key: 'products', label: 'Products & Officers' },
-  { key: 'calls', label: 'Sales Calls' },
-  { key: 'daily', label: 'Daily Sales' },
-  { key: 'districts', label: 'Districts' },
-  { key: 'dealers', label: 'Dealers' },
-  { key: 'breakdown', label: 'Sales Breakdown' },
-  { key: 'nonsales', label: 'Branch Transfer & Samples' },
-  { key: 'notes', label: 'Calculation Notes' },
+  { key: 'overview', label: 'Overview', views: ['ceo', 'state', 'district'] },
+  { key: 'states', label: 'State Performance', views: ['ceo'] },
+  { key: 'districtChart', label: 'District Performance', views: ['state'] },
+  { key: 'products', label: 'Products & Officers', views: ['ceo', 'state', 'district'] },
+  { key: 'calls', label: 'Sales Calls', views: ['ceo', 'state', 'district'] },
+  { key: 'daily', label: 'Daily Sales', views: ['ceo', 'state', 'district'] },
+  { key: 'districts', label: 'Districts', views: ['ceo', 'state'] },
+  { key: 'cities', label: 'Cities', views: ['district'] },
+  { key: 'dealers', label: 'Dealers', views: ['ceo', 'state', 'district'] },
+  { key: 'breakdown', label: 'Sales Breakdown', views: ['ceo', 'state', 'district'] },
+  { key: 'nonsales', label: 'Branch Transfer & Samples', views: ['ceo', 'state', 'district'] },
 ];
 
-export default function CEODashboard({ data }) {
+// scopeLabel / controlTitle / stateView / districtView let the State Sales Head and the District Manager
+// reuse this exact dashboard on the state(s) / district the CEO assigned (the data passed in is already
+// limited to them).
+export default function CEODashboard({ data, scopeLabel = 'All-India', controlTitle = 'CEO VIEW SCOPE SELECTOR', stateView = false, districtView = false }) {
   const { filteredComplaints, filteredVisits, filteredNonSalesInvoices, clearFilters } = useRole();
   // Defaults to "All" rather than a hardcoded year — real synced Tally data
   // won't necessarily fall in whatever year this was last hardcoded to
@@ -205,6 +213,7 @@ export default function CEODashboard({ data }) {
   // silently zeroed every KPI card despite real data existing.
   const [selectedYear, setSelectedYear] = useState('All');
   const [activeTab, setActiveTab] = useState('overview');
+  const view = districtView ? 'district' : stateView ? 'state' : 'ceo';
 
   // The CEO page has its own filters (below). The shared filter bar is hidden for the CEO, so make
   // sure no filter chosen earlier in it is still silently applied to `data`.
@@ -246,6 +255,7 @@ export default function CEODashboard({ data }) {
   const highOutstanding = useMemo(() => getHighOutstandingDealers(filteredData, 8), [filteredData]);
   const dealerSummary = useMemo(() => getDealerPerformanceSummary(filteredData), [filteredData]);
   const dailySales = useMemo(() => getDailySalesSummary(filteredData), [filteredData]);
+  const cityPerf = useMemo(() => getCityPerformance(filteredData), [filteredData]);
 
   // BUG FIX: this used to take the single totalSales figure and fabricate
   // 4 fixed states from it — "Madhya Pradesh" got 100% of it, "Maharashtra"/
@@ -272,6 +282,14 @@ export default function CEODashboard({ data }) {
   // Financial Years (Apr-Mar): FY 25-26 and 24-25 always, plus any in the data (e.g. 26-27)
   const availableYears = useMemo(() => fiscalYearOptions(data), [data]);
 
+  // The map follows the State filter: pick a state that has a district map and the map switches to
+  // that state's districts. A scope with a single state (e.g. a State Sales Head) starts there.
+  const mapState = useMemo(() => {
+    if (ceoFilters.state) return STATES_WITH_DISTRICT_MAP.includes(ceoFilters.state) ? ceoFilters.state : null;
+    const states = [...new Set(data.map((r) => r.state).filter(Boolean))];
+    return states.length === 1 && STATES_WITH_DISTRICT_MAP.includes(states[0]) ? states[0] : null;
+  }, [ceoFilters.state, data]);
+
   const periodLabel = useMemo(() => {
     const parts = [selectedYear === 'All' ? 'All years' : `FY ${selectedYear}`];
     if (ceoFilters.fromDate || ceoFilters.toDate) parts.push(`${ceoFilters.fromDate || '…'} to ${ceoFilters.toDate || '…'}`);
@@ -285,7 +303,7 @@ export default function CEODashboard({ data }) {
       <div className="dashboard-control-bar ceo-control-bar">
         <div className="control-bar-left">
           <span className="control-bar-title">
-            CEO VIEW SCOPE SELECTOR
+            {controlTitle}
           </span>
         </div>
         <div className="control-bar-right">
@@ -304,6 +322,8 @@ export default function CEODashboard({ data }) {
       </div>
 
       <CeoFilterBar filters={ceoFilters} setFilters={setCeoFilters} dealerIndex={dealerIndex} fyRange={fyRange} />
+
+      <CalculationNotes />
 
       <KPIRow
         metrics={metrics}
@@ -328,13 +348,15 @@ export default function CEODashboard({ data }) {
         />
       )}
 
-      <TabBar tabs={DASHBOARD_TABS} active={activeTab} onChange={setActiveTab} />
+      <TabBar tabs={DASHBOARD_TABS.filter((t) => t.views.includes(view))} active={activeTab} onChange={setActiveTab} />
 
       {activeTab === 'overview' && (
         <div className="charts-with-alerts">
           <div className="charts-main">
             <div className="charts-row">
-              <IndiaMap data={filteredData} isNational={true} />
+              {mapState
+                ? <IndiaMap data={filteredData} isNational={false} stateName={mapState} />
+                : <IndiaMap data={filteredData} isNational={true} />}
               <YearlySalesTrend data={localRows} selectedYear={selectedYear} />
             </div>
           </div>
@@ -349,7 +371,7 @@ export default function CEODashboard({ data }) {
 
       {activeTab === 'states' && (
         <div className="charts-row">
-          <ChartCard title="All-India State Performance" subtitle="Top states by real sales value">
+          <ChartCard title={`${scopeLabel} State Performance`} subtitle="Top states by real sales value">
               <ResponsiveContainer width="100%" height={290}>
                 <BarChart data={statePerformanceData} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
@@ -383,6 +405,12 @@ export default function CEODashboard({ data }) {
         </div>
       )}
 
+      {activeTab === 'districtChart' && stateView && (
+        <div className="charts-row">
+          <DistrictPerformance data={districtPerf} />
+        </div>
+      )}
+
       {activeTab === 'products' && (
         <div className="charts-bottom-row">
           <TopProducts data={topProducts} />
@@ -391,20 +419,22 @@ export default function CEODashboard({ data }) {
       )}
 
       {activeTab === 'calls' && (
-        <SalesCallsReportTable visits={filteredVisits} title="All-India Daily Sales Calls & Visits (Google Sheet Replacement)" />
+        <SalesCallsReportTable visits={filteredVisits} title={`${scopeLabel} Daily Sales Calls & Visits (Google Sheet Replacement)`} />
       )}
       {activeTab === 'daily' && (
-        <DailySalesTable data={dailySales} title="All-India Daily Sales Register (Excl. GST)" />
+        <DailySalesTable data={dailySales} title={`${scopeLabel} Daily Sales Register (Excl. GST)`} />
       )}
       {activeTab === 'districts' && <DistrictPerformanceTable data={districtPerf} />}
+      {activeTab === 'cities' && (
+        <DistrictPerformanceTable data={cityPerf} title={`${scopeLabel} City Performance`} label="City" accessor="city" showTarget={false} />
+      )}
       {activeTab === 'dealers' && <DealerPerformanceTable data={dealerSummary} />}
       {activeTab === 'breakdown' && (
-        <SalesReconciliationTable salesRows={filteredData} selectedYear={selectedYear} title="All-India Sales Breakdown (compare with Tally)" />
+        <SalesReconciliationTable salesRows={filteredData} selectedYear={selectedYear} title={`${scopeLabel} Sales Breakdown (compare with Tally)`} />
       )}
       {activeTab === 'nonsales' && (
-        <NonSalesInvoicesTable selectedYear={selectedYear} rows={nonSalesRows} title="All-India Branch Transfer & Sample Invoices" />
+        <NonSalesInvoicesTable selectedYear={selectedYear} rows={nonSalesRows} title={`${scopeLabel} Branch Transfer & Sample Invoices`} />
       )}
-      {activeTab === 'notes' && <CalculationNotes />}
     </div>
   );
 }
