@@ -16,6 +16,7 @@ import CeoFilterBar from '../components/filters/CeoFilterBar';
 import DrillDownDrawer from '../components/panels/DrillDownDrawer';
 import SalesCallsReportTable from '../components/tables/SalesCallsReportTable';
 import ChartCard from '../components/common/ChartCard';
+import TabBar from '../components/common/TabBar';
 import { useRole } from '../context/RoleContext';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { abbreviateCurrency } from '../utils/formatters';
@@ -183,6 +184,19 @@ function getYearlyFallingSalesAlerts(allData, selectedYear) {
   return alerts.sort((a, b) => a.change - b.change);
 }
 
+const DASHBOARD_TABS = [
+  { key: 'overview', label: 'Overview' },
+  { key: 'states', label: 'State Performance' },
+  { key: 'products', label: 'Products & Officers' },
+  { key: 'calls', label: 'Sales Calls' },
+  { key: 'daily', label: 'Daily Sales' },
+  { key: 'districts', label: 'Districts' },
+  { key: 'dealers', label: 'Dealers' },
+  { key: 'breakdown', label: 'Sales Breakdown' },
+  { key: 'nonsales', label: 'Branch Transfer & Samples' },
+  { key: 'notes', label: 'Calculation Notes' },
+];
+
 export default function CEODashboard({ data }) {
   const { filteredComplaints, filteredVisits, filteredNonSalesInvoices, clearFilters } = useRole();
   // Defaults to "All" rather than a hardcoded year — real synced Tally data
@@ -190,6 +204,7 @@ export default function CEODashboard({ data }) {
   // (e.g. real vouchers dated 2025 while this defaulted to 2026), which
   // silently zeroed every KPI card despite real data existing.
   const [selectedYear, setSelectedYear] = useState('All');
+  const [activeTab, setActiveTab] = useState('overview');
 
   // The CEO page has its own filters (below). The shared filter bar is hidden for the CEO, so make
   // sure no filter chosen earlier in it is still silently applied to `data`.
@@ -290,8 +305,6 @@ export default function CEODashboard({ data }) {
 
       <CeoFilterBar filters={ceoFilters} setFilters={setCeoFilters} dealerIndex={dealerIndex} fyRange={fyRange} />
 
-      <CalculationNotes />
-
       <KPIRow
         metrics={metrics}
         isYearly={true}
@@ -315,15 +328,28 @@ export default function CEODashboard({ data }) {
         />
       )}
 
-      <div className="charts-with-alerts">
-        <div className="charts-main">
-          <div className="charts-row">
-            <IndiaMap data={filteredData} isNational={true} />
-            <YearlySalesTrend data={localRows} selectedYear={selectedYear} />
+      <TabBar tabs={DASHBOARD_TABS} active={activeTab} onChange={setActiveTab} />
+
+      {activeTab === 'overview' && (
+        <div className="charts-with-alerts">
+          <div className="charts-main">
+            <div className="charts-row">
+              <IndiaMap data={filteredData} isNational={true} />
+              <YearlySalesTrend data={localRows} selectedYear={selectedYear} />
+            </div>
           </div>
 
-          <div className="charts-row">
-            <ChartCard title="All-India State Performance" subtitle="Top states by real sales value">
+          <AlertsPanel
+            fallingAlerts={fallingAlerts}
+            highOutstanding={highOutstanding}
+            complaints={filteredComplaints}
+          />
+        </div>
+      )}
+
+      {activeTab === 'states' && (
+        <div className="charts-row">
+          <ChartCard title="All-India State Performance" subtitle="Top states by real sales value">
               <ResponsiveContainer width="100%" height={290}>
                 <BarChart data={statePerformanceData} margin={{ top: 10, right: 10, left: 10, bottom: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
@@ -354,30 +380,31 @@ export default function CEODashboard({ data }) {
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>
-            {/* StockGroupBreakdown hidden as per requirements */}
-          </div>
-
-          <div className="charts-bottom-row">
-            <TopProducts data={topProducts} />
-            <TopSalesOfficers data={topOfficers} />
-          </div>
         </div>
+      )}
 
-        <AlertsPanel
-          fallingAlerts={fallingAlerts}
-          highOutstanding={highOutstanding}
-          complaints={filteredComplaints}
-        />
-      </div>
+      {activeTab === 'products' && (
+        <div className="charts-bottom-row">
+          <TopProducts data={topProducts} />
+          <TopSalesOfficers data={topOfficers} />
+        </div>
+      )}
 
-      <div className="tables-section">
+      {activeTab === 'calls' && (
         <SalesCallsReportTable visits={filteredVisits} title="All-India Daily Sales Calls & Visits (Google Sheet Replacement)" />
+      )}
+      {activeTab === 'daily' && (
         <DailySalesTable data={dailySales} title="All-India Daily Sales Register (Excl. GST)" />
-        <DistrictPerformanceTable data={districtPerf} />
-        <DealerPerformanceTable data={dealerSummary} />
+      )}
+      {activeTab === 'districts' && <DistrictPerformanceTable data={districtPerf} />}
+      {activeTab === 'dealers' && <DealerPerformanceTable data={dealerSummary} />}
+      {activeTab === 'breakdown' && (
         <SalesReconciliationTable salesRows={filteredData} selectedYear={selectedYear} title="All-India Sales Breakdown (compare with Tally)" />
+      )}
+      {activeTab === 'nonsales' && (
         <NonSalesInvoicesTable selectedYear={selectedYear} rows={nonSalesRows} title="All-India Branch Transfer & Sample Invoices" />
-      </div>
+      )}
+      {activeTab === 'notes' && <CalculationNotes />}
     </div>
   );
 }

@@ -47,15 +47,20 @@ export default function DataTable({ title, subtitle, columns, data, searchable =
           {subtitle && <p className="data-table-subtitle">{subtitle}</p>}
           <span className="data-table-scroll-hint">← Swipe to view more →</span>
         </div>
-        {searchable && (
-          <input
-            type="text"
-            className="data-table-search"
-            placeholder="Search..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        )}
+        <div className="data-table-actions">
+          <span className="data-table-count">
+            {sorted.length === data.length ? `${data.length} rows` : `${sorted.length} of ${data.length} rows`}
+          </span>
+          {searchable && (
+            <input
+              type="text"
+              className="data-table-search"
+              placeholder="Search..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          )}
+        </div>
       </div>
       {toolbar && (
         <div className="data-table-toolbar-wrapper">
