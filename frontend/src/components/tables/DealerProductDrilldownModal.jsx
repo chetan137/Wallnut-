@@ -44,18 +44,19 @@ export default function DealerProductDrilldownModal({ isOpen, onClose, dealer })
               <h3 className="modal-title" style={{ margin: 0, fontSize: '1.15rem' }}>
                 {dealerName} — Product Purchase Drill-Down
               </h3>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                Officer: <strong style={{ color: 'var(--text-secondary)' }}>{salesMan || 'Unassigned'}</strong> • District: <strong style={{ color: 'var(--text-secondary)' }}>{district || 'N/A'}</strong>
+              <div className="modal-subtitle" style={{ fontSize: '0.8rem', marginTop: '2px' }}>
+                Officer: <strong>{salesMan || 'Unassigned'}</strong> • District: <strong>{district || 'N/A'}</strong>
               </div>
             </div>
           </div>
           <button
             onClick={onClose}
+            className="modal-close-btn"
+            aria-label="Close"
             style={{
               background: 'transparent',
               border: 'none',
               cursor: 'pointer',
-              color: 'var(--text-muted)',
               display: 'flex',
               alignItems: 'center',
               padding: '4px',

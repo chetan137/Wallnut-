@@ -153,6 +153,28 @@
   letter-spacing: 0.03em;
 }
 
+/* The header bar is dark: keep its text and close button light and fully opaque. */
+.modal-header .modal-title,
+.modal-header h3 {
+  color: #FFFFFF;
+}
+
+.modal-header .modal-subtitle {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.modal-header .modal-subtitle strong {
+  color: #FFFFFF;
+}
+
+.modal-header .modal-close-btn {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.modal-header .modal-close-btn:hover {
+  color: #FFFFFF;
+}
+
 .modal-close {
   color: var(--text-on-dark);
   cursor: pointer;
