@@ -77,13 +77,13 @@ export default function AnalyticsPage() {
   const customerColumns = useMemo(() => [
     { header: 'Customer', accessor: 'name' },
     { header: 'Revenue', accessor: 'revenue', numeric: true, render: (v) => abbreviateCurrency(v) },
-    { header: 'Cumulative %', accessor: 'cumulativePct', numeric: true, render: (v) => formatPercent(v) },
+    { header: 'Cumulative %', help: 'Running total of revenue down the list (biggest first) as a % of the total revenue of all rows. Example: 40% on the 3rd row means the top 3 together make 40% of all revenue.', accessor: 'cumulativePct', numeric: true, render: (v) => formatPercent(v) },
   ], []);
 
   const productColumns = useMemo(() => [
     { header: 'Product', accessor: 'name' },
     { header: 'Revenue', accessor: 'revenue', numeric: true, render: (v) => abbreviateCurrency(v) },
-    { header: 'Cumulative %', accessor: 'cumulativePct', numeric: true, render: (v) => formatPercent(v) },
+    { header: 'Cumulative %', help: 'Running total of revenue down the list (biggest first) as a % of the total revenue of all rows. Example: 40% on the 3rd row means the top 3 together make 40% of all revenue.', accessor: 'cumulativePct', numeric: true, render: (v) => formatPercent(v) },
   ], []);
 
   const abcColumns = useMemo(() => [
@@ -92,6 +92,7 @@ export default function AnalyticsPage() {
     { header: 'Revenue', accessor: 'revenue', numeric: true, render: (v) => abbreviateCurrency(v) },
     {
       header: 'Category', accessor: 'category',
+      help: 'Items are sorted by revenue. A = the items that together make the first 70% of total revenue, B = the next 20% (up to 90%), C = the remaining 10%.',
       render: (v) => (
         <span style={{ fontWeight: 700, color: ABC_COLOR[v] }}>{v}</span>
       ),

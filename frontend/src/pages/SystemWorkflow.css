@@ -218,3 +218,134 @@
   border-radius: var(--radius-sm);
   margin-right: 4px;
 }
+
+/* ── "How Wallnut works": data journey, number sources, notes ───────────────────────────── */
+.wf-section-title {
+  font-family: var(--font-heading);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: var(--space-8) 0 var(--space-3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.wf-section-note {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.wf-flow {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.wf-step-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.wf-step {
+  display: flex;
+  gap: var(--space-4);
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--space-4) var(--space-5);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-left: 3px solid var(--accent-primary);
+  border-radius: var(--radius-lg);
+}
+
+.wf-step-icon {
+  flex: 0 0 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(130, 178, 44, 0.12);
+  color: var(--accent-primary);
+}
+
+.wf-step-body { min-width: 0; }
+
+.wf-step-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 4px;
+}
+
+.wf-step-title {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.wf-step-where {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  background: var(--bg-main);
+  border: 1px solid var(--card-border);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.wf-step-line {
+  margin: 2px 0;
+  font-size: var(--text-sm);
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.wf-step-line b { color: var(--text-primary); }
+
+.wf-step-arrow {
+  margin: 6px 0;
+  color: var(--text-muted);
+}
+
+.wf-numbers {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.wf-number-row {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: var(--space-4);
+  padding: 10px var(--space-5);
+  border-bottom: 1px solid var(--card-border);
+  font-size: var(--text-sm);
+}
+
+.wf-number-row:last-child { border-bottom: none; }
+.wf-number-name { font-weight: 700; color: var(--text-primary); }
+.wf-number-text { color: var(--text-secondary); line-height: 1.45; }
+
+.wf-good-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+@media (max-width: 640px) {
+  .wf-number-row { grid-template-columns: 1fr; gap: 2px; }
+  .wf-step { padding: var(--space-3); gap: var(--space-3); }
+}

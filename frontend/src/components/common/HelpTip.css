@@ -1,0 +1,56 @@
+.help-tip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 4px;
+  vertical-align: middle;
+  color: var(--text-muted);
+  cursor: help;
+  border-radius: 50%;
+  outline: none;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.help-tip:hover,
+.help-tip:focus-visible {
+  color: var(--accent-primary);
+}
+
+.help-tip-box {
+  position: fixed;
+  z-index: 3000;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  background: var(--card-bg, #fff);
+  color: var(--text-primary, #2d2d2a);
+  border: 1px solid var(--card-border, #e4e1d6);
+  border-left: 3px solid var(--accent-primary, #82b22c);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(19, 23, 15, 0.18);
+  pointer-events: none;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  text-align: left;
+}
+
+.help-tip-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--accent-primary, #82b22c);
+  margin-bottom: 4px;
+}
+
+.help-tip-line {
+  margin: 0 0 4px;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--text-secondary, #5b5a52);
+}
+
+.help-tip-line:last-child {
+  margin-bottom: 0;
+}

@@ -5,9 +5,12 @@ import { abbreviateCurrency, formatNumber } from '../../utils/formatters';
 export default function KPIRow({ metrics, isYearly = false, showBothTrends = false, descriptions = {}, onCardClick = {} }) {
   const trendLabel = isYearly ? 'vs last year' : 'vs last month';
 
+  // What the +/- % on each card means (matches the calculation in CEODashboard).
+  const MONTH_HELP = "(this month so far - last month up to the same day) / last month up to the same day x 100. Shown only after the 10th of the month, because earlier in the month the comparison swings too much.";
+  const YEAR_HELP = "(this Financial Year - last Financial Year) / last Financial Year x 100, comparing only the calendar months present in both years (e.g. Apr-Sep against Apr-Sep). Hidden when the two years share no month.";
   const asTrends = (monthValue, yearValue) => showBothTrends ? [
-    { value: monthValue, label: 'vs last month' },
-    { value: yearValue, label: 'vs last year' },
+    { value: monthValue, label: 'vs last month', help: MONTH_HELP },
+    { value: yearValue, label: 'vs last year', help: YEAR_HELP },
   ] : null;
 
   const salesTrends = asTrends(metrics.salesTrendMonth, metrics.salesTrend);

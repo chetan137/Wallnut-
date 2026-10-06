@@ -342,6 +342,9 @@ export default function IndiaMap({ data, isNational = true, defaultState = 'Madh
                   {hoveredGeo.metrics.totalSales > 0 ? formatPercent(hoveredGeo.metrics.targetPct) : '0.0%'}
                 </span>
               </div>
+              <div className="tooltip-label-sub" style={{ lineHeight: 1.3 }}>
+                Target = assumed {isNational ? '112%' : '115%'} of this area's own average monthly sales (no real target is set), so this % is only an indicator.
+              </div>
               <div className="tooltip-category-row">
                 <span className="tooltip-label-sub">Top Stock Category</span>
                 <span className="tooltip-val-sub" title={hoveredGeo.metrics.topCategory}>

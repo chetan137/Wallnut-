@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, Package, TrendingUp, TrendingDown, IndianRupee, AlertCircle, ShoppingBag } from 'lucide-react';
 import { formatCurrency, formatNumber } from '../../utils/formatters';
+import HelpTip from '../common/HelpTip';
 
 export default function DealerProductDrilldownModal({ isOpen, onClose, dealer }) {
   if (!isOpen || !dealer) return null;
@@ -105,6 +106,7 @@ export default function DealerProductDrilldownModal({ isOpen, onClose, dealer })
           <div style={{ background: 'var(--card-bg)', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               Growth (vs Prior Period)
+              <HelpTip title="Growth %" text="Compares this dealer's latest month of sales with the same month last year: (this month - same month last year) / same month last year x 100. If the dealer had no sales in that month last year, it is compared with the previous month instead, so the % is then a month-on-month change, not a year-on-year one." />
             </div>
             <div style={{ fontSize: '1.15rem', fontWeight: 700, marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
               {pyGrowth !== null ? (
@@ -158,7 +160,7 @@ export default function DealerProductDrilldownModal({ isOpen, onClose, dealer })
                     <th style={{ padding: '10px 14px', textAlign: 'right', color: 'var(--text-secondary)', fontWeight: 600 }}>Total Qty</th>
                     <th style={{ padding: '10px 14px', textAlign: 'right', color: 'var(--text-secondary)', fontWeight: 600 }}>Avg Rate (Excl. GST)</th>
                     <th style={{ padding: '10px 14px', textAlign: 'right', color: 'var(--text-secondary)', fontWeight: 600 }}>Total Net Value</th>
-                    <th style={{ padding: '10px 14px', textAlign: 'right', color: 'var(--text-secondary)', fontWeight: 600 }}>Share (%)</th>
+                    <th style={{ padding: '10px 14px', textAlign: 'right', color: 'var(--text-secondary)', fontWeight: 600 }}>Share (%)<HelpTip title="Share %" text="This product's net value / this dealer's total net value x 100 (excl. GST, all products of this dealer)." /></th>
                   </tr>
                 </thead>
                 <tbody>

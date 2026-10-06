@@ -1,6 +1,7 @@
 import { TrendingDown, AlertTriangle, MessageSquare } from 'lucide-react';
 import { abbreviateCurrency, formatPercent } from '../../utils/formatters';
 import { getComplaintSummary } from '../../data/complaintsData';
+import HelpTip from '../common/HelpTip';
 import './AlertsPanel.css';
 
 export default function AlertsPanel({ fallingAlerts, highOutstanding, complaints: rawComplaints }) {
@@ -14,6 +15,7 @@ export default function AlertsPanel({ fallingAlerts, highOutstanding, complaints
           <span className="alert-section-title">
             <TrendingDown size={15} style={{ color: 'var(--danger)' }} />
             Falling Sales
+            <HelpTip title="Falling Sales %" lines={['(This Financial Year sales - last Financial Year sales) / last Financial Year sales x 100, for each dealer who bought last year.', 'A dealer is listed when this year is lower than last year, worst first. If the selected year is still running, a dealer can show here only because the year is not over yet.']} />
           </span>
           <span className="alert-section-count red">{fallingAlerts.length}</span>
         </div>

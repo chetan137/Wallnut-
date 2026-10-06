@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import HelpTip from './HelpTip';
 import './DataTable.css';
 
 export default function DataTable({ title, subtitle, columns, data, searchable = true, id = '', toolbar = null }) {
@@ -78,6 +79,7 @@ export default function DataTable({ title, subtitle, columns, data, searchable =
                   onClick={() => handleSort(col.accessor)}
                 >
                   {col.header}
+                  {col.help && <HelpTip title={col.header} lines={[].concat(col.help)} />}
                   <span className="sort-icon">
                     {sortKey === col.accessor ? (sortDir === 'asc' ? '▲' : '▼') : '↕'}
                   </span>

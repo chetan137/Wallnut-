@@ -8,7 +8,7 @@ const EMPTY_FORM = { name: '', username: '', password: '', role: ROLES.SALES_OFF
 
 export default function ManageUsers() {
   const { currentUser, users = [], addUser, updateUser, deleteUser, canManageUsers } = useAuth();
-  const { allStates = [], allDistricts = [], districtToState = {}, allSalesOfficers = [] } = useRole();
+  const { allStates = [], allDistricts = [], districtToState = {}, allSalesOfficers = [], currentRole } = useRole();
   const [editing, setEditing] = useState(null); // null = closed, 'new' = create, or a user object
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -22,11 +22,12 @@ export default function ManageUsers() {
     [userList, roleFilter]
   );
 
-  if (!canManageUsers) {
+  // Not reachable by typing /users either: only the CEO, and only in the CEO view.
+  if (!canManageUsers || currentRole !== ROLES.CEO) {
     return (
       <div className="manage-users-page">
         <h2 className="manage-users-title">User Management</h2>
-        <p style={{ color: 'var(--text-muted)' }}>Only the CEO can manage users.</p>
+        <p style={{ color: 'var(--text-muted)' }}>Only the CEO can manage users{canManageUsers ? ' - switch the view back to CEO / Admin to open this page.' : '.'}</p>
       </div>
     );
   }

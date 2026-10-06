@@ -58,7 +58,7 @@ export default function Sidebar({ isOpen, onClose }) {
           <span>Dashboard</span>
         </Link>
 
-        {canManageUsers && (
+        {canManageUsers && currentRole === ROLES.CEO && (
           <Link
             to="/users"
             className={`sidebar-item-link ${currentPath === '/users' ? 'active' : ''}`}

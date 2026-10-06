@@ -222,7 +222,7 @@ export default function FinancialsPage() {
     { header: 'Avg. Credit Terms', accessor: 'avgCreditDays', numeric: true, render: (v) => `${v} days` },
     { header: 'Overdue Bills', accessor: 'overdueBillCount', numeric: true },
     { header: 'Overdue Amount', accessor: 'overdueAmount', numeric: true, render: (v) => abbreviateCurrency(v) },
-    { header: 'Compliance', accessor: 'complianceRate', numeric: true, render: (v) => `${v}%` },
+    { header: 'Compliance', help: '(Bills - overdue bills) / Bills x 100 for this customer. A bill is overdue when its due date (bill date + agreed credit period) has passed and it is still unpaid.', accessor: 'complianceRate', numeric: true, render: (v) => `${v}%` },
   ], []);
 
   const gstColumns = useMemo(() => [

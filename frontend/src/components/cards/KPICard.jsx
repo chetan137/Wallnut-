@@ -1,4 +1,5 @@
 import { TrendingUp, TrendingDown } from 'lucide-react';
+import HelpTip from '../common/HelpTip';
 import './KPICard.css';
 
 export default function KPICard({ icon: Icon, label, value, description, trend, trendLabel, trends, color = 'green', onClick }) {
@@ -45,7 +46,7 @@ export default function KPICard({ icon: Icon, label, value, description, trend, 
             const isPos = t.value >= 0;
             return (
               <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', fontSize: '11px' }}>
-                <span style={{ color: 'var(--text-muted)', fontWeight: '500' }}>{t.label}</span>
+                <span style={{ color: 'var(--text-muted)', fontWeight: '500' }}>{t.label}{t.help && <HelpTip title={`${label}: ${t.label}`} text={t.help} />}</span>
                 <span style={{
                   color: isPos ? 'var(--success)' : 'var(--danger)',
                   background: isPos ? 'var(--success-bg)' : 'var(--danger-bg)',

@@ -57,6 +57,7 @@ export default function DealerPerformanceTable({ data }) {
     },
     {
       header: 'Growth (PY)',
+      help: "Compares this dealer's latest month of sales with the same month last year: (this month - same month last year) / same month last year x 100. If the dealer had no sales in that month last year, it is compared with the previous month instead, so the % is then a month-on-month change, not a year-on-year one.",
       accessor: 'pyGrowth',
       numeric: true,
       render: (val) => {

@@ -48,6 +48,7 @@ const buildColumns = (label, accessor, showTarget) => [
   },
   {
     header: 'Target %',
+    help: ["Average monthly sales of the district / its monthly target x 100.","No real sales targets are set up yet. A few districts (e.g. Kolhapur, Mumbai, Pune, Ahmedabad, Surat, Indore) use a sample target stored in the app. Every other district uses an assumed target of 110% of its own average monthly sales, so it always comes out near 91%.","Treat this as an indicator only, not a real target achievement."],
     accessor: 'targetPct',
     numeric: false,
     render: (val) => <TargetBar value={val} />,
