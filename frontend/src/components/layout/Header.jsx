@@ -1,6 +1,11 @@
-import { useEffect, useState } from 'react';
-import { Bell, Calendar, RefreshCw, Zap, Database, Menu, X, CheckCircle2, AlertCircle, Download, Laptop, Smartphone } from 'lucide-react';
+import { useEffect, useState, useMemo, useRef } from 'react';
+import {
+  Bell, Calendar, RefreshCw, Zap, Database, Menu, X, CheckCircle2,
+  AlertCircle, Download, Laptop, Smartphone, FileText, MapPin,
+  Filter, ChevronDown, ChevronUp, Users, Sparkles
+} from 'lucide-react';
 import { useRole } from '../../context/RoleContext';
+import { formatCurrency } from '../../utils/formatters';
 import './Header.css';
 
 const SOURCE_LABELS = { db: 'PostgreSQL (Tally sync)', tally: 'Tally Prime', local: 'Demo data' };
@@ -8,8 +13,9 @@ const SOURCE_LABELS = { db: 'PostgreSQL (Tally sync)', tally: 'Tally Prime', loc
 export default function Header({ onMenuClick }) {
   const {
     roleConfig, dataSource, dataLoading, syncing, lastSync, syncFromTally,
-    syncResult, dismissSyncResult,
+    syncResult, dismissSyncResult, filteredSales, filteredVisits, filters, setFilters,
   } = useRole();
+
 
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isStandalone, setIsStandalone] = useState(false);
@@ -70,6 +76,115 @@ export default function Header({ onMenuClick }) {
       return null;
     }
   })();
+
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [expandedVoucher, setExpandedVoucher] = useState(null);
+  const notificationsRef = useRef(null);
+
+  // Close notifications on outside click or Escape key
+  useEffect(() => {
+    if (!showNotifications) return;
+    const handleClickOutside = (e) => {
+      if (notificationsRef.current && !notificationsRef.current.contains(e.target)) {
+        setShowNotifications(false);
+      }
+    };
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setShowNotifications(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showNotifications]);
+
+  // Today date formatted for comparisons and UI
+  const todayStr = useMemo(() => {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }, []);
+
+  const todayFormatted = useMemo(() => {
+    return new Date().toLocaleDateString('en-IN', {
+      weekday: 'short',
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  }, []);
+
+  // Today's records from filteredSales
+  const todayRecords = useMemo(() => {
+    return (filteredSales || []).filter((r) => r.date === todayStr);
+  }, [filteredSales, todayStr]);
+
+  // Group today's voucher line items into distinct vouchers
+  const todayVouchers = useMemo(() => {
+    const map = new Map();
+    for (const r of todayRecords) {
+      const key = r.vchNo || `${r.partyName}-${r.date}`;
+      if (!map.has(key)) {
+        map.set(key, {
+          vchNo: r.vchNo || 'Invoice',
+          vchType: r.vchType || 'Sales',
+          partyName: r.partyName || 'Unknown Party',
+          date: r.date,
+          state: r.state,
+          district: r.district,
+          city: r.city,
+          salesMan: r.salesMan,
+          totalAmount: 0,
+          totalQty: 0,
+          itemLines: [],
+        });
+      }
+      const vch = map.get(key);
+      vch.totalAmount += Number(r.amount) || 0;
+      vch.totalQty += Number(r.quantity) || 0;
+      if (r.itemName) {
+        vch.itemLines.push({
+          name: r.itemName,
+          qty: r.quantity,
+          units: r.units,
+          rate: r.rate,
+          amount: r.amount,
+        });
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => b.totalAmount - a.totalAmount);
+  }, [todayRecords]);
+
+  // Today's visits
+  const todayVisits = useMemo(() => {
+    return (filteredVisits || []).filter((v) => (v.date || '').startsWith(todayStr));
+  }, [filteredVisits, todayStr]);
+
+  // Totals
+  const todaySalesTotal = useMemo(() => {
+    return todayVouchers.reduce((sum, v) => sum + v.totalAmount, 0);
+  }, [todayVouchers]);
+
+  const uniqueDealersToday = useMemo(() => {
+    return new Set(todayVouchers.map((v) => v.partyName)).size;
+  }, [todayVouchers]);
+
+  const todayUpdatesCount = todayVouchers.length + todayVisits.length;
+
+  const isFilteredToToday = filters?.fromDate === todayStr && filters?.toDate === todayStr;
+
+  const toggleTodayFilter = () => {
+    if (isFilteredToToday) {
+      setFilters((prev) => ({ ...prev, fromDate: '', toDate: '' }));
+    } else {
+      setFilters((prev) => ({ ...prev, fromDate: todayStr, toDate: todayStr }));
+    }
+    setShowNotifications(false);
+  };
 
   return (
     <header className="header" id="main-header">
@@ -177,10 +292,208 @@ export default function Header({ onMenuClick }) {
           </button>
         )}
 
-        <button className="header-icon-btn" id="notifications-btn" title="Notifications">
-          <Bell size={18} />
-          <span className="header-notification-dot" />
-        </button>
+        {/* Notifications Button & Dropdown */}
+        <div className="header-notification-wrap" ref={notificationsRef}>
+          <button
+            className={`header-icon-btn ${showNotifications ? 'active' : ''}`}
+            id="notifications-btn"
+            title="Today's Updates & Activity"
+            onClick={() => setShowNotifications((prev) => !prev)}
+            aria-expanded={showNotifications}
+          >
+            <Bell size={18} />
+            {todayUpdatesCount > 0 ? (
+              <span className="header-notification-badge" title={`${todayUpdatesCount} updates today`}>
+                {todayUpdatesCount}
+              </span>
+            ) : (
+              <span className="header-notification-dot" />
+            )}
+          </button>
+
+          {showNotifications && (
+            <div className="header-notifications-dropdown" id="notifications-panel">
+              {/* Header */}
+              <div className="notifications-header">
+                <div className="notifications-header-left">
+                  <div className="notifications-title-row">
+                    <Bell size={15} className="notifications-bell-icon" />
+                    <span className="notifications-title">Today's Updates</span>
+                    <span className={`notifications-count-pill ${todayUpdatesCount > 0 ? 'active' : ''}`}>
+                      {todayUpdatesCount > 0 ? `${todayUpdatesCount} New` : '0 New'}
+                    </span>
+                  </div>
+                  <div className="notifications-subtitle">
+                    <Calendar size={12} />
+                    <span>{todayFormatted}</span>
+                  </div>
+                </div>
+                <button
+                  className="notifications-close-btn"
+                  onClick={() => setShowNotifications(false)}
+                  title="Close notifications"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+
+              {/* Today's KPI Bar */}
+              <div className="notifications-stats-grid">
+                <div className="notif-stat-card">
+                  <div className="notif-stat-label">Sales Today</div>
+                  <div className="notif-stat-val sales">{formatCurrency(todaySalesTotal)}</div>
+                </div>
+                <div className="notif-stat-card">
+                  <div className="notif-stat-label">Invoices</div>
+                  <div className="notif-stat-val">{todayVouchers.length}</div>
+                </div>
+                <div className="notif-stat-card">
+                  <div className="notif-stat-label">Dealers</div>
+                  <div className="notif-stat-val">{uniqueDealersToday}</div>
+                </div>
+                <div className="notif-stat-card">
+                  <div className="notif-stat-label">Visits</div>
+                  <div className="notif-stat-val">{todayVisits.length}</div>
+                </div>
+              </div>
+
+              {/* Action Banner: Filter dashboard to today */}
+              {todayVouchers.length > 0 && (
+                <div className="notifications-action-bar">
+                  <button
+                    className={`notifications-filter-btn ${isFilteredToToday ? 'active' : ''}`}
+                    onClick={toggleTodayFilter}
+                    title={isFilteredToToday ? 'Clear Today filter' : 'Filter entire dashboard to Today'}
+                  >
+                    <Filter size={12} />
+                    <span>{isFilteredToToday ? 'Dashboard filtered to Today (Click to reset)' : 'Filter Dashboard to Today'}</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Notification Items List */}
+              <div className="notifications-list">
+                {todayUpdatesCount === 0 ? (
+                  <div className="notifications-empty">
+                    <CheckCircle2 size={32} className="notifications-empty-icon" />
+                    <div className="notifications-empty-title">All caught up for today</div>
+                    <div className="notifications-empty-desc">
+                      No new billing or field visits recorded for today ({todayFormatted}) yet.
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {todayVouchers.length > 0 && (
+                      <div className="notifications-section">
+                        <div className="notifications-section-header">
+                          <FileText size={13} />
+                          <span>Billed Invoices Today ({todayVouchers.length})</span>
+                        </div>
+                        {todayVouchers.map((vch) => {
+                          const isExpanded = expandedVoucher === vch.vchNo;
+                          const locationText = [vch.city, vch.district, vch.state].filter(Boolean).join(', ');
+                          return (
+                            <div key={vch.vchNo} className="notification-card">
+                              <div className="notif-card-top">
+                                <div className="notif-card-dealer">{vch.partyName}</div>
+                                <div className="notif-card-amount">{formatCurrency(vch.totalAmount)}</div>
+                              </div>
+                              <div className="notif-card-meta">
+                                <span className="notif-badge vch-no">{vch.vchNo}</span>
+                                {vch.vchType && <span className="notif-badge vch-type">{vch.vchType}</span>}
+                                {locationText && (
+                                  <span className="notif-location">
+                                    <MapPin size={10} />
+                                    <span>{locationText}</span>
+                                  </span>
+                                )}
+                              </div>
+                              {vch.salesMan && (
+                                <div className="notif-card-salesman">
+                                  <span>SO: {vch.salesMan}</span>
+                                </div>
+                              )}
+                              {vch.itemLines.length > 0 && (
+                                <div className="notif-card-items">
+                                  <button
+                                    className="notif-expand-btn"
+                                    onClick={() => setExpandedVoucher(isExpanded ? null : vch.vchNo)}
+                                  >
+                                    <span>{vch.itemLines.length} item line{vch.itemLines.length > 1 ? 's' : ''}</span>
+                                    {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                                  </button>
+                                  {isExpanded ? (
+                                    <div className="notif-items-expanded-list">
+                                      {vch.itemLines.map((item, idx) => (
+                                        <div key={idx} className="notif-item-row">
+                                          <span className="notif-item-name">{item.name}</span>
+                                          <span className="notif-item-qty">{item.qty} {item.units || ''}</span>
+                                          <span className="notif-item-price">{formatCurrency(item.amount)}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div className="notif-items-summary">
+                                      {vch.itemLines.map((i) => i.name).slice(0, 2).join(', ')}
+                                      {vch.itemLines.length > 2 ? ` +${vch.itemLines.length - 2} more` : ''}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {todayVisits.length > 0 && (
+                      <div className="notifications-section">
+                        <div className="notifications-section-header">
+                          <Users size={13} />
+                          <span>Field Visits Today ({todayVisits.length})</span>
+                        </div>
+                        {todayVisits.map((visit, idx) => (
+                          <div key={visit.id || idx} className="notification-card visit">
+                            <div className="notif-card-top">
+                              <div className="notif-card-dealer">{visit.dealerName || visit.partyName}</div>
+                              <span className="notif-badge visit-status">{visit.status || 'Completed'}</span>
+                            </div>
+                            <div className="notif-card-meta">
+                              <span>SO: {visit.salesOfficer || visit.salesMan}</span>
+                              {visit.area && <span>· {visit.area}</span>}
+                            </div>
+                            {visit.notes && <div className="notif-visit-notes">{visit.notes}</div>}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="notifications-footer">
+                <div className="notif-footer-sync">
+                  <span className="notif-live-dot" />
+                  <span>{SOURCE_LABELS[dataSource] || 'Live Database'}</span>
+                  {lastSync && <span>· {new Date(lastSync).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>}
+                </div>
+                <button
+                  className="notif-sync-now-btn"
+                  onClick={() => {
+                    syncFromTally(false);
+                    setShowNotifications(false);
+                  }}
+                  disabled={syncing}
+                >
+                  <RefreshCw size={11} className={syncing ? 'spinning' : ''} />
+                  <span>{syncing ? 'Syncing…' : 'Sync Now'}</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
       </div>
 
       {/* Install Guide Modal */}
