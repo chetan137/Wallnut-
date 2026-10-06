@@ -5,6 +5,7 @@
 
 import { createContext, useContext, useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useAuth } from './AuthContext';
+import { idbGet, idbSet } from '../utils/idb';
 
 // Sent as X-API-Key so the backend can reject requests that don't come from
 // this app — set in Vercel project env vars, must match API_KEY on the server.
@@ -86,12 +87,22 @@ export function RoleProvider({ children }) {
   // (tagged by the backend via `invoiceCategory`). Never feed this straight
   // into a KPI/chart — use `sales` below, which leaves those two out.
   const [allSales, setSales] = useState(() => {
-    const saved = localStorage.getItem('wallnut_sales_records');
-    // No bundled demo data: until the first real sync lands (or when there is
-    // no cached copy yet) the dashboard starts empty rather than showing
-    // fabricated sales.
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem('wallnut_sales_records');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
   });
+
+  // Hydrate from IndexedDB on startup if localStorage couldn't hold the dataset (>5MB)
+  useEffect(() => {
+    idbGet('wallnut_sales_records').then((cached) => {
+      if (Array.isArray(cached) && cached.length > 0) {
+        setSales((prev) => (prev.length === 0 ? cached : prev));
+      }
+    });
+  }, []);
 
   // Monthly Collection (Receipt vouchers) from the backend: [{ month: 'YYYY-MM', receipts, amount }].
   // Company-wide — not scoped by role or filters. Shown in the CEO Sales Breakdown table.
@@ -208,9 +219,16 @@ export function RoleProvider({ children }) {
         setDataSource(json.source || 'local');
         const syncTime = json.source === 'tally' || json.source === 'db' ? (json.lastSync || new Date().toISOString()) : null;
         if (syncTime) setLastSync(syncTime);
-        localStorage.setItem('wallnut_sales_records', JSON.stringify(records));
-        localStorage.setItem('wallnut_data_source', json.source || 'local');
-        localStorage.setItem('wallnut_last_sync', syncTime || '');
+        idbSet('wallnut_sales_records', records);
+        try {
+          localStorage.setItem('wallnut_sales_records', JSON.stringify(records));
+        } catch {
+          // Dataset exceeds browser 5MB localStorage quota — saved in IndexedDB
+        }
+        try {
+          localStorage.setItem('wallnut_data_source', json.source || 'local');
+          localStorage.setItem('wallnut_last_sync', syncTime || '');
+        } catch { /* ignore */ }
 
         if (!silent) {
           const previousKeys = new Set(salesRef.current.map(recordKey));
@@ -232,9 +250,15 @@ export function RoleProvider({ children }) {
       } else if (!silent) {
         setSyncResult({ ok: false, error: 'Sync completed but returned no data.' });
       }
-    } catch {
+    } catch (err) {
       // Backend unreachable — keep existing data
-      if (!silent) setSyncResult({ ok: false, error: 'Could not reach the backend.' });
+      console.error('[Sync] Failed to sync data from backend:', err);
+      if (!silent) {
+        setSyncResult({
+          ok: false,
+          error: err?.message ? `Could not reach backend (${err.message})` : 'Could not reach the backend.',
+        });
+      }
     } finally {
       if (!silent) setSyncing(false);
       setDataLoading(false);
@@ -298,9 +322,13 @@ export function RoleProvider({ children }) {
 
     setSales((prev) => {
       const updated = [newRecord, ...prev];
-      localStorage.setItem('wallnut_sales_records', JSON.stringify(updated));
+      idbSet('wallnut_sales_records', updated);
+      try {
+        localStorage.setItem('wallnut_sales_records', JSON.stringify(updated));
+      } catch { /* ignore quota exceeded */ }
       return updated;
     });
+
   }, []);
 
   const addVisitEntry = useCallback(async (entry) => {
