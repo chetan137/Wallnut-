@@ -200,6 +200,7 @@ const DASHBOARD_TABS = [
   { key: 'dealers', label: 'Dealers', views: ['ceo', 'state', 'district'] },
   { key: 'breakdown', label: 'Sales Breakdown', views: ['ceo', 'state', 'district'] },
   { key: 'nonsales', label: 'Branch Transfer & Samples', views: ['ceo', 'state', 'district'] },
+  { key: 'notes', label: 'How It Is Calculated', views: ['ceo', 'state', 'district'] },
 ];
 
 // scopeLabel / controlTitle / stateView / districtView let the State Sales Head and the District Manager
@@ -323,8 +324,6 @@ export default function CEODashboard({ data, scopeLabel = 'All-India', controlTi
 
       <CeoFilterBar filters={ceoFilters} setFilters={setCeoFilters} dealerIndex={dealerIndex} fyRange={fyRange} />
 
-      <CalculationNotes />
-
       <KPIRow
         metrics={metrics}
         isYearly={true}
@@ -435,6 +434,7 @@ export default function CEODashboard({ data, scopeLabel = 'All-India', controlTi
       {activeTab === 'nonsales' && (
         <NonSalesInvoicesTable selectedYear={selectedYear} rows={nonSalesRows} title={`${scopeLabel} Branch Transfer & Sample Invoices`} />
       )}
+      {activeTab === 'notes' && <CalculationNotes />}
     </div>
   );
 }
