@@ -259,7 +259,8 @@ export function getTopProducts(data, limit = 10) {
 // for the same real-world inconsistency). Strip the honorific so both group
 // under one canonical name instead of splitting one person's sales across
 // two bars.
-const HONORIFIC_RE = /^(mr|mrs|ms|miss|shri|smt|dr)\.?\s+/i;
+// "Mr. X", "Mr X" and "Mr.X" (no space after the dot) are all the same person as "X".
+const HONORIFIC_RE = /^(mr|mrs|ms|miss|shri|smt|dr)(\.\s*|\s+)/i;
 
 function canonicalOfficerName(rawName) {
   return rawName.trim().replace(HONORIFIC_RE, '').replace(/\s+/g, ' ').trim();

@@ -13,8 +13,9 @@ export const EMPTY_CEO_FILTERS = { fromDate: '', toDate: '', state: '', district
 export const UNKNOWN = 'Unknown';
 const place = (v) => v || UNKNOWN;
 
-/** "Mr. Vaibhav Pawar" and "Vaibhav Pawar" are the same officer. */
-export const officerKey = (name) => (name || '').replace(/^M[rs]\.\s+/i, '').trim().toLowerCase();
+/** "Mr. Vaibhav Pawar", "Mr.Vaibhav Pawar" and "Vaibhav Pawar" are the same officer. */
+export const officerKey = (name) =>
+  (name || '').replace(/^(mr|mrs|ms|miss|shri|smt|dr)(\.\s*|\s+)/i, '').replace(/\s+/g, ' ').trim().toLowerCase();
 const NOT_AN_OFFICER = /branch|godown|warehouse|location/i;
 
 /** One entry per dealer: place + main sales officer. */
