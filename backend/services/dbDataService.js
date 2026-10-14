@@ -420,6 +420,28 @@ async function fetchFinancials({ companyId } = {}) {
     entry.balanceSheet[field] = ASSET_FIELDS.has(field) ? Math.abs(r.netBalance) : r.netBalance;
   }
 
+  // Current Assets: use Tally's BALANCE SHEET report when it has been synced. The Trial Balance carries
+  // the Stock-in-Hand ledger (opening stock), the Balance Sheet the calculated Closing Stock, so only the
+  // Balance Sheet figure equals what Tally shows (Trial Balance was 19-25 lakh lower). Falls back to the
+  // Trial Balance figure above for a company with no Balance Sheet rows yet (e.g. the closed 24-25 company).
+  try {
+    await query(`CREATE TABLE IF NOT EXISTS balance_sheet_groups (
+      id SERIAL PRIMARY KEY, company_id INT NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+      group_name TEXT NOT NULL, main_amount NUMERIC(15, 2) NOT NULL DEFAULT 0,
+      period_from DATE NOT NULL, period_to DATE NOT NULL, synced_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE (company_id, group_name, period_from, period_to))`);
+    const { rows: caRows } = await query(`
+      SELECT DISTINCT ON (company_id) company_id AS "companyId", main_amount AS "amount"
+      FROM balance_sheet_groups
+      WHERE group_name = 'Current Assets' ${companyId ? 'AND company_id = $1' : ''}
+      ORDER BY company_id, period_to DESC`, companyId ? [bsParams[0]] : []);
+    for (const r of caRows) {
+      if (byCompany[r.companyId]) byCompany[r.companyId].balanceSheet.currentAssets = Math.abs(Number(r.amount));
+    }
+  } catch (err) {
+    console.warn('[fetchFinancials] Balance Sheet Current Assets unavailable, using Trial Balance:', err.message);
+  }
+
   return { source: 'db', companies: Object.values(byCompany) };
 }
 
