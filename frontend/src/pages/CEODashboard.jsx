@@ -158,6 +158,16 @@ function getYearlyFallingSalesAlerts(allData, selectedYear) {
   const currentYear = selectedYear === 'All' ? latestYear : selectedYear;
   const prevYear = previousFiscalYear(currentYear);
 
+  // Fair comparison: only the part of last year that matches the part of this year that has
+  // happened. FY 26-27 with data for Apr-Oct is compared with Apr-Oct of FY 25-26 (and the month
+  // still running only up to the same day), not with the whole of 25-26 — that made almost every
+  // dealer look like it had fallen.
+  const currentRows = allData.filter(d => fiscalYearOfDate(d.date) === currentYear);
+  const monthsSoFar = new Set(currentRows.map(d => d.date.slice(5, 7)));
+  const latestDate = currentRows.reduce((max, d) => (d.date > max ? d.date : max), '');
+  const latestMonth = latestDate.slice(5, 7);
+  const cutoffDay = latestDate.slice(8, 10);
+
   const currentSales = {};
   const prevSales = {};
 
@@ -166,15 +176,22 @@ function getYearlyFallingSalesAlerts(allData, selectedYear) {
     if (year === currentYear) {
       currentSales[row.partyName] = (currentSales[row.partyName] || 0) + row.amount;
     } else if (year === prevYear) {
+      const month = row.date.slice(5, 7);
+      if (!monthsSoFar.has(month)) continue;
+      if (month === latestMonth && row.date.slice(8, 10) > cutoffDay) continue;
       prevSales[row.partyName] = (prevSales[row.partyName] || 0) + row.amount;
     }
   }
 
   const alerts = [];
   for (const [dealer, prevAmt] of Object.entries(prevSales)) {
+    // A percentage only makes sense against positive sales of the same period last year.
+    if (!(prevAmt > 0)) continue;
     const currAmt = currentSales[dealer] || 0;
     if (currAmt < prevAmt) {
-      const change = ((currAmt - prevAmt) / prevAmt) * 100;
+      // Net sales can be negative (credit notes bigger than invoices); a fall is never shown as
+      // worse than -100% ("lost all of last year's sales").
+      const change = Math.max(-100, ((currAmt - prevAmt) / prevAmt) * 100);
       alerts.push({
         dealer,
         currentSales: currAmt,

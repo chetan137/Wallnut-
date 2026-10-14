@@ -15,14 +15,22 @@ export default function AlertsPanel({ fallingAlerts, highOutstanding, complaints
           <span className="alert-section-title">
             <TrendingDown size={15} style={{ color: 'var(--danger)' }} />
             Falling Sales
-            <HelpTip title="Falling Sales %" lines={['(This Financial Year sales - last Financial Year sales) / last Financial Year sales x 100, for each dealer who bought last year.', 'A dealer is listed when this year is lower than last year, worst first. If the selected year is still running, a dealer can show here only because the year is not over yet.']} />
+            <HelpTip title="Falling Sales" lines={['Dealers who bought less this Financial Year than in the same period last year. Example: for Apr to Oct, this year is compared with Apr to Oct of last year, not with the whole of last year.', '% = (sales this year - sales same period last year) / sales same period last year x 100. -100% means the dealer has bought nothing so far. Worst first.', 'Only dealers with sales in that period last year are listed. Credit notes count as negative sales.']} />
           </span>
           <span className="alert-section-count red">{fallingAlerts.length}</span>
         </div>
         <div className="alert-list">
           {fallingAlerts.slice(0, 8).map((alert, i) => (
             <div key={i} className="alert-item">
-              <span className="alert-item-name" title={alert.dealer}>{alert.dealer}</span>
+              <span
+                className="alert-item-name"
+                title={`${alert.dealer}: ${abbreviateCurrency(alert.previousSales)} in the same period last year, ${abbreviateCurrency(alert.currentSales)} this year`}
+              >
+                {alert.dealer}
+                <small style={{ display: 'block', color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>
+                  {abbreviateCurrency(alert.previousSales)} last year &rarr; {abbreviateCurrency(alert.currentSales)} this year
+                </small>
+              </span>
               <span className="alert-item-value negative">{alert.change.toFixed(0)}%</span>
             </div>
           ))}
