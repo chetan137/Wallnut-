@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { RotateCcw } from 'lucide-react';
 import HelpTip from './HelpTip';
 import './DataTable.css';
 
@@ -14,6 +15,14 @@ export default function DataTable({ title, subtitle, columns, data, searchable =
       setSortKey(key);
       setSortDir('desc');
     }
+  };
+
+  // Back to the table's default order, with no search text.
+  const canReset = sortKey !== null || search !== '';
+  const resetTable = () => {
+    setSortKey(null);
+    setSortDir('desc');
+    setSearch('');
   };
 
   const filtered = useMemo(() => {
@@ -52,6 +61,17 @@ export default function DataTable({ title, subtitle, columns, data, searchable =
           <span className="data-table-count">
             {sorted.length === data.length ? `${data.length} rows` : `${sorted.length} of ${data.length} rows`}
           </span>
+          <button
+            type="button"
+            className="data-table-reset"
+            onClick={resetTable}
+            disabled={!canReset}
+            title="Reset: clear sorting and search, back to the default order"
+            aria-label="Reset table to default order"
+          >
+            <RotateCcw size={13} />
+            <span>Reset</span>
+          </button>
           {searchable && (
             <input
               type="text"

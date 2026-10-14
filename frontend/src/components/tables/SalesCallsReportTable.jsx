@@ -193,6 +193,7 @@ export default function SalesCallsReportTable({ visits = [], title = 'Daily Sale
     },
     {
       header: 'Calls Today',
+      help: 'Number of calls / visits this person logged today (dashboard date). It counts the entries saved with the "Log Daily Sales Call" button.',
       accessor: 'callsToday',
       numeric: true,
       render: (val) => (
@@ -214,6 +215,7 @@ export default function SalesCallsReportTable({ visits = [], title = 'Daily Sale
     },
     {
       header: 'Calls This Month',
+      help: 'Calls / visits logged by this person in the current calendar month.',
       accessor: 'callsThisMonth',
       numeric: true,
       render: (val) => (
@@ -224,6 +226,7 @@ export default function SalesCallsReportTable({ visits = [], title = 'Daily Sale
     },
     {
       header: 'Call Types (Visits / Phone)',
+      help: 'Store visits and phone calls, counted separately, over all the entries shown after the filters above.',
       accessor: 'storeVisits',
       render: (val, row) => (
         <div style={{ fontSize: 11, color: 'var(--text-secondary, #475569)' }}>
@@ -233,6 +236,7 @@ export default function SalesCallsReportTable({ visits = [], title = 'Daily Sale
     },
     {
       header: 'Last Call Date',
+      help: 'Date of the most recent call / visit logged by this person.',
       accessor: 'lastCallDate',
       render: (val) => val ? formatDate(val) : '—',
     },

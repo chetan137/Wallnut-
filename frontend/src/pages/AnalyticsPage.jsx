@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Trophy, Package, PackageX, Layers, Receipt } from 'lucide-react';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
 import ChartCard from '../components/common/ChartCard';
 import DataTable from '../components/common/DataTable';
 import KPICard from '../components/cards/KPICard';
@@ -21,7 +20,6 @@ const API_KEY = import.meta.env.VITE_API_KEY || '';
 function useAnalyticsData() {
   const [pareto, setPareto] = useState(null);
   const [abc, setAbc] = useState(null);
-  const [slowMoving, setSlowMoving] = useState(null);
   const [hsn, setHsn] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -32,21 +30,19 @@ function useAnalyticsData() {
     (async () => {
       try {
         const headers = { 'X-API-Key': API_KEY };
-        const [paretoRes, abcRes, slowRes, hsnRes] = await Promise.all([
+        const [paretoRes, abcRes, hsnRes] = await Promise.all([
           fetch('/api/tally/pareto', { headers }).then((r) => r.json()),
           fetch('/api/tally/abc-analysis', { headers }).then((r) => r.json()),
-          fetch('/api/tally/slow-moving-stock', { headers }).then((r) => r.json()),
           fetch('/api/tally/hsn-summary', { headers }).then((r) => r.json()),
         ]);
         if (cancelled) return;
 
-        if (!paretoRes.ok || !abcRes.ok || !slowRes.ok || !hsnRes.ok) {
-          setError(paretoRes.message || abcRes.message || slowRes.message || hsnRes.message || 'Analytics require a live Postgres connection.');
+        if (!paretoRes.ok || !abcRes.ok || !hsnRes.ok) {
+          setError(paretoRes.message || abcRes.message || hsnRes.message || 'Analytics require a live Postgres connection.');
           return;
         }
         setPareto(paretoRes.data);
         setAbc(abcRes.data);
-        setSlowMoving(slowRes.data);
         setHsn(hsnRes.data);
       } catch {
         if (!cancelled) setError('Could not reach the backend API.');
@@ -58,7 +54,7 @@ function useAnalyticsData() {
     return () => { cancelled = true; };
   }, []);
 
-  return { pareto, abc, slowMoving, hsn, loading, error };
+  return { pareto, abc, hsn, loading, error };
 }
 
 const ABC_COLOR = { A: 'var(--success, #2e7d32)', B: 'var(--warning, #f0ad4e)', C: 'var(--text-muted)' };
@@ -66,12 +62,11 @@ const ABC_COLOR = { A: 'var(--success, #2e7d32)', B: 'var(--warning, #f0ad4e)', 
 const ANALYTICS_TABS = [
   { key: 'pareto', label: 'Pareto (80/20)' },
   { key: 'abc', label: 'ABC Analysis' },
-  { key: 'slowmoving', label: 'Slow-Moving Stock' },
   { key: 'hsn', label: 'HSN Summary' },
 ];
 
 export default function AnalyticsPage() {
-  const { pareto, abc, slowMoving, hsn, loading, error } = useAnalyticsData();
+  const { pareto, abc, hsn, loading, error } = useAnalyticsData();
   const [activeTab, setActiveTab] = useState('pareto');
 
   const customerColumns = useMemo(() => [
@@ -97,14 +92,6 @@ export default function AnalyticsPage() {
         <span style={{ fontWeight: 700, color: ABC_COLOR[v] }}>{v}</span>
       ),
     },
-  ], []);
-
-  const slowMovingColumns = useMemo(() => [
-    { header: 'Item', accessor: 'itemName' },
-    { header: 'Last Movement', accessor: 'lastMovementDate' },
-    { header: 'Days Since', accessor: 'daysSinceLastMovement', numeric: true },
-    { header: 'Value Moved (all-time)', accessor: 'totalValueMoved', numeric: true, render: (v) => abbreviateCurrency(v) },
-    { header: 'Status', accessor: 'bucket' },
   ], []);
 
   const hsnColumns = useMemo(() => [
@@ -142,9 +129,9 @@ export default function AnalyticsPage() {
 
   return (
     <div className="ssh-dashboard" id="analytics-page">
-      <h2 style={{ marginBottom: 'var(--space-1)' }}>Sales &amp; Inventory Analytics</h2>
+      <h2 style={{ marginBottom: 'var(--space-1)' }}>Sales Analytics</h2>
       <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)', marginBottom: 'var(--space-4)', marginTop: 0 }}>
-        See which customers and products drive the most revenue, and which stock has been sitting idle.
+        See which customers and products drive the most revenue.
       </p>
 
       {/* ── Pareto (80/20) ─────────────────────────────────────────────── */}
@@ -169,13 +156,6 @@ export default function AnalyticsPage() {
           value={formatNumber(abc.counts.A)}
           description="Top-selling items — always keep these in stock"
           color="green"
-        />
-        <KPICard
-          icon={PackageX}
-          label="Dead Stock (1+ Year)"
-          value={formatNumber(slowMoving.summary.find((s) => s.bucket.startsWith('Non'))?.itemCount || 0)}
-          description="No movement in 365+ days — capital is tied up, take action"
-          color="red"
         />
       </div>
 
@@ -206,31 +186,6 @@ export default function AnalyticsPage() {
             </div>
           </ChartCard>
           <DataTable title="ABC Item Classification" columns={abcColumns} data={abc.items} />
-        </>
-      )}
-
-      {/* ── Slow-Moving / Non-Moving Stock ─────────────────────────────── */}
-      {activeTab === 'slowmoving' && (
-        <>
-          <ChartCard
-            title="Slow-Moving &amp; Non-Moving Stock"
-            subtitle="How long has each item been sitting? Active = healthy, Slow = needs attention, Non-Moving = urgent action required"
-          >
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={slowMoving.summary} margin={{ top: 10, right: 10, left: 10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
-                <XAxis dataKey="bucket" tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
-                <Tooltip formatter={(v, name) => (name === 'itemCount' ? [v, 'Items'] : [abbreviateCurrency(v), 'Value'])} />
-                <Bar dataKey="itemCount" radius={[4, 4, 0, 0]} maxBarSize={60}>
-                  {slowMoving.summary.map((entry, i) => (
-                    <Cell key={i} fill={entry.bucket === 'Active' ? 'var(--accent-primary)' : entry.bucket.startsWith('Non') ? 'var(--danger)' : 'var(--warning)'} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartCard>
-          <DataTable title="Item Movement Detail (oldest first)" columns={slowMovingColumns} data={slowMoving.items} />
         </>
       )}
 

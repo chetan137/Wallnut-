@@ -192,6 +192,22 @@ const CURRENT_COMPANY_BILLS = `(company_id IN (SELECT id FROM companies WHERE is
   OR NOT EXISTS (SELECT 1 FROM companies WHERE is_historical = false))`;
 
 /**
+ * Which company a balance report reads (the one asked for, else the current one) and when it was last
+ * synced - the Financials page shows it as "as on <time>" and warns when the company is a closed year.
+ */
+async function balanceAsOn(companyId, table) {
+  const cid = await resolveCompanyId(companyId);
+  const { rows: c } = await query('SELECT id, name, is_historical AS "isHistorical" FROM companies WHERE id = $1', [cid]);
+  const { rows: s } = await query(`SELECT MAX(synced_at) AS "syncedAt" FROM ${table} WHERE company_id = $1`, [cid]);
+  return {
+    companyId: cid,
+    companyName: c[0] ? c[0].name : String(cid),
+    isHistorical: c[0] ? c[0].isHistorical : false,
+    syncedAt: s[0] ? s[0].syncedAt : null,
+  };
+}
+
+/**
  * Vendor-wise payables — the mirror of fetchOutstanding, but money the
  * company owes rather than is owed. Sourced from outstanding_payables
  * (party totals) plus an aging breakdown from bills_payable (bill-level,
@@ -209,7 +225,7 @@ async function fetchPayables({ companyId } = {}) {
   const { rows: parties } = await query(`
     SELECT party_name AS "partyName", SUM(amount_payable) AS "amountPayable"
     FROM outstanding_payables
-    WHERE 1=1 ${companyFilter}
+    WHERE ${companyId ? '1=1' : CURRENT_COMPANY_BILLS} ${companyFilter}
     GROUP BY party_name
     ORDER BY "amountPayable" DESC
   `, params);
@@ -234,6 +250,7 @@ async function fetchPayables({ companyId } = {}) {
 
   return {
     source: 'db',
+    asOn: await balanceAsOn(companyId, 'outstanding_payables'),
     totalPayable: parties.reduce((s, p) => s + p.amountPayable, 0),
     totalVendors: parties.length,
     payables: parties,
@@ -285,6 +302,7 @@ async function fetchReceivablesAging({ companyId } = {}) {
 
   return {
     source: 'db',
+    asOn: await balanceAsOn(companyId, 'bills_receivable'),
     totalReceivable: parties.reduce((s, p) => s + p.amountReceivable, 0),
     totalCustomers: parties.length,
     customers: parties,
@@ -834,6 +852,7 @@ async function fetchCreditTermsCompliance({ companyId } = {}) {
 
   return {
     source: 'db',
+    asOn: await balanceAsOn(companyId, 'bills_receivable'),
     bills: rows,
     parties,
     totalBills: rows.length,

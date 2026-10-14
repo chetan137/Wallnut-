@@ -50,8 +50,9 @@ function HowCalculated() {
             <b>Collection</b>: money received. It is the total of the month&apos;s Receipt vouchers.
           </p>
           <p>
-            <b>Outstanding</b>: money customers still have to pay, from Tally&apos;s pending bills. Very old bills that are not in
-            this system are not included yet.
+            <b>Outstanding</b>: money customers still have to pay <b>today</b>, from Tally&apos;s pending bills of the live book (as on the
+            last sync). Each invoice shows what is still pending on it now, whichever year it is from; a bill that was paid is not counted.
+            Bills that do not belong to a sales invoice in this system (opening balances, journals) are in Financials &rarr; Receivables.
           </p>
         </section>
 
@@ -130,7 +131,7 @@ function WhatChanged() {
               <td><b>Outstanding</b></td>
               <td>Pending bills that match an invoice in this system.</td>
               <td>Same as before.</td>
-              <td>No change yet. We are matching it with Tally&apos;s Receivables total.</td>
+              <td>Changed. It is now &quot;as on today&quot; from the live book. Before, invoices of a closed year showed what was pending on its closing date.</td>
             </tr>
             <tr>
               <td><b>Missing data</b></td>

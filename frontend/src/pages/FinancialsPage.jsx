@@ -121,6 +121,11 @@ function useGstTdsSummary(companyId, from, to) {
   return { data, loading, error };
 }
 
+// "14 Oct 2026, 04:27 pm" in Indian time
+const fmtWhen = (iso) => (iso
+  ? new Date(iso).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })
+  : 'an unknown time');
+
 const AGING_ORDER = ['Not Due', '1-30 days', '31-60 days', '61-90 days', '90+ days'];
 
 const FINANCIALS_TABS = [
@@ -272,14 +277,39 @@ export default function FinancialsPage() {
     );
   }
 
+  // Receivables / Payables are balances AS ON A DATE: one Tally company only (the live one unless another is picked).
+  const asOnInfo = receivables.asOn || payables.asOn || {};
+  const asOnWhen = fmtWhen(asOnInfo.syncedAt);
+
   return (
     <div className="ssh-dashboard" id="financials-page">
       <h2 style={{ marginBottom: 'var(--space-4)' }}>Financial Overview</h2>
       <CompanyFilterBar companies={companies} selectedCompanyId={selectedCompanyId} onChange={setSelectedCompanyId} />
 
+      <div
+        id="financials-as-on"
+        style={{
+          padding: '10px 14px',
+          marginBottom: 'var(--space-4)',
+          background: asOnInfo.isHistorical ? 'var(--warning-bg, #fff6e5)' : 'var(--card-bg)',
+          border: '1px solid var(--card-border)',
+          borderLeft: '3px solid ' + (asOnInfo.isHistorical ? 'var(--warning, #f0ad4e)' : 'var(--accent-primary)'),
+          borderRadius: 'var(--border-radius-lg)',
+          fontSize: 'var(--text-sm)',
+          color: 'var(--text-secondary)',
+          lineHeight: 1.45,
+        }}
+      >
+        <b style={{ color: 'var(--text-primary)' }}>Payables and Receivables as on {asOnWhen}</b>
+        {' \u2013 '}
+        {asOnInfo.isHistorical
+          ? <>this is the closed book <b>{asOnInfo.companyName}</b>: the balances in it when it was last synced, <b>not today's balances</b>. Pick the live company to see today.</>
+          : <>from the live book <b>{asOnInfo.companyName}</b>. These are balances on a date, so different years are <b>never added together</b> (the live book already carries earlier years' open bills forward). Net Cash Flow below is a yearly figure and is shown per year.</>}
+      </div>
+
       <div className="kpi-row stagger-children">
-        <KPICard icon={Wallet} label="Total Payable" value={abbreviateCurrency(payables.totalPayable)} color="orange" />
-        <KPICard icon={Landmark} label="Total Receivable" value={abbreviateCurrency(receivables.totalReceivable)} color="blue" />
+        <KPICard icon={Wallet} label="Total Payable" value={abbreviateCurrency(payables.totalPayable)} description={`as on ${asOnWhen}`} color="orange" />
+        <KPICard icon={Landmark} label="Total Receivable" value={abbreviateCurrency(receivables.totalReceivable)} description={`as on ${asOnWhen}`} color="blue" />
         {cashFlow.companies.map((c) => (
           <KPICard
             key={c.companyId}

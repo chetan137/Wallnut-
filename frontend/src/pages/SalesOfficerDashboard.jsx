@@ -8,7 +8,7 @@ import SalesCallsReportTable from '../components/tables/SalesCallsReportTable';
 import LogSalesCallModal from '../components/common/LogSalesCallModal';
 import DealerProductDrilldownModal from '../components/tables/DealerProductDrilldownModal';
 import { useRole } from '../context/RoleContext';
-import { abbreviateCurrency, formatNumber } from '../utils/formatters';
+import { abbreviateCurrency, formatNumber, formatMonthKey, formatPercent } from '../utils/formatters';
 import { getDailySalesSummary, getDealerPerformanceSummary } from '../utils/dataProcessors';
 import {
   ResponsiveContainer,
@@ -25,18 +25,16 @@ export default function SalesOfficerDashboard({ data }) {
     filteredVisits,
     addSalesEntry,
     addComplaintEntry,
-    allDealers
   } = useRole();
 
   // Selected Sales Officer name
   const officerName = roleConfig.scope;
 
   // Find dealers assigned to this sales officer
+  // Every dealer this officer has invoice lines for (the data passed in is already limited to the officer).
   const myDealers = useMemo(() => {
-    return allDealers
-      .filter(d => d.salesOfficer === officerName)
-      .map(d => d.name);
-  }, [allDealers, officerName]);
+    return [...new Set(data.map(r => r.partyName).filter(Boolean))];
+  }, [data]);
 
   // Determine latest transaction date in data to represent "Today" for demo purposes
   const latestDate = useMemo(() => {
@@ -50,6 +48,8 @@ export default function SalesOfficerDashboard({ data }) {
       .filter(r => r.date === latestDate)
       .reduce((sum, r) => sum + r.amount, 0);
   }, [data, latestDate]);
+
+  const monthlyLabel = useMemo(() => (latestDate ? formatMonthKey(latestDate.slice(0, 7)) : ''), [latestDate]);
 
   const monthlySales = useMemo(() => {
     const monthPrefix = latestDate.slice(0, 7); // e.g. "2025-06"
@@ -74,17 +74,52 @@ export default function SalesOfficerDashboard({ data }) {
       monthlySalesMap[monthKey] = (monthlySalesMap[monthKey] || 0) + r.amount;
     });
 
-    const months = ['2025-01', '2025-02', '2025-03', '2025-04', '2025-05', '2025-06'];
-    const monthLabels = {
-      '2025-01': 'Jan', '2025-02': 'Feb', '2025-03': 'Mar',
-      '2025-04': 'Apr', '2025-05': 'May', '2025-06': 'Jun'
-    };
-
-    return months.map(m => ({
-      month: monthLabels[m] || m,
-      amount: monthlySalesMap[m] || 0
-    }));
+    // Every month between the first and the last sale, so a month with no sales shows as 0.
+    const keys = Object.keys(monthlySalesMap).sort();
+    if (keys.length === 0) return [];
+    const out = [];
+    let [y, m] = keys[0].split('-').map(Number);
+    const [ly, lm] = keys[keys.length - 1].split('-').map(Number);
+    while (y < ly || (y === ly && m <= lm)) {
+      const key = `${y}-${String(m).padStart(2, '0')}`;
+      out.push({ month: formatMonthKey(key), amount: monthlySalesMap[key] || 0 });
+      m += 1;
+      if (m > 12) { m = 1; y += 1; }
+    }
+    return out;
   }, [data]);
+
+  // Product-wise sales of all this officer's customers together (from the customer invoices).
+  const productSalesData = useMemo(() => {
+    const map = {};
+    let total = 0;
+    data.forEach(r => {
+      const name = r.itemName || 'Other (no item on invoice)';
+      if (!map[name]) map[name] = { name, quantity: 0, units: r.units || '', amount: 0, dealers: new Set() };
+      map[name].quantity += Number(r.quantity) || 0;
+      map[name].amount += Number(r.amount) || 0;
+      if (!map[name].units && r.units) map[name].units = r.units;
+      if (r.partyName) map[name].dealers.add(r.partyName);
+      total += Number(r.amount) || 0;
+    });
+    return Object.values(map)
+      .map(p => ({ name: p.name, quantity: p.quantity, units: p.units, amount: p.amount, dealers: p.dealers.size, share: total ? (p.amount / total) * 100 : 0 }))
+      .sort((x, y) => y.amount - x.amount);
+  }, [data]);
+
+  const productColumns = [
+    { header: 'Product', accessor: 'name' },
+    { header: 'Quantity', accessor: 'quantity', numeric: true, render: (val, row) => `${formatNumber(Math.round(val))} ${row.units || ''}`.trim() },
+    { header: 'Net Sales (Excl. GST)', accessor: 'amount', numeric: true, render: (val) => abbreviateCurrency(val) },
+    { header: 'Dealers', accessor: 'dealers', numeric: true },
+    {
+      header: 'Share (%)',
+      help: "This product's net sales / total net sales of all your customers x 100.",
+      accessor: 'share',
+      numeric: true,
+      render: (val) => formatPercent(val),
+    },
+  ];
 
   // Chart 2: My Top Dealers (Amount by Party Name)
   const topDealersData = useMemo(() => {
@@ -300,7 +335,7 @@ export default function SalesOfficerDashboard({ data }) {
         />
         <KPICard
           icon={ClipboardList}
-          label="Monthly Sales (Excl. GST)"
+          label={`Sales in ${monthlyLabel} (Excl. GST)`}
           value={abbreviateCurrency(monthlySales)}
           color="blue"
         />
@@ -326,7 +361,7 @@ export default function SalesOfficerDashboard({ data }) {
             <ResponsiveContainer width="100%" height={250}>
               <LineChart data={salesTrendData} margin={{ top: 10, right: 10, left: -15, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
-                <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="month" interval={salesTrendData.length > 12 ? Math.ceil(salesTrendData.length / 8) - 1 : 0} tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={(v) => abbreviateCurrency(v)} />
                 <Tooltip formatter={(v) => abbreviateCurrency(v)} />
                 <Line type="monotone" dataKey="amount" stroke="var(--accent-primary)" strokeWidth={3} activeDot={{ r: 6 }} dot={{ strokeWidth: 2, r: 4 }} />
@@ -419,6 +454,13 @@ export default function SalesOfficerDashboard({ data }) {
           columns={dealerColumns}
           searchKey="name"
           id="dealer-summary-table"
+        />
+        <DataTable
+          title="My Product-wise Sales (all my customers)"
+          subtitle="Net sales of every product across all your customers, from the customer invoices (Excl. GST). Click a dealer above for one customer's products."
+          data={productSalesData}
+          columns={productColumns}
+          id="officer-product-sales-table"
         />
       </div>
 

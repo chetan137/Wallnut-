@@ -50,7 +50,7 @@ function pctChange(current, prev) {
 const KPI_DESCRIPTIONS = {
   sales: "Same as Tally's Sales: after discount, without GST. Credit notes are subtracted. Branch Transfer and Sample are not included.",
   dealers: 'Customers with a sales invoice or credit note in this period. Branch Transfer and Sample are not counted.',
-  outstanding: "Money customers still have to pay (Tally's pending bills) for invoices of this period. Very old bills are not included yet.",
+  outstanding: "Money customers still have to pay today (Tally's pending bills, as on the last sync) for the invoices of this period. Bills that were already cleared are not counted.",
 };
 
 const aggSales = (rows) => rows.reduce((sum, d) => sum + d.amount, 0);
