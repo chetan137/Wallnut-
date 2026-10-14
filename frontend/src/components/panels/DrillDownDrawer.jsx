@@ -1,10 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, X, Search } from 'lucide-react';
+import { ArrowLeft, X, Search, Calendar } from 'lucide-react';
 import { formatCurrency, formatNumber, formatDate } from '../../utils/formatters';
 import { invoiceList, dealerList, billList, invoiceLines } from '../../utils/ceoFilters';
 import './DrillDownDrawer.css';
 
 const MAX_ROWS = 1000;
+
+const addDays = (iso, n) => {
+  const d = new Date(`${iso}T00:00:00`);
+  d.setDate(d.getDate() + n);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
 
 const money = (v) => <span className="dd-money">{formatCurrency(v)}</span>;
 const dealerButton = (open) => (v) => (
@@ -18,11 +24,37 @@ const dealerButton = (open) => (v) => (
  *   kind 'dealers'     -> dealers         (row click: that dealer's invoices)
  *   kind 'outstanding' -> pending bills   (row click: the items of the invoice)
  */
-export default function DrillDownDrawer({ kind, rows, dealerIndex, periodLabel, onClose }) {
+export default function DrillDownDrawer({ kind, rows: allRows, dealerIndex, periodLabel, onClose }) {
   // Stack of views: [root, ...deeper]. Back goes one level up.
   const [stack, setStack] = useState([{ type: 'root' }]);
   const [search, setSearch] = useState('');
   const view = stack[stack.length - 1];
+
+  // Date filter inside the drawer, to look at recent days only. The presets count back from the
+  // newest date that has data in this list (not from today), so "Latest day" is always a real day.
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
+  const { minDate, maxDate } = useMemo(() => {
+    let lo = '', hi = '';
+    for (const r of allRows) {
+      if (!r.date) continue;
+      if (!lo || r.date < lo) lo = r.date;
+      if (r.date > hi) hi = r.date;
+    }
+    return { minDate: lo, maxDate: hi };
+  }, [allRows]);
+  const rows = useMemo(
+    () => (from || to ? allRows.filter((r) => (!from || r.date >= from) && (!to || r.date <= to)) : allRows),
+    [allRows, from, to]
+  );
+  const preset = (days) => {
+    setSearch('');
+    setStack([{ type: 'root' }]);
+    if (days == null) { setFrom(''); setTo(''); return; }
+    setFrom(addDays(maxDate, -(days - 1)));
+    setTo(maxDate);
+  };
+  const dateFiltered = Boolean(from || to);
 
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
@@ -156,6 +188,26 @@ export default function DrillDownDrawer({ kind, rows, dealerIndex, periodLabel, 
           <label className="dd-search"><Search size={13} />
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search in this list…" />
           </label>
+        </div>
+
+        <div className="dd-datebar">
+          <Calendar size={13} />
+          <span className="dd-datebar-label">Dates</span>
+          {[['Latest day', 1], ['Last 7 days', 7], ['Last 30 days', 30], ['All', null]].map(([label, days]) => (
+            <button
+              key={label}
+              type="button"
+              className={`dd-chip${(days == null ? !dateFiltered : (to === maxDate && from === addDays(maxDate, -(days - 1)))) ? ' active' : ''}`}
+              onClick={() => preset(days)}
+              disabled={!maxDate}
+            >
+              {label}
+            </button>
+          ))}
+          <input type="date" value={from} min={minDate} max={to || maxDate} onChange={(e) => setFrom(e.target.value)} aria-label="From date" />
+          <span className="dd-datebar-to">to</span>
+          <input type="date" value={to} min={from || minDate} max={maxDate} onChange={(e) => setTo(e.target.value)} aria-label="To date" />
+          {dateFiltered && <span className="dd-datebar-note">Part of the card total: only the dates chosen.</span>}
         </div>
 
         <div className="dd-table-wrap">
