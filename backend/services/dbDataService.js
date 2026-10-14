@@ -442,6 +442,51 @@ async function fetchFinancials({ companyId } = {}) {
     console.warn('[fetchFinancials] Balance Sheet Current Assets unavailable, using Trial Balance:', err.message);
   }
 
+  // Details for the pop-ups on the Financials cards (additive: nothing above is changed).
+  //   balanceSheetLines  every group of Tally's Balance Sheet (newest day), Cr-positive / Dr-negative
+  //   history            the last 30 days of balance-sheet figures, newest first. Current Assets comes
+  //                      from the Balance Sheet report only (it differs from the Trial Balance), the
+  //                      others from the Trial Balance snapshots; a day without a value is null.
+  for (const entry of Object.values(byCompany)) { entry.balanceSheetLines = []; entry.balanceSheetDate = null; entry.history = []; }
+  try {
+    const { rows: tbHist } = await query(`
+      SELECT tbg.company_id AS "companyId", tbg.period_to::text AS "date", tbg.group_name AS "groupName", tbg.net_balance AS "netBalance"
+      FROM trial_balance_groups tbg
+      WHERE tbg.group_name IN ('Current Liabilities', 'Fixed Assets', 'Capital Account', 'Loans (Liability)')
+        AND tbg.period_to >= (SELECT MAX(t2.period_to) FROM trial_balance_groups t2 WHERE t2.company_id = tbg.company_id) - 30
+        ${bsCompanyFilter}`, bsParams);
+    const { rows: bsHist } = await query(`
+      SELECT b.company_id AS "companyId", b.period_to::text AS "date", b.group_name AS "groupName", b.main_amount AS "amount"
+      FROM balance_sheet_groups b
+      WHERE b.period_to >= (SELECT MAX(b2.period_to) FROM balance_sheet_groups b2 WHERE b2.company_id = b.company_id) - 30
+        ${companyId ? 'AND b.company_id = $1' : ''}`, bsParams);
+
+    const days = {}; // companyId -> date -> row
+    const dayOf = (cid, date) => {
+      days[cid] = days[cid] || {};
+      return (days[cid][date] = days[cid][date] || { date, currentAssets: null, currentLiabilities: null, fixedAssets: null, loans: null, capitalAccount: null });
+    };
+    const tbField = { 'Current Liabilities': 'currentLiabilities', 'Fixed Assets': 'fixedAssets', 'Capital Account': 'capitalAccount', 'Loans (Liability)': 'loans' };
+    for (const r of tbHist) {
+      const v = Number(r.netBalance);
+      dayOf(r.companyId, r.date)[tbField[r.groupName]] = r.groupName === 'Fixed Assets' ? Math.abs(v) : v;
+    }
+    const newestBs = {};
+    for (const r of bsHist) {
+      if (r.groupName === 'Current Assets') dayOf(r.companyId, r.date).currentAssets = Math.abs(Number(r.amount));
+      if (!newestBs[r.companyId] || r.date > newestBs[r.companyId]) newestBs[r.companyId] = r.date;
+    }
+    for (const r of bsHist) {
+      const e = byCompany[r.companyId];
+      if (e && r.date === newestBs[r.companyId]) { e.balanceSheetLines.push({ groupName: r.groupName, amount: Number(r.amount) }); e.balanceSheetDate = r.date; }
+    }
+    for (const [cid, perDay] of Object.entries(days)) {
+      if (byCompany[cid]) byCompany[cid].history = Object.values(perDay).sort((x, y) => (x.date < y.date ? 1 : -1));
+    }
+  } catch (err) {
+    console.warn('[fetchFinancials] card details unavailable:', err.message);
+  }
+
   return { source: 'db', companies: Object.values(byCompany) };
 }
 

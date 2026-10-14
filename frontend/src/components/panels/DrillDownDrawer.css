@@ -130,3 +130,8 @@
 }
 .dd-chip.active { background: var(--accent-primary); border-color: var(--accent-primary); color: #fff; }
 .dd-chip:disabled { opacity: 0.4; cursor: default; }
+
+.dd-note { margin: var(--space-3) 0; padding: var(--space-2) var(--space-3); background: var(--bg-main); border-radius: var(--radius-md); font-size: var(--text-sm); line-height: 1.5; color: var(--text-primary); }
+.dd-section { margin: var(--space-4) 0 var(--space-2); font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); }
+.dd-table tr.dd-row-main td { background: var(--bg-main); font-weight: 600; }
+.dd-table tr.dd-row-total td { border-top: 2px solid var(--card-border); font-weight: 700; }

@@ -7,6 +7,7 @@ import ChartCard from '../components/common/ChartCard';
 import DataTable from '../components/common/DataTable';
 import KPICard from '../components/cards/KPICard';
 import TabBar from '../components/common/TabBar';
+import FinancialDetailDrawer from '../components/panels/FinancialDetailDrawer';
 import CompanyFilterBar, { useCompanyList } from '../components/common/CompanyFilterBar';
 import { SkeletonKPIRow, SkeletonChartCard, SkeletonTable } from '../components/common/Skeleton';
 import { abbreviateCurrency, formatCurrency, formatNumber, formatDate } from '../utils/formatters';
@@ -135,6 +136,8 @@ export default function FinancialsPage() {
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
   const { payables, receivables, cashFlow, financials, creditTerms, loading, error } = useFinancialsData(selectedCompanyId);
   const [activeTab, setActiveTab] = useState('payables');
+  // Pop-up behind a P&L / Balance Sheet card: { card, company }
+  const [financialDetail, setFinancialDetail] = useState(null);
 
   // GST & TDS return periods are always a specific month/quarter — its own
   // date range, independent of the rest of this page.
@@ -436,6 +439,10 @@ export default function FinancialsPage() {
         </>
       )}
 
+      {financialDetail && (
+        <FinancialDetailDrawer card={financialDetail.card} company={financialDetail.company} onClose={() => setFinancialDetail(null)} />
+      )}
+
       {activeTab === 'plbs' && financials.companies.map((c) => (
         <ChartCard
           key={c.companyId}
@@ -444,16 +451,16 @@ export default function FinancialsPage() {
           style={{ marginBottom: 'var(--space-4)' }}
         >
           <div className="kpi-row stagger-children" style={{ marginBottom: 'var(--space-3)' }}>
-            <KPICard icon={TrendingUp} label="Revenue" value={abbreviateCurrency(c.pl.revenue)} description={formatCurrency(c.pl.revenue)} color="green" />
-            <KPICard icon={TrendingDown} label="Cost of Sales" value={abbreviateCurrency(Math.abs(c.pl.costOfSales))} description={formatCurrency(Math.abs(c.pl.costOfSales))} color="red" />
-            <KPICard icon={FileText} label="Gross Profit" value={abbreviateCurrency(c.pl.grossProfit)} description={formatCurrency(c.pl.grossProfit)} color={c.pl.grossProfit >= 0 ? 'green' : 'red'} />
-            <KPICard icon={AlertTriangle} label="Net Profit" value={abbreviateCurrency(c.pl.netProfit)} description={formatCurrency(c.pl.netProfit)} color={c.pl.netProfit >= 0 ? 'green' : 'red'} />
+            <KPICard icon={TrendingUp} label="Revenue" onClick={() => setFinancialDetail({ card: 'revenue', company: c })} value={abbreviateCurrency(c.pl.revenue)} description={formatCurrency(c.pl.revenue)} color="green" />
+            <KPICard icon={TrendingDown} label="Cost of Sales" onClick={() => setFinancialDetail({ card: 'costOfSales', company: c })} value={abbreviateCurrency(Math.abs(c.pl.costOfSales))} description={formatCurrency(Math.abs(c.pl.costOfSales))} color="red" />
+            <KPICard icon={FileText} label="Gross Profit" onClick={() => setFinancialDetail({ card: 'grossProfit', company: c })} value={abbreviateCurrency(c.pl.grossProfit)} description={formatCurrency(c.pl.grossProfit)} color={c.pl.grossProfit >= 0 ? 'green' : 'red'} />
+            <KPICard icon={AlertTriangle} label="Net Profit" onClick={() => setFinancialDetail({ card: 'netProfit', company: c })} value={abbreviateCurrency(c.pl.netProfit)} description={formatCurrency(c.pl.netProfit)} color={c.pl.netProfit >= 0 ? 'green' : 'red'} />
           </div>
           <div className="kpi-row stagger-children">
-            <KPICard icon={Landmark} label="Current Assets" value={abbreviateCurrency(c.balanceSheet.currentAssets)} description={formatCurrency(c.balanceSheet.currentAssets)} color="blue" />
-            <KPICard icon={Landmark} label="Current Liabilities" value={abbreviateCurrency(c.balanceSheet.currentLiabilities)} description={formatCurrency(c.balanceSheet.currentLiabilities)} color="orange" />
-            <KPICard icon={Landmark} label="Fixed Assets" value={abbreviateCurrency(c.balanceSheet.fixedAssets)} description={formatCurrency(c.balanceSheet.fixedAssets)} color="blue" />
-            <KPICard icon={Wallet} label="Loans + Capital" value={abbreviateCurrency(c.balanceSheet.loans + c.balanceSheet.capitalAccount)} description={formatCurrency(c.balanceSheet.loans + c.balanceSheet.capitalAccount)} color="orange" />
+            <KPICard icon={Landmark} label="Current Assets" onClick={() => setFinancialDetail({ card: 'currentAssets', company: c })} value={abbreviateCurrency(c.balanceSheet.currentAssets)} description={formatCurrency(c.balanceSheet.currentAssets)} color="blue" />
+            <KPICard icon={Landmark} label="Current Liabilities" onClick={() => setFinancialDetail({ card: 'currentLiabilities', company: c })} value={abbreviateCurrency(c.balanceSheet.currentLiabilities)} description={formatCurrency(c.balanceSheet.currentLiabilities)} color="orange" />
+            <KPICard icon={Landmark} label="Fixed Assets" onClick={() => setFinancialDetail({ card: 'fixedAssets', company: c })} value={abbreviateCurrency(c.balanceSheet.fixedAssets)} description={formatCurrency(c.balanceSheet.fixedAssets)} color="blue" />
+            <KPICard icon={Wallet} label="Loans + Capital" onClick={() => setFinancialDetail({ card: 'loansCapital', company: c })} value={abbreviateCurrency(c.balanceSheet.loans + c.balanceSheet.capitalAccount)} description={formatCurrency(c.balanceSheet.loans + c.balanceSheet.capitalAccount)} color="orange" />
           </div>
         </ChartCard>
       ))}
