@@ -75,7 +75,7 @@ function getYearlyKPIMetrics(allData, selectedYear) {
 
   const salesTrend = prevYearRows.length > 0 ? pctChange(aggSales(currentYearRows), aggSales(prevYearRows)) : null;
   const dealersTrend = prevYearRows.length > 0 ? pctChange(aggDealers(currentYearRows), aggDealers(prevYearRows)) : null;
-  const outstandingTrend = prevYearRows.length > 0 ? pctChange(aggOutstanding(currentYearRows), aggOutstanding(prevYearRows)) : null;
+  // No Outstanding trend: it is a balance as on today, so a % against an earlier period means nothing.
 
   const scopedData = selectedYear === 'All'
     ? allData
@@ -89,7 +89,6 @@ function getYearlyKPIMetrics(allData, selectedYear) {
   const monthsInScope = [...new Set(scopedData.map(d => d.date.slice(0, 7)).filter(m => m && m.length === 7))].sort();
   let salesTrendMonth = null;
   let dealersTrendMonth = null;
-  let outstandingTrendMonth = null;
 
   if (monthsInScope.length > 0) {
     const currentMonth = monthsInScope[monthsInScope.length - 1]; // e.g. "2026-06"
@@ -122,7 +121,6 @@ function getYearlyKPIMetrics(allData, selectedYear) {
 
       salesTrendMonth = pctChange(aggSales(currentMonthRows), aggSales(prevMonthRows));
       dealersTrendMonth = pctChange(aggDealers(currentMonthRows), aggDealers(prevMonthRows));
-      outstandingTrendMonth = pctChange(aggOutstanding(currentMonthRows), aggOutstanding(prevMonthRows));
     }
   }
 
@@ -134,8 +132,8 @@ function getYearlyKPIMetrics(allData, selectedYear) {
     salesTrendMonth,
     dealersTrend,
     dealersTrendMonth,
-    outstandingTrend,
-    outstandingTrendMonth,
+    outstandingTrend: null,
+    outstandingTrendMonth: null,
   };
 }
 

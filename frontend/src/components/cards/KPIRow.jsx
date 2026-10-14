@@ -15,7 +15,10 @@ export default function KPIRow({ metrics, isYearly = false, showBothTrends = fal
 
   const salesTrends = asTrends(metrics.salesTrendMonth, metrics.salesTrend);
   const dealersTrends = asTrends(metrics.dealersTrendMonth, metrics.dealersTrend);
-  const outstandingTrends = asTrends(metrics.outstandingTrendMonth, metrics.outstandingTrend);
+  // Outstanding is a balance as on today, not a flow: no trend line when there is nothing to compare.
+  const outstandingTrends = metrics.outstandingTrendMonth == null && metrics.outstandingTrend == null
+    ? null
+    : asTrends(metrics.outstandingTrendMonth, metrics.outstandingTrend);
 
   return (
     <div className="kpi-row stagger-children" id="kpi-row">

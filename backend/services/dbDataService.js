@@ -180,6 +180,17 @@ async function fetchInventory({ companyId } = {}) {
   return summarizeInventory(records, 'db');
 }
 
+// Overdue days are worked out from the due date and TODAY, here, every time. The overdue_days column the
+// sync stores is Tally's own count and is as of Tally's report date (31 Oct on 14 Oct), so a bill that is
+// not due yet showed as overdue. A bill that is not due yet is 0.
+const OVERDUE_NOW = 'GREATEST((CURRENT_DATE - due_date), 0)';
+
+// Both Tally companies hold a copy of every pending bill (the closed year's copy is an old snapshot), so a
+// total over "all companies" counted bills twice and included bills paid since. Without an explicit
+// company, use the current (not historical) company's bills only.
+const CURRENT_COMPANY_BILLS = `(company_id IN (SELECT id FROM companies WHERE is_historical = false)
+  OR NOT EXISTS (SELECT 1 FROM companies WHERE is_historical = false))`;
+
 /**
  * Vendor-wise payables — the mirror of fetchOutstanding, but money the
  * company owes rather than is owed. Sourced from outstanding_payables
@@ -206,16 +217,16 @@ async function fetchPayables({ companyId } = {}) {
   const { rows: aging } = await query(`
     SELECT
       CASE
-        WHEN overdue_days <= 0  THEN 'Not Due'
-        WHEN overdue_days <= 30 THEN '1-30 days'
-        WHEN overdue_days <= 60 THEN '31-60 days'
-        WHEN overdue_days <= 90 THEN '61-90 days'
+        WHEN ${OVERDUE_NOW} <= 0  THEN 'Not Due'
+        WHEN ${OVERDUE_NOW} <= 30 THEN '1-30 days'
+        WHEN ${OVERDUE_NOW} <= 60 THEN '31-60 days'
+        WHEN ${OVERDUE_NOW} <= 90 THEN '61-90 days'
         ELSE '90+ days'
       END AS bucket,
       COUNT(*) AS "billCount",
       SUM(amount) AS "amount"
     FROM bills_payable
-    WHERE 1=1 ${companyFilter}
+    WHERE ${companyId ? '1=1' : CURRENT_COMPANY_BILLS} ${companyFilter}
     GROUP BY 1
   `, params);
 
@@ -249,7 +260,7 @@ async function fetchReceivablesAging({ companyId } = {}) {
   const { rows: parties } = await query(`
     SELECT party_name AS "partyName", SUM(amount) AS "amountReceivable", COUNT(*) AS "billCount"
     FROM bills_receivable
-    WHERE 1=1 ${companyFilter}
+    WHERE ${companyId ? '1=1' : CURRENT_COMPANY_BILLS} ${companyFilter}
     GROUP BY party_name
     ORDER BY "amountReceivable" DESC
   `, params);
@@ -257,16 +268,16 @@ async function fetchReceivablesAging({ companyId } = {}) {
   const { rows: aging } = await query(`
     SELECT
       CASE
-        WHEN overdue_days <= 0  THEN 'Not Due'
-        WHEN overdue_days <= 30 THEN '1-30 days'
-        WHEN overdue_days <= 60 THEN '31-60 days'
-        WHEN overdue_days <= 90 THEN '61-90 days'
+        WHEN ${OVERDUE_NOW} <= 0  THEN 'Not Due'
+        WHEN ${OVERDUE_NOW} <= 30 THEN '1-30 days'
+        WHEN ${OVERDUE_NOW} <= 60 THEN '31-60 days'
+        WHEN ${OVERDUE_NOW} <= 90 THEN '61-90 days'
         ELSE '90+ days'
       END AS bucket,
       COUNT(*) AS "billCount",
       SUM(amount) AS "amount"
     FROM bills_receivable
-    WHERE 1=1 ${companyFilter}
+    WHERE ${companyId ? '1=1' : CURRENT_COMPANY_BILLS} ${companyFilter}
     GROUP BY 1
   `, params);
 
@@ -772,6 +783,9 @@ async function fetchCreditTermsCompliance({ companyId } = {}) {
     companyFilter = ` AND br.company_id = $${params.length}`;
   }
 
+  // The bill's voucher is found by party + bill number across companies (a bill of an earlier year is in
+  // the current company's list but its voucher is in the closed year's company); if the number sits on more
+  // than one voucher row, the newest row that has a credit period is used. Overdue days = today - due date.
   const { rows } = await query(`
     SELECT
       br.party_name          AS "partyName",
@@ -779,14 +793,19 @@ async function fetchCreditTermsCompliance({ companyId } = {}) {
       br.bill_date             AS "billDate",
       br.amount                AS "amount",
       br.due_date              AS "dueDate",
-      br.overdue_days          AS "overdueDays",
+      GREATEST((CURRENT_DATE - br.due_date), 0)::int AS "overdueDays",
       v.credit_period_label    AS "creditPeriodLabel",
       v.credit_period_days     AS "creditPeriodDays"
     FROM bills_receivable br
-    JOIN vouchers v
-      ON v.company_id = br.company_id AND v.vch_no = br.bill_ref AND LOWER(v.vch_type) LIKE 'sales%'
-    WHERE v.credit_period_days IS NOT NULL ${companyFilter}
-    ORDER BY br.overdue_days DESC
+    JOIN LATERAL (
+      SELECT x.credit_period_label, x.credit_period_days FROM vouchers x
+      WHERE x.vch_no = br.bill_ref AND x.party_name = br.party_name
+        AND LOWER(x.vch_type) LIKE 'sales%' AND LOWER(x.vch_type) NOT LIKE 'sales order%'
+        AND x.credit_period_days IS NOT NULL
+      ORDER BY x.synced_at DESC LIMIT 1
+    ) v ON true
+    WHERE ${companyId ? '1=1' : CURRENT_COMPANY_BILLS.replace(/company_id/g, 'br.company_id')} ${companyFilter}
+    ORDER BY "overdueDays" DESC
   `, params);
 
   const byParty = {};
