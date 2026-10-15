@@ -19,6 +19,8 @@ import SalesCallsReportTable from '../components/tables/SalesCallsReportTable';
 import ChartCard from '../components/common/ChartCard';
 import TabBar from '../components/common/TabBar';
 import { useRole } from '../context/RoleContext';
+import { useAuth } from '../context/AuthContext';
+import { Download } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { abbreviateCurrency } from '../utils/formatters';
 import { STATES_WITH_DISTRICT_MAP } from '../utils/districtNames';
@@ -222,7 +224,8 @@ const DASHBOARD_TABS = [
 // reuse this exact dashboard on the state(s) / district the CEO assigned (the data passed in is already
 // limited to them).
 export default function CEODashboard({ data, scopeLabel = 'All-India', controlTitle = 'CEO VIEW SCOPE SELECTOR', stateView = false, districtView = false }) {
-  const { filteredComplaints, filteredVisits, filteredNonSalesInvoices, clearFilters } = useRole();
+  const { filteredComplaints, filteredVisits, filteredNonSalesInvoices, clearFilters, lastSync } = useRole();
+  const { currentUser } = useAuth();
   // Defaults to "All" rather than a hardcoded year — real synced Tally data
   // won't necessarily fall in whatever year this was last hardcoded to
   // (e.g. real vouchers dated 2025 while this defaulted to 2026), which
@@ -314,6 +317,46 @@ export default function CEODashboard({ data, scopeLabel = 'All-India', controlTi
     return parts.join(' · ');
   }, [selectedYear, ceoFilters]);
 
+  // PDF report of exactly what the filters show (loaded only when the button is used)
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const officerName = useMemo(() => {
+    if (!ceoFilters.officer) return '';
+    for (const d of dealerIndex.values()) if (d.officerKey === ceoFilters.officer) return d.officer;
+    return ceoFilters.officer;
+  }, [ceoFilters.officer, dealerIndex]);
+  const downloadPdf = async () => {
+    setPdfBusy(true);
+    try {
+      const { buildCeoReport } = await import('../utils/ceoReportPdf');
+      const { blob, fileName } = await buildCeoReport({
+        title: 'Sales & Outstanding Report',
+        scopeLabel,
+        yearLabel: selectedYear === 'All' ? 'All years' : `FY ${selectedYear}`,
+        filters: ceoFilters,
+        officerName,
+        rows: filteredData,
+        nonSalesRows: selectedYear === 'All' ? nonSalesRows : nonSalesRows.filter((r) => fiscalYearOfDate(r.date) === selectedYear),
+        dealerIndex,
+        metrics,
+        lastSync: lastSync || '',
+        preparedBy: currentUser?.name || '',
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    } catch (err) {
+      console.error('PDF report failed', err);
+      window.alert('Could not create the PDF report. Please try again.');
+    } finally {
+      setPdfBusy(false);
+    }
+  };
+
   return (
     <div className="ssh-dashboard" id="ceo-dashboard">
       <div className="dashboard-control-bar ceo-control-bar">
@@ -334,6 +377,19 @@ export default function CEODashboard({ data, scopeLabel = 'All-India', controlTi
               <option key={year} value={year}>FY {year}</option>
             ))}
           </select>
+          {view === 'ceo' && (
+            <button
+              type="button"
+              className={`header-sync-btn ${pdfBusy ? 'spinning' : ''}`}
+              onClick={downloadPdf}
+              disabled={pdfBusy || filteredData.length === 0}
+              title="Download a PDF report of everything shown for the filters chosen"
+              style={{ marginLeft: 'var(--space-3)' }}
+            >
+              <Download size={14} />
+              <span>{pdfBusy ? 'Preparing PDF…' : 'Download PDF report'}</span>
+            </button>
+          )}
         </div>
       </div>
 
