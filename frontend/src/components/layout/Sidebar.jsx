@@ -11,6 +11,9 @@ export default function Sidebar({ isOpen, onClose }) {
     setRole,
     selectedState,
     setSelectedState,
+    assignedStates,
+    headStatePick,
+    setHeadStatePick,
     selectedDistrict,
     setSelectedDistrict,
     selectedSalesMan,
@@ -153,8 +156,29 @@ export default function Sidebar({ isOpen, onClose }) {
           </div>
         )}
 
-        {/* State Selector (Visible only for State Sales Head role) */}
-        {currentRole === ROLES.STATE_SALES_HEAD && (
+        {/* State Head with states assigned in User Management: pick one of THEIR states, or all of them */}
+        {currentRole === ROLES.STATE_SALES_HEAD && assignedStates && (
+          <div className="sidebar-control-group">
+            <label className="sidebar-control-label" htmlFor="state-selector">State Scope</label>
+            <select
+              className="sidebar-role-select"
+              value={assignedStates.includes(headStatePick) ? headStatePick : ''}
+              onChange={(e) => {
+                setHeadStatePick(e.target.value);
+                if (onClose) onClose();
+              }}
+              id="state-selector"
+            >
+              <option value="">{assignedStates.length > 1 ? `All my states (${assignedStates.length})` : assignedStates[0]}</option>
+              {assignedStates.length > 1 && assignedStates.map(s => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* State Selector (State Sales Head role previewed by the CEO: any state) */}
+        {currentRole === ROLES.STATE_SALES_HEAD && !assignedStates && (
           <div className="sidebar-control-group">
             <label className="sidebar-control-label" htmlFor="state-selector">State Scope</label>
             <select

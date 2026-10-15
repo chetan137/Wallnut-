@@ -414,10 +414,13 @@ export function RoleProvider({ children }) {
       ? currentUser.states : null),
     [currentUser]
   );
-  const stateScope = useMemo(
-    () => assignedStates || (selectedState ? [selectedState] : []),
-    [assignedStates, selectedState]
-  );
+  // A State Sales Head with several assigned states can narrow the view to ONE of them from Scope Control
+  // ('' = all of their states together). Not stored: it opens on "all" every time.
+  const [headStatePick, setHeadStatePick] = useState('');
+  const stateScope = useMemo(() => {
+    if (assignedStates) return assignedStates.includes(headStatePick) ? [headStatePick] : assignedStates;
+    return selectedState ? [selectedState] : [];
+  }, [assignedStates, headStatePick, selectedState]);
 
   // Baseline scoped datasets (before global filters)
   // Same role scoping for sales rows and for Branch Transfer / Sample rows,
@@ -636,8 +639,8 @@ export function RoleProvider({ children }) {
       case ROLES.STATE_SALES_HEAD:
         return {
           label: 'State Sales Head',
-          description: `${stateScope.join(', ')} State`,
-          scope: `${stateScope.join(', ')} Branch`,
+          description: stateScope.length > 3 ? `${stateScope.length} states` : `${stateScope.join(', ')} State`,
+          scope: stateScope.length > 3 ? `All ${stateScope.length} states` : `${stateScope.join(', ')} Branch`,
         };
       case ROLES.DISTRICT_MANAGER:
         return {
@@ -669,6 +672,8 @@ export function RoleProvider({ children }) {
     selectedState,
     setSelectedState,
     assignedStates,
+    headStatePick,
+    setHeadStatePick,
     stateScope,
     selectedDistrict,
     setSelectedDistrict,
@@ -710,6 +715,7 @@ export function RoleProvider({ children }) {
     currentRole,
     selectedState,
     assignedStates,
+    headStatePick,
     stateScope,
     selectedDistrict,
     selectedSalesMan,
