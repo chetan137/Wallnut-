@@ -76,6 +76,19 @@ export default function ManageUsers() {
     states: f.states.includes(s) ? f.states.filter((x) => x !== s) : [...f.states, s],
   }));
 
+  // A State Sales Head starts with ALL states ticked (like the CEO) - untick the ones they should not see.
+  // Only fills in when nothing is chosen yet, so a saved person's own states are never overwritten.
+  const changeRole = (e) => {
+    const role = e.target.value;
+    setForm((f) => ({
+      ...f,
+      role,
+      states: role === ROLES.STATE_SALES_HEAD && f.states.length === 0 ? [...allStates] : f.states,
+    }));
+  };
+  const selectAllStates = () => setForm((f) => ({ ...f, states: [...new Set([...allStates, ...f.states])] }));
+  const clearStates = () => setForm((f) => ({ ...f, states: [] }));
+
   // Picking a sales person from the Tally list also fills in their area.
   const pickSalesMan = (e) => {
     const name = e.target.value;
@@ -215,7 +228,7 @@ export default function ManageUsers() {
 
               <div className="login-field">
                 <label className="login-label">2. Role</label>
-                <select value={form.role} onChange={set('role')}>
+                <select value={form.role} onChange={changeRole}>
                   {ROLE_HIERARCHY.map((r) => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
                 </select>
               </div>
@@ -223,6 +236,11 @@ export default function ManageUsers() {
               {form.role === ROLES.STATE_SALES_HEAD && (
                 <div className="login-field">
                   <label className="login-label">3. States this person can see (one or more)</label>
+                  <div className="um-state-actions">
+                    <button type="button" className="um-link-btn" onClick={selectAllStates}>Select all states</button>
+                    <button type="button" className="um-link-btn" onClick={clearStates}>Clear</button>
+                    <span className="um-hint">{form.states.length} of {new Set([...allStates, ...form.states]).size} selected</span>
+                  </div>
                   <div className="um-state-grid">
                     {[...new Set([...allStates, ...form.states])].map((st) => (
                       <label key={st} className={`um-state-chip ${form.states.includes(st) ? 'on' : ''}`}>

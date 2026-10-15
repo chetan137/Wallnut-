@@ -294,3 +294,7 @@
 .um-state-chip input { margin: 0; accent-color: var(--accent-primary); }
 .um-state-chip.on { border-color: var(--accent-primary); background: rgba(130, 178, 44, 0.12); color: var(--text-primary); font-weight: 600; }
 .um-hint { font-size: 11px; color: var(--danger, #c0392b); margin-top: 4px; display: block; }
+
+.um-state-actions { display: flex; align-items: center; gap: var(--space-3); margin: 4px 0 var(--space-2); }
+.um-link-btn { border: 0; background: none; padding: 0; color: var(--accent-primary); font: inherit; font-size: var(--text-sm); font-weight: 600; cursor: pointer; }
+.um-link-btn:hover { text-decoration: underline; }
