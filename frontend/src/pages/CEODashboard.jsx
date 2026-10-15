@@ -318,18 +318,20 @@ export default function CEODashboard({ data, scopeLabel = 'All-India', controlTi
   }, [selectedYear, ceoFilters]);
 
   // PDF report of exactly what the filters show (loaded only when the button is used)
-  const [pdfBusy, setPdfBusy] = useState(false);
+  const [pdfBusy, setPdfBusy] = useState(''); // '' | 'full' | 'sales' | 'dealers' | 'outstanding'
   const officerName = useMemo(() => {
     if (!ceoFilters.officer) return '';
     for (const d of dealerIndex.values()) if (d.officerKey === ceoFilters.officer) return d.officer;
     return ceoFilters.officer;
   }, [ceoFilters.officer, dealerIndex]);
-  const downloadPdf = async () => {
-    setPdfBusy(true);
+  const downloadPdf = async (section = 'full') => {
+    if (pdfBusy) return;
+    setPdfBusy(section);
     try {
       const { buildCeoReport } = await import('../utils/ceoReportPdf');
       const { blob, fileName } = await buildCeoReport({
-        title: 'Sales & Outstanding Report',
+        title: { sales: 'Net Sales Report', dealers: 'Active Dealers Report', outstanding: 'Outstanding Report', full: 'Sales & Outstanding Report' }[section],
+        section,
         scopeLabel,
         yearLabel: selectedYear === 'All' ? 'All years' : `FY ${selectedYear}`,
         filters: ceoFilters,
@@ -353,7 +355,7 @@ export default function CEODashboard({ data, scopeLabel = 'All-India', controlTi
       console.error('PDF report failed', err);
       window.alert('Could not create the PDF report. Please try again.');
     } finally {
-      setPdfBusy(false);
+      setPdfBusy('');
     }
   };
 
@@ -380,14 +382,14 @@ export default function CEODashboard({ data, scopeLabel = 'All-India', controlTi
           {view === 'ceo' && (
             <button
               type="button"
-              className={`header-sync-btn ${pdfBusy ? 'spinning' : ''}`}
-              onClick={downloadPdf}
-              disabled={pdfBusy || filteredData.length === 0}
+              className={`header-sync-btn ${pdfBusy === 'full' ? 'spinning' : ''}`}
+              onClick={() => downloadPdf('full')}
+              disabled={Boolean(pdfBusy) || filteredData.length === 0}
               title="Download a PDF report of everything shown for the filters chosen"
               style={{ marginLeft: 'var(--space-3)' }}
             >
               <Download size={14} />
-              <span>{pdfBusy ? 'Preparing PDF…' : 'Download PDF report'}</span>
+              <span>{pdfBusy === 'full' ? 'Preparing PDF…' : 'Download PDF report'}</span>
             </button>
           )}
         </div>
@@ -400,6 +402,12 @@ export default function CEODashboard({ data, scopeLabel = 'All-India', controlTi
         isYearly={true}
         showBothTrends={true}
         descriptions={KPI_DESCRIPTIONS}
+        downloading={pdfBusy}
+        onCardDownload={view === 'ceo' && filteredData.length > 0 ? {
+          sales: () => downloadPdf('sales'),
+          dealers: () => downloadPdf('dealers'),
+          outstanding: () => downloadPdf('outstanding'),
+        } : {}}
         onCardClick={{
           sales: () => setDrill('sales'),
           dealers: () => setDrill('dealers'),

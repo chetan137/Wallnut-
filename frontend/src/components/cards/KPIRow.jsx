@@ -2,7 +2,7 @@ import { IndianRupee, Users, AlertCircle } from 'lucide-react';
 import KPICard from './KPICard';
 import { abbreviateCurrency, formatNumber } from '../../utils/formatters';
 
-export default function KPIRow({ metrics, isYearly = false, showBothTrends = false, descriptions = {}, onCardClick = {} }) {
+export default function KPIRow({ metrics, isYearly = false, showBothTrends = false, descriptions = {}, onCardClick = {}, onCardDownload = {}, downloading = '' }) {
   const trendLabel = isYearly ? 'vs last year' : 'vs last month';
 
   // What the +/- % on each card means (matches the calculation in CEODashboard).
@@ -32,6 +32,8 @@ export default function KPIRow({ metrics, isYearly = false, showBothTrends = fal
         trends={salesTrends}
         color="green"
         onClick={onCardClick.sales}
+        onDownload={onCardDownload.sales}
+        downloading={downloading === 'sales'}
       />
       <KPICard
         icon={Users}
@@ -43,6 +45,8 @@ export default function KPIRow({ metrics, isYearly = false, showBothTrends = fal
         trends={dealersTrends}
         color="blue"
         onClick={onCardClick.dealers}
+        onDownload={onCardDownload.dealers}
+        downloading={downloading === 'dealers'}
       />
       <KPICard
         icon={AlertCircle}
@@ -54,6 +58,8 @@ export default function KPIRow({ metrics, isYearly = false, showBothTrends = fal
         trends={outstandingTrends}
         color="orange"
         onClick={onCardClick.outstanding}
+        onDownload={onCardDownload.outstanding}
+        downloading={downloading === 'outstanding'}
       />
     </div>
   );

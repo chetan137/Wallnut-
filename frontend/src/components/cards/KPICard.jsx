@@ -1,8 +1,8 @@
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { TrendingUp, TrendingDown, Download } from 'lucide-react';
 import HelpTip from '../common/HelpTip';
 import './KPICard.css';
 
-export default function KPICard({ icon: Icon, label, value, description, trend, trendLabel, trends, color = 'green', onClick }) {
+export default function KPICard({ icon: Icon, label, value, description, trend, trendLabel, trends, color = 'green', onClick, onDownload, downloading = false }) {
   const isPositive = trend >= 0;
 
   return (
@@ -21,6 +21,20 @@ export default function KPICard({ icon: Icon, label, value, description, trend, 
         <div className={`kpi-card-icon ${color}`}>
           <Icon size={20} />
         </div>
+        {onDownload && (
+          <button
+            type="button"
+            className={`kpi-card-download ${downloading ? 'busy' : ''}`}
+            disabled={downloading}
+            title="Download a PDF of this card for the filters chosen"
+            aria-label={`Download ${label} as PDF`}
+            onClick={(e) => { e.stopPropagation(); onDownload(); }}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
+            <Download size={13} />
+            <span>{downloading ? 'Preparing…' : 'PDF'}</span>
+          </button>
+        )}
         {!trends && trend != null && (
           <div className={`kpi-card-trend ${isPositive ? 'up' : 'down'}`}>
             {isPositive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}

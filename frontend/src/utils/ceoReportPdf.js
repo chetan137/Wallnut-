@@ -157,6 +157,7 @@ const tableDefaults = (marginX) => ({
 /**
  * @param {object} o
  * @param {string}   o.title        report title
+ * @param {string}   o.section      'full' (default) or one card: 'sales' | 'dealers' | 'outstanding'
  * @param {string}   o.scopeLabel   e.g. "All-India" or the state(s) of a State Head
  * @param {string}   o.yearLabel    "All years" / "FY 26-27"
  * @param {object}   o.filters      the CEO filter values (fromDate, toDate, state, district, city, officer, dealer)
@@ -171,6 +172,7 @@ const tableDefaults = (marginX) => ({
  */
 export async function buildCeoReport(o) {
   const { rows, nonSalesRows = [], dealerIndex, filters } = o;
+  const section = ['sales', 'dealers', 'outstanding'].includes(o.section) ? o.section : 'full';
   const now = new Date();
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
   let logo = null;
@@ -209,14 +211,31 @@ export async function buildCeoReport(o) {
     ['Prepared by', o.preparedBy || '-'],
   ]);
 
-  // 2. Totals
+  // 2. Totals: the tiles of the card(s) this report is about
+  const want = (k) => section === 'full' || section === k;
+  const overdueBills = bills.filter((b) => (b.overdueDays || 0) > 0);
+  const overdueAmount = overdueBills.reduce((sum, b) => sum + b.amount, 0);
   y = band(doc, marginX, pageWidth, y, 'Summary');
-  const tw = (pageW - 4 * 3) / 5;
-  tile(doc, marginX, y, tw, 'NET SALES (excl. GST)', rs(net), 'after discount, credit notes taken off', GREEN);
-  tile(doc, marginX + (tw + 3), y, tw, 'SALES INVOICES', inr(invoiceCount), `${inr(invoices.length - invoiceCount)} credit notes`, BLUE);
-  tile(doc, marginX + (tw + 3) * 2, y, tw, 'ACTIVE DEALERS', inr(dealers.length), 'with an invoice in this report', BLUE);
-  tile(doc, marginX + (tw + 3) * 3, y, tw, 'OUTSTANDING', rs(outstanding), `${inr(bills.length)} pending bills of these invoices`, ORANGE);
-  tile(doc, marginX + (tw + 3) * 4, y, tw, 'BRANCH TRANSFER + SAMPLE', rs(nonSalesTotal), 'not counted in Net Sales', GREY);
+  const tiles = [];
+  if (want('sales')) {
+    tiles.push(['NET SALES (excl. GST)', rs(net), 'after discount, credit notes taken off', GREEN]);
+    tiles.push(['SALES INVOICES', inr(invoiceCount), `${inr(invoices.length - invoiceCount)} credit notes`, BLUE]);
+  }
+  if (want('dealers')) {
+    tiles.push(['ACTIVE DEALERS', inr(dealers.length), 'with an invoice in this report', BLUE]);
+    if (section === 'dealers') tiles.push(['NET SALES (excl. GST)', rs(net), 'of these dealers', GREEN], ['AVERAGE PER DEALER', rs(dealers.length ? net / dealers.length : 0), 'Net Sales / active dealers', GREY]);
+  }
+  if (want('outstanding')) {
+    tiles.push(['OUTSTANDING', rs(outstanding), `${inr(bills.length)} pending bills of these invoices`, ORANGE]);
+    if (section === 'outstanding') {
+      tiles.push(['OVERDUE (past due date)', rs(overdueAmount), `${inr(overdueBills.length)} bills`, [200, 70, 60]]);
+      tiles.push(['NOT YET DUE', rs(outstanding - overdueAmount), `${inr(bills.length - overdueBills.length)} bills`, GREEN]);
+    }
+  }
+  if (section === 'full' || section === 'sales') tiles.push(['BRANCH TRANSFER + SAMPLE', rs(nonSalesTotal), 'not counted in Net Sales', GREY]);
+  const gap = 3;
+  const tw = (pageW - gap * (tiles.length - 1)) / tiles.length;
+  tiles.forEach((t, k) => tile(doc, marginX + k * (tw + gap), y, tw, t[0], t[1], t[2], t[3]));
   y += 26;
   doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...GREY);
   const note = doc.splitTextToSize(
@@ -226,97 +245,146 @@ export async function buildCeoReport(o) {
   doc.text(note, marginX, y);
 
   // 3. Diagrams
-  doc.addPage(); y = 18;
-  y = band(doc, marginX, pageWidth, y, 'Diagrams');
-  const half = (pageW - 8) / 2;
-  const yTop = y + 2;
-  vBarChart(doc, { x: marginX, y: yTop, w: half, h: 62, title: 'Net Sales by month', items: months.map((m) => ({ label: m.label, value: m.net })) });
-
-  const ageing = [['Not due', 0, 0], ['1-30 days', 1, 30], ['31-60 days', 31, 60], ['61-90 days', 61, 90], ['90+ days', 91, Infinity]].map(([label, lo, hi]) => ({
-    label, value: bills.filter((b) => (b.overdueDays || 0) >= lo && (b.overdueDays || 0) <= hi).reduce((s, b) => s + b.amount, 0),
-  }));
-  hBarChart(doc, { x: marginX + half + 8, y: yTop, w: half, title: 'Outstanding by age (days past due date)', items: ageing, color: ORANGE, maxItems: 5 });
-  y = yTop + 68;
-
   const byState = new Map();
   dealers.forEach((d) => byState.set(d.state, (byState.get(d.state) || 0) + d.value));
-  const stateItems = [...byState.entries()].map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value);
-  const topOff = getTopSalesOfficers(rows, 10).map((x) => ({ label: x.name, value: x.amount }));
-  const topProd = getTopProducts(rows, 10).map((x) => ({ label: x.product, value: x.amount }));
-  const topDealers = dealers.slice(0, 10).map((d) => ({ label: d.dealer, value: d.value }));
+  const toItems = (map) => [...map.entries()].map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value);
+  const byOutDealer = new Map();
+  bills.forEach((b) => byOutDealer.set(b.dealer, (byOutDealer.get(b.dealer) || 0) + b.amount));
+  const ageing = [['Not due', 0, 0], ['1-30 days', 1, 30], ['31-60 days', 31, 60], ['61-90 days', 61, 90], ['90+ days', 91, Infinity]].map(([label, lo, hi]) => ({
+    label, value: bills.filter((b) => (b.overdueDays || 0) >= lo && (b.overdueDays || 0) <= hi).reduce((sum, b) => sum + b.amount, 0),
+  }));
+  const C = {
+    month:     { kind: 'v', title: 'Net Sales by month', items: months.map((m) => ({ label: m.label, value: m.net })) },
+    ageing:    { kind: 'h', title: 'Outstanding by age (days past due date)', items: ageing, color: ORANGE, maxItems: 5 },
+    state:     { kind: 'h', title: 'Net Sales by state', items: toItems(byState) },
+    dealers:   { kind: 'h', title: 'Top 10 dealers', items: dealers.slice(0, 10).map((d) => ({ label: d.dealer, value: d.value })) },
+    outDealer: { kind: 'h', title: 'Top 10 dealers by outstanding', items: toItems(byOutDealer), color: ORANGE },
+    products:  { kind: 'h', title: 'Top 10 products', items: getTopProducts(rows, 10).map((x) => ({ label: x.product, value: x.amount })) },
+    officers:  { kind: 'h', title: 'Top 10 sales officers (only sales that carry an officer in Tally)', items: getTopSalesOfficers(rows, 10).map((x) => ({ label: x.name, value: x.amount })) },
+  };
+  const chartRows = {
+    full:        [[C.month, C.ageing], [C.state, C.dealers], [C.products, C.officers]],
+    sales:       [[C.month, C.state], [C.products, C.officers], [C.dealers]],
+    dealers:     [[C.dealers, C.state]],
+    outstanding: [[C.ageing, C.outDealer]],
+  }[section];
 
-  y = room(doc, y, 75);
-  const yA = hBarChart(doc, { x: marginX, y, w: half, title: 'Net Sales by state', items: stateItems });
-  const yB = hBarChart(doc, { x: marginX + half + 8, y, w: half, title: 'Top 10 dealers', items: topDealers });
-  y = Math.max(yA, yB) + 4;
-  y = room(doc, y, 75);
-  const yC = hBarChart(doc, { x: marginX, y, w: half, title: 'Top 10 products', items: topProd });
-  const yD = hBarChart(doc, { x: marginX + half + 8, y, w: half, title: 'Top 10 sales officers (only sales that carry an officer in Tally)', items: topOff });
-  void Math.max(yC, yD);
+  doc.addPage(); y = 18;
+  y = band(doc, marginX, pageWidth, y, 'Diagrams') + 2;
+  const half = (pageW - 8) / 2;
+  chartRows.forEach((pair) => {
+    y = room(doc, y, pair.some((c) => c.kind === 'v') ? 68 : 75);
+    const bottoms = pair.map((c, k) => (c.kind === 'v'
+      ? vBarChart(doc, { x: marginX + k * (half + 8), y, w: half, h: 62, title: c.title, items: c.items })
+      : hBarChart(doc, { x: marginX + k * (half + 8), y, w: half, title: c.title, items: c.items, color: c.color, maxItems: c.maxItems || 10 })));
+    y = Math.max(...bottoms) + 4;
+  });
 
   // 4. Tables
   const common = tableDefaults(marginX);
+  const begin = () => { doc.addPage(); y = 18; };
 
-  doc.addPage(); y = 18;
-  y = band(doc, marginX, pageWidth, y, 'Month-wise sales');
-  autoTable(doc, {
-    ...common, startY: y,
-    head: [['Month', R('Sales invoices'), R('Sales (excl. GST)'), R('Credit notes'), R('Net Sales')]],
-    body: [
-      ...months.map((m) => [m.label, inr(m.invoices), rs(m.sales), rs(m.credits), rs(m.net)]),
-      [{ content: 'Total', styles: { fontStyle: 'bold' } }, inr(months.reduce((s, m) => s + m.invoices, 0)), rs(months.reduce((s, m) => s + m.sales, 0)), rs(months.reduce((s, m) => s + m.credits, 0)), { content: rs(net), styles: { fontStyle: 'bold' } }],
-    ],
-    columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' } },
-  });
-  y = doc.lastAutoTable.finalY + 8;
+  const tableMonths = () => {
+    y = band(doc, marginX, pageWidth, y, 'Month-wise sales');
+    autoTable(doc, {
+      ...common, startY: y,
+      head: [['Month', R('Sales invoices'), R('Sales (excl. GST)'), R('Credit notes'), R('Net Sales')]],
+      body: [
+        ...months.map((m) => [m.label, inr(m.invoices), rs(m.sales), rs(m.credits), rs(m.net)]),
+        [{ content: 'Total', styles: { fontStyle: 'bold' } }, inr(months.reduce((sum, m) => sum + m.invoices, 0)), rs(months.reduce((sum, m) => sum + m.sales, 0)), rs(months.reduce((sum, m) => sum + m.credits, 0)), { content: rs(net), styles: { fontStyle: 'bold' } }],
+      ],
+      columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' } },
+    });
+    y = doc.lastAutoTable.finalY + 8;
+  };
 
-  const byPlace = new Map();
-  dealers.forEach((d) => {
-    const k = `${d.state}|${d.district}`;
-    const p = byPlace.get(k) || { state: d.state, district: d.district, dealers: 0, value: 0 };
-    p.dealers += 1; p.value += d.value;
-    byPlace.set(k, p);
-  });
-  const places = [...byPlace.values()].sort((a, b) => b.value - a.value);
-  y = room(doc, y, 30);
-  y = band(doc, marginX, pageWidth, y, 'Place-wise sales (state and district of the dealer, from the pincode on its Tally ledger)');
-  autoTable(doc, {
-    ...common, startY: y,
-    head: [['State', 'District', R('Dealers'), R('Net Sales')]],
-    body: places.map((p) => [p.state, p.district, inr(p.dealers), rs(p.value)]),
-    columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' } },
-  });
+  const tablePlaces = () => {
+    const byPlace = new Map();
+    dealers.forEach((d) => {
+      const k = `${d.state}|${d.district}`;
+      const pl = byPlace.get(k) || { state: d.state, district: d.district, dealers: 0, value: 0 };
+      pl.dealers += 1; pl.value += d.value;
+      byPlace.set(k, pl);
+    });
+    const places = [...byPlace.values()].sort((a, b) => b.value - a.value);
+    y = room(doc, y, 30);
+    y = band(doc, marginX, pageWidth, y, 'Place-wise sales (state and district of the dealer, from the pincode on its Tally ledger)');
+    autoTable(doc, {
+      ...common, startY: y,
+      head: [['State', 'District', R('Dealers'), R('Net Sales')]],
+      body: places.map((pl) => [pl.state, pl.district, inr(pl.dealers), rs(pl.value)]),
+      columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' } },
+    });
+  };
 
-  doc.addPage(); y = 18;
-  y = band(doc, marginX, pageWidth, y, `Dealers (${inr(dealers.length)})`);
-  autoTable(doc, {
-    ...common, startY: y,
-    head: [['#', 'Dealer', 'State', 'District', 'City', 'Sales officer', R('Quantity'), R('Net Sales'), 'Last invoice']],
-    body: dealers.map((d, i) => [i + 1, d.dealer, d.state, d.district, d.city, d.officer || '-', qty(d.quantity), rs(d.value), fmtDate(d.lastInvoice)]),
-    columnStyles: { 0: { cellWidth: 9 }, 6: { halign: 'right' }, 7: { halign: 'right' } },
-  });
+  const tableDealers = () => {
+    y = band(doc, marginX, pageWidth, y, `Dealers (${inr(dealers.length)})`);
+    autoTable(doc, {
+      ...common, startY: y,
+      head: [['#', 'Dealer', 'State', 'District', 'City', 'Sales officer', R('Quantity'), R('Net Sales'), 'Last invoice']],
+      body: dealers.map((d, k) => [k + 1, d.dealer, d.state, d.district, d.city, d.officer || '-', qty(d.quantity), rs(d.value), fmtDate(d.lastInvoice)]),
+      columnStyles: { 0: { cellWidth: 9 }, 6: { halign: 'right' }, 7: { halign: 'right' } },
+    });
+  };
 
-  doc.addPage(); y = 18;
-  y = band(doc, marginX, pageWidth, y, `Outstanding bills (${inr(bills.length)}) - total ${rs(outstanding)}`);
-  autoTable(doc, {
-    ...common, startY: y,
-    head: [['Dealer', 'Bill no', 'Bill date', 'Due date', R('Overdue days'), R('Amount')]],
-    body: bills.map((b) => [b.dealer, b.billNo, fmtDate(b.billDate), fmtDate(b.dueDate), b.overdueDays == null ? '-' : b.overdueDays, rs(b.amount)]),
-    columnStyles: { 4: { halign: 'right' }, 5: { halign: 'right' } },
-  });
+  const tableOutstandingByDealer = () => {
+    const m = new Map();
+    bills.forEach((b) => {
+      const e = m.get(b.dealer) || { dealer: b.dealer, bills: 0, amount: 0, overdue: 0, maxDays: 0, state: b.state, district: b.district };
+      e.bills += 1; e.amount += b.amount;
+      if ((b.overdueDays || 0) > 0) e.overdue += b.amount;
+      e.maxDays = Math.max(e.maxDays, b.overdueDays || 0);
+      m.set(b.dealer, e);
+    });
+    const list = [...m.values()].sort((a, b) => b.amount - a.amount);
+    y = band(doc, marginX, pageWidth, y, `Outstanding by dealer (${inr(list.length)})`);
+    autoTable(doc, {
+      ...common, startY: y,
+      head: [['#', 'Dealer', 'State', 'District', R('Pending bills'), R('Outstanding'), R('Of which overdue'), R('Oldest overdue (days)')]],
+      body: list.map((e, k) => [k + 1, e.dealer, e.state, e.district, inr(e.bills), rs(e.amount), rs(e.overdue), inr(e.maxDays)]),
+      columnStyles: { 0: { cellWidth: 9 }, 4: { halign: 'right' }, 5: { halign: 'right' }, 6: { halign: 'right' }, 7: { halign: 'right' } },
+    });
+  };
 
-  doc.addPage(); y = 18;
-  const shown = invoices.slice(0, MAX_INVOICE_ROWS);
-  y = band(doc, marginX, pageWidth, y, `Invoices (${inr(invoices.length)}) - Net Sales ${rs(net)}`);
-  autoTable(doc, {
-    ...common, startY: y,
-    head: [['Date', 'Invoice no', 'Type', 'Dealer', 'State', 'District', 'City', 'Sales officer', R('Quantity'), R('Value (excl. GST)')]],
-    body: shown.map((i) => [fmtDate(i.date), i.vchNo, i.vchType, i.dealer, i.state, i.district, i.city, i.officer || '-', qty(i.quantity), rs(i.value)]),
-    columnStyles: { 8: { halign: 'right' }, 9: { halign: 'right' } },
-  });
-  if (invoices.length > shown.length) {
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...GREY);
-    doc.text(`Showing the first ${inr(shown.length)} of ${inr(invoices.length)} invoices. Use a narrower date range or filter for the rest.`, marginX, doc.lastAutoTable.finalY + 6);
+  const tableBills = () => {
+    y = band(doc, marginX, pageWidth, y, `Outstanding bills (${inr(bills.length)}) - total ${rs(outstanding)}`);
+    autoTable(doc, {
+      ...common, startY: y,
+      head: [['Dealer', 'Bill no', 'Bill date', 'Due date', R('Overdue days'), R('Amount')]],
+      body: bills.map((b) => [b.dealer, b.billNo, fmtDate(b.billDate), fmtDate(b.dueDate), b.overdueDays == null ? '-' : b.overdueDays, rs(b.amount)]),
+      columnStyles: { 4: { halign: 'right' }, 5: { halign: 'right' } },
+    });
+  };
+
+  const tableInvoices = () => {
+    const shown = invoices.slice(0, MAX_INVOICE_ROWS);
+    y = band(doc, marginX, pageWidth, y, `Invoices (${inr(invoices.length)}) - Net Sales ${rs(net)}`);
+    autoTable(doc, {
+      ...common, startY: y,
+      head: [['Date', 'Invoice no', 'Type', 'Dealer', 'State', 'District', 'City', 'Sales officer', R('Quantity'), R('Value (excl. GST)')]],
+      body: shown.map((i) => [fmtDate(i.date), i.vchNo, i.vchType, i.dealer, i.state, i.district, i.city, i.officer || '-', qty(i.quantity), rs(i.value)]),
+      columnStyles: { 8: { halign: 'right' }, 9: { halign: 'right' } },
+    });
+    if (invoices.length > shown.length) {
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...GREY);
+      doc.text(`Showing the first ${inr(shown.length)} of ${inr(invoices.length)} invoices. Use a narrower date range or filter for the rest.`, marginX, doc.lastAutoTable.finalY + 6);
+    }
+  };
+
+  if (section === 'full') {
+    begin(); tableMonths(); tablePlaces();
+    begin(); tableDealers();
+    begin(); tableBills();
+    begin(); tableInvoices();
+  } else if (section === 'sales') {
+    begin(); tableMonths(); tablePlaces();
+    begin(); tableInvoices();
+  } else if (section === 'dealers') {
+    begin(); tablePlaces();
+    begin(); tableDealers();
+  } else {
+    begin(); tableOutstandingByDealer();
+    begin(); tableBills();
   }
 
   // Running header on every page after the first: what the report is for
@@ -337,7 +405,7 @@ export async function buildCeoReport(o) {
 
   const slug = (s) => String(s || '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '');
   const parts = [
-    'Wallnut-Sales-Report', slug(o.yearLabel), slug(filters.state), slug(filters.district), slug(filters.dealer), now.toISOString().slice(0, 10),
+    { sales: 'Net-Sales-Report', dealers: 'Active-Dealers-Report', outstanding: 'Outstanding-Report', full: 'Wallnut-Sales-Report' }[section], slug(o.yearLabel), slug(filters.state), slug(filters.district), slug(filters.dealer), now.toISOString().slice(0, 10),
   ].filter(Boolean);
   return { blob: doc.output('blob'), fileName: `${parts.join('_')}.pdf` };
 }
