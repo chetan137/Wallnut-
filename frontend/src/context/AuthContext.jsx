@@ -36,7 +36,10 @@ async function api(path, { method = 'GET', body } = {}) {
   if (token) headers.Authorization = `Bearer ${token}`;
   if (body) headers['Content-Type'] = 'application/json';
   try {
-    const res = await fetch(`/api/users${path}`, { method, headers, body: body ? JSON.stringify(body) : undefined });
+    // No trailing slash for the list / create calls: Vercel forwards "/api/users" to the backend but serves the
+    // web page for "/api/users/" (GET gave HTML, POST gave "405 Method Not Allowed").
+    const url = path === '/' ? '/api/users' : `/api/users${path}`;
+    const res = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined });
     const json = await res.json().catch(() => ({}));
     return { ok: res.ok && json.ok === true, status: res.status, ...json };
   } catch {
