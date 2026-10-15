@@ -409,3 +409,153 @@ export async function buildCeoReport(o) {
   ].filter(Boolean);
   return { blob: doc.output('blob'), fileName: `${parts.join('_')}.pdf` };
 }
+
+
+/**
+ * One dealer's report - what the "Products" pop-up of the Dealer Performance table shows, plus the dealer's invoices:
+ * who and where the dealer is, totals, diagrams (monthly purchases, top products), the products bought, pending bills
+ * and every invoice with its items. `rows` are the dashboard rows (filters applied); only this dealer's are used.
+ * @returns {Promise<{blob: Blob, fileName: string}>}
+ */
+export async function buildDealerReport(o) {
+  const { dealer, rows = [], dealerIndex, filters } = o;
+  const now = new Date();
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+  let logo = null;
+  try { logo = await loadLogoAsDataUrl(); } catch { /* the report works without the logo */ }
+
+  const mine = rows.filter((r) => r.partyName === dealer.dealer);
+  const info = (dealerIndex && dealerIndex.get(dealer.dealer)) || {};
+  const invoices = invoiceList(mine, dealerIndex || new Map());
+  const bills = billList(mine, dealerIndex || new Map(), now);
+  const invoiceCount = invoices.filter((i) => !(/credit note/i.test(i.vchType) || i.value < 0)).length;
+  const dates = mine.map((r) => r.date).filter(Boolean).sort();
+
+  // Items of each invoice, as text
+  const keyOf = (r) => `${r.vchNo}|${r.vchType}|${r.date}|${r.partyName}`;
+  const itemsOf = new Map();
+  mine.forEach((r) => {
+    if (!r.itemName) return;
+    const list = itemsOf.get(keyOf(r)) || [];
+    list.push(`${r.itemName} (${qty(r.quantity)}${r.units ? ` ${r.units}` : ''})`);
+    itemsOf.set(keyOf(r), list);
+  });
+
+  const monthItems = mine.length
+    ? monthlyBreakdown(invoices).map((m) => ({ label: m.label, value: m.net }))
+    : Object.entries(dealer.monthlySales || {}).sort(([a], [b]) => (a < b ? -1 : 1))
+      .map(([k, v]) => ({ label: `${MONTHS[Number(k.slice(5, 7)) - 1]} ${k.slice(2, 4)}`, value: v }));
+  const productList = dealer.productList || [];
+
+  const generated = `${fmtDate(now.toISOString())} ${now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}`;
+  const { marginX, pageWidth, contentStartY } = drawLetterhead(doc, logo, 'Dealer Report', `Generated ${generated}`);
+  const pageW = pageWidth - marginX * 2;
+  const chosen = (v) => v || 'All';
+  const dateRange = filters && (filters.fromDate || filters.toDate)
+    ? `${filters.fromDate ? fmtDate(filters.fromDate) : 'start of the year'}  to  ${filters.toDate ? fmtDate(filters.toDate) : 'end of the year'}`
+    : `Whole period of ${o.yearLabel}`;
+
+  let y = drawSection(doc, marginX, pageWidth, contentStartY, 'Dealer', [
+    ['Dealer', dealer.dealer],
+    ['Sales officer', dealer.salesMan || info.officer || 'Unassigned'],
+    ['State / District / City', `${info.state || '-'}  /  ${dealer.district || info.district || '-'}  /  ${info.city || '-'}${info.pincode ? `   (pincode ${info.pincode})` : ''}`],
+  ]);
+  y = drawSection(doc, marginX, pageWidth, y, 'Report filters (what this report covers)', [
+    ['Financial Year', o.yearLabel],
+    ['Date range chosen', dateRange],
+    ['Data in this report', mine.length ? `invoices from ${fmtDate(dates[0])} to ${fmtDate(dates[dates.length - 1])}` : 'no invoices'],
+    ['Dashboard filters', `Scope: ${o.scopeLabel}  |  State: ${chosen(filters && filters.state)}  |  District: ${chosen(filters && filters.district)}  |  City: ${chosen(filters && filters.city)}  |  Officer: ${o.officerName || 'All'}`],
+    ['Data last read from Tally', o.lastSync ? `${fmtDate(o.lastSync)} ${new Date(o.lastSync).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}` : 'not available'],
+    ['Prepared by', o.preparedBy || '-'],
+  ]);
+
+  y = band(doc, marginX, pageWidth, y, 'Summary');
+  const growth = dealer.pyGrowth;
+  const tiles = [
+    ['TOTAL SALES (excl. GST)', rs(dealer.totalSales), 'after discount, credit notes taken off', GREEN],
+    ['OUTSTANDING', rs(dealer.outstanding), `${inr(bills.length)} pending bills`, ORANGE],
+    ['GROWTH', growth == null ? 'N/A' : `${growth >= 0 ? '+' : ''}${growth}%`, growth == null ? 'first period' : 'latest month vs same month last year', growth != null && growth < 0 ? [200, 70, 60] : BLUE],
+    ['INVOICES', inr(invoiceCount), `${inr(invoices.length - invoiceCount)} credit notes, ${inr(mine.length)} item lines`, BLUE],
+    ['PRODUCTS BOUGHT', inr(productList.length), 'different products', GREY],
+  ];
+  const gap = 3;
+  const tw = (pageW - gap * (tiles.length - 1)) / tiles.length;
+  tiles.forEach((t, k) => tile(doc, marginX + k * (tw + gap), y, tw, t[0], t[1], t[2], t[3]));
+  y += 26;
+  doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(...GREY);
+  doc.text(doc.splitTextToSize(
+    'Values are without GST (base taxable value), as in Tally. Growth compares the latest month with the same month last year; if there were no sales '
+    + 'in that month last year it is compared with the previous month. Outstanding is the pending amount on this dealer\'s invoices as on the day of the report.', pageW), marginX, y);
+
+  // Diagrams
+  doc.addPage(); y = 18;
+  y = band(doc, marginX, pageWidth, y, 'Diagrams') + 2;
+  const half = (pageW - 8) / 2;
+  vBarChart(doc, { x: marginX, y, w: half, h: 62, title: 'Purchases by month (Net, excl. GST)', items: monthItems });
+  hBarChart(doc, { x: marginX + half + 8, y, w: half, title: 'Top 10 products by value', items: productList.slice(0, 10).map((p) => ({ label: p.name, value: p.amount })) });
+
+  // Tables
+  const common = tableDefaults(marginX);
+  doc.addPage(); y = 18;
+  y = band(doc, marginX, pageWidth, y, `Products purchased (${inr(productList.length)})`);
+  autoTable(doc, {
+    ...common, startY: y,
+    head: [['Product', R('Total quantity'), R('Avg rate (excl. GST)'), R('Net value'), R('Share %')]],
+    body: [
+      ...productList.map((p) => [p.name, `${qty(p.quantity)} ${p.units || ''}`.trim(), rs(p.avgRate), rs(p.amount), `${p.sharePct}%`]),
+      [{ content: 'Total', styles: { fontStyle: 'bold' } }, '', '', { content: rs(productList.reduce((sum, p) => sum + p.amount, 0)), styles: { fontStyle: 'bold' } }, ''],
+    ],
+    columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' } },
+  });
+  y = doc.lastAutoTable.finalY + 8;
+
+  const months = mine.length ? monthlyBreakdown(invoices) : [];
+  if (months.length) {
+    y = room(doc, y, 30);
+    y = band(doc, marginX, pageWidth, y, 'Month-wise purchases');
+    autoTable(doc, {
+      ...common, startY: y,
+      head: [['Month', R('Invoices'), R('Sales (excl. GST)'), R('Credit notes'), R('Net')]],
+      body: months.map((m) => [m.label, inr(m.invoices), rs(m.sales), rs(m.credits), rs(m.net)]),
+      columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' } },
+    });
+    y = doc.lastAutoTable.finalY + 8;
+  }
+
+  if (bills.length) {
+    y = room(doc, y, 30);
+    y = band(doc, marginX, pageWidth, y, `Pending bills (${inr(bills.length)}) - total ${rs(bills.reduce((sum, b) => sum + b.amount, 0))}`);
+    autoTable(doc, {
+      ...common, startY: y,
+      head: [['Bill no', 'Bill date', 'Due date', R('Overdue days'), R('Amount')]],
+      body: bills.map((b) => [b.billNo, fmtDate(b.billDate), fmtDate(b.dueDate), b.overdueDays == null ? '-' : b.overdueDays, rs(b.amount)]),
+      columnStyles: { 3: { halign: 'right' }, 4: { halign: 'right' } },
+    });
+  }
+
+  if (invoices.length) {
+    doc.addPage(); y = 18;
+    y = band(doc, marginX, pageWidth, y, `Invoices (${inr(invoices.length)}) with their items`);
+    autoTable(doc, {
+      ...common, startY: y,
+      head: [['Date', 'Invoice no', 'Type', 'Items (quantity)', R('Quantity'), R('Value (excl. GST)')]],
+      body: invoices.map((i) => [fmtDate(i.date), i.vchNo, i.vchType, (itemsOf.get(i.key) || []).join('; ') || '-', qty(i.quantity), rs(i.value)]),
+      columnStyles: { 3: { cellWidth: 110 }, 4: { halign: 'right' }, 5: { halign: 'right' } },
+    });
+  }
+
+  // Running header (pages after the first) + footer
+  const oneLine = `${dealer.dealer}  |  ${o.yearLabel}${filters && (filters.fromDate || filters.toDate) ? `  |  ${filters.fromDate ? fmtDate(filters.fromDate) : '...'} to ${filters.toDate ? fmtDate(filters.toDate) : '...'}` : ''}`;
+  const total = doc.internal.getNumberOfPages();
+  for (let p = 2; p <= total; p++) {
+    doc.setPage(p);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(...GREY);
+    doc.text(`Dealer Report  -  ${oneLine}`, marginX, 9);
+    doc.setDrawColor(225); doc.setLineWidth(0.2);
+    doc.line(marginX, 11, pageWidth - marginX, 11);
+  }
+  stampFooter(doc, marginX, pageWidth);
+
+  const slug = (s) => String(s || '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
+  return { blob: doc.output('blob'), fileName: `Dealer-Report_${[slug(dealer.dealer), slug(o.yearLabel), now.toISOString().slice(0, 10)].filter(Boolean).join('_')}.pdf` };
+}

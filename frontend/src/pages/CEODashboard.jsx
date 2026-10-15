@@ -359,6 +359,40 @@ export default function CEODashboard({ data, scopeLabel = 'All-India', controlTi
     }
   };
 
+  // PDF of one dealer (the Products pop-up of the Dealer Performance table)
+  const [dealerPdfBusy, setDealerPdfBusy] = useState(false);
+  const downloadDealerPdf = async (dealer) => {
+    if (dealerPdfBusy) return;
+    setDealerPdfBusy(true);
+    try {
+      const { buildDealerReport } = await import('../utils/ceoReportPdf');
+      const { blob, fileName } = await buildDealerReport({
+        dealer,
+        rows: filteredData,
+        dealerIndex,
+        yearLabel: selectedYear === 'All' ? 'All years' : `FY ${selectedYear}`,
+        filters: ceoFilters,
+        officerName,
+        scopeLabel,
+        lastSync: lastSync || '',
+        preparedBy: currentUser?.name || '',
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    } catch (err) {
+      console.error('Dealer PDF failed', err);
+      window.alert('Could not create the dealer PDF. Please try again.');
+    } finally {
+      setDealerPdfBusy(false);
+    }
+  };
+
   return (
     <div className="ssh-dashboard" id="ceo-dashboard">
       <div className="dashboard-control-bar ceo-control-bar">
@@ -506,7 +540,9 @@ export default function CEODashboard({ data, scopeLabel = 'All-India', controlTi
       {activeTab === 'cities' && (
         <DistrictPerformanceTable data={cityPerf} title={`${scopeLabel} City Performance`} label="City" accessor="city" showTarget={false} />
       )}
-      {activeTab === 'dealers' && <DealerPerformanceTable data={dealerSummary} />}
+      {activeTab === 'dealers' && (
+        <DealerPerformanceTable data={dealerSummary} rows={filteredData} onDownload={downloadDealerPdf} downloading={dealerPdfBusy} />
+      )}
       {activeTab === 'breakdown' && (
         <SalesReconciliationTable salesRows={filteredData} selectedYear={selectedYear} title={`${scopeLabel} Sales Breakdown (compare with Tally)`} />
       )}

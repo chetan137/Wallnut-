@@ -4,7 +4,7 @@ import { formatCurrency, formatNumber } from '../../utils/formatters';
 import { Package, TrendingUp, TrendingDown } from 'lucide-react';
 import DealerProductDrilldownModal from './DealerProductDrilldownModal';
 
-export default function DealerPerformanceTable({ data }) {
+export default function DealerPerformanceTable({ data, rows, onDownload, downloading = false }) {
   const [selectedDealer, setSelectedDealer] = useState(null);
 
   const columns = [
@@ -151,6 +151,9 @@ export default function DealerPerformanceTable({ data }) {
         isOpen={Boolean(selectedDealer)}
         onClose={() => setSelectedDealer(null)}
         dealer={selectedDealer}
+        rows={rows}
+        onDownload={onDownload}
+        downloading={downloading}
       />
     </>
   );
